@@ -4,11 +4,12 @@
   "main": "index.js",
   "repository": {},
   "author": "Jake Sower",
-  "license": "GPL3.0",
+  "license": "CC-BY-NC-4.0",
   "scripts": {
     "build": "browserify ./src/index.js -o dist/data-prism.js -t brfs -v",
-    "watch-sass": "mkdirp dist/styles && node-sass -wr assets/styles -o dist/styles",
-    "watch": "watchify ./src/index.js -o dist/data-prism.js -t brfs -v",
+    "build-sass": "mkdirp dist/styles && node-sass -r assets/styles/main.scss --output-style=compressed -o dist/styles",
+    "watch-sass": "mkdirp dist/styles && node-sass -wr assets/styles/main.scss --output-style=compressed -o dist/styles",
+    "watch": "mkdirp dist && watchify ./src/index.js -o dist/data-prism.js -t brfs -v",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
@@ -19,6 +20,7 @@
     "watchify": "^3.7.0"
   },
   "dependencies": {
+    "csv-parse": "^1.2.0",
     "flyd": "^0.2.4",
     "ramda": "^0.23.0",
     "snabbdom": "^0.6.8",
