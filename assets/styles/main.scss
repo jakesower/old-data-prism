@@ -1,0 +1,221 @@
+@import "reset.css";
+@import "variables.scss";
+@import "fonts.scss";
+
+@mixin page-colors($pure-color) {
+  $light: lighten($pure-color, 40%);
+  $mid: lighten($pure-color, 20%);
+
+  nav {
+    border-bottom: 4px solid $mid;
+    background-color: #000;
+
+    h1 {
+      color: #fff;
+    }
+  }
+
+  aside {
+    background-color: $mid;
+  }
+}
+
+p {
+  margin: 1em 0;
+  line-height: 120%;
+}
+
+ul {
+  list-style: square outside none;
+  margin-left: 1em;
+}
+
+li {
+  margin-bottom: 1em;
+  line-height: 120%;
+}
+
+strong {
+  font-weight: bold;
+}
+
+body {
+  font-family: 'Lato';
+}
+
+div.body-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+  &.uploaddata { @include page-colors($red); }
+
+  &.preparedata {
+    @include page-colors($orange);
+
+    .column {
+      width: 100%;
+      border-top: 1px dashed #444;
+      &:first-child{ border: none; }
+
+      font-size: 140%;
+      padding: 1em 0;
+
+      .name {
+        width: 30%;
+        display: inline-block;
+      }
+
+      select {
+        font-size: 100%;
+      }
+    }
+
+    tr:nth-child(2n) {
+      background-color: lighten($orange, 40%);
+    }
+  }
+
+  &.viewgrid {
+    @include page-colors($yellow);
+
+    tr:nth-child(2n) {
+      background-color: #ffa;
+    }
+  }
+
+  &.chart {
+    @include page-colors($green);
+  }
+
+  &.analyze {
+    @include page-colors($blue);
+  }
+
+  &.indigo {
+    @include page-colors($indigo);
+  }
+
+  &.purple {
+    @include page-colors($purple);
+  }
+}
+
+div.main-container {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+
+  aside {
+    flex: 0 0 18em;
+    padding: 1em;
+  }
+
+  main {
+    padding: 1em;
+    flex: 1;
+    overflow-x: auto;
+  }
+
+  th {
+    font-weight: bold;
+    text-align: left;
+    padding: 0.4em;
+    text-size: 115%;
+  }
+
+  td {
+    padding: 0.4em;
+    // font-family: "Oswald";
+  }
+}
+
+nav {
+  background-color: #fffff3;
+
+  h1 {
+    font-size: 120%;
+    display: inline-block;
+    padding: 0.3em 1em;
+  }
+
+  a {
+    display: inline-block;
+    font-size: 140%;
+    padding: 0.4em 1em 0.3em 1em;
+    cursor: pointer;
+  }
+
+  a:nth-child(7n + 2) {
+    background-color: $light-red;
+    &:hover { background-color: $mid-red; }
+    &.selected { background-color: $mid-red; }
+  }
+  a:nth-child(7n + 3) {
+    background-color: $light-orange;
+    &:hover { background-color: $mid-orange; }
+    &.selected { background-color: $mid-orange; }
+  }
+  a:nth-child(7n + 4) {
+    background-color: $light-yellow;
+    &:hover { background-color: $mid-yellow; }
+    &.selected { background-color: $mid-yellow; }
+  }
+  a:nth-child(7n + 5) {
+    background-color: $light-green;
+    &:hover { background-color: $mid-green; }
+    &.selected { background-color: $mid-green; }
+  }
+  a:nth-child(7n + 6) {
+    background-color: $light-blue;
+    &:hover { background-color: $mid-blue; }
+    &.selected { background-color: $mid-blue; }
+  }
+  a:nth-child(7n) {
+    background-color: $light-indigo;
+    &:hover { background-color: $mid-indigo; }
+    &.selected { background-color: $mid-indigo; }
+  }
+  a:nth-child(7n + 1) {
+    background-color: $light-purple;
+    &:hover { background-color: $mid-purple; }
+    &.selected { background-color: $mid-purple; }
+  }
+}
+
+.page-controls {
+  .button {
+    padding: 3px 7px;
+    margin: 0 3px;
+    border-radius: 5px;
+    cursor: pointer;
+
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+
+    &.disabled {
+      opacity: 0.3;
+    }
+
+    &.selected {
+      margin: 0 2px;
+      border: thin solid #999;
+    }
+
+    &:not(.selected) {
+      &:hover {
+        margin: 0 2px;
+        border: thin solid #333;
+      }
+    }
+  }
+}
+
+.prepare-controls {
+  h2 {
+    font-size: 80%;
+    text-transform: uppercase;
+  }
+}

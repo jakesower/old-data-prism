@@ -1,0 +1,27 @@
+{
+  "name": "data-prism",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {},
+  "author": "Jake Sower",
+  "license": "GPL3.0",
+  "scripts": {
+    "build": "browserify ./src/index.js -o dist/data-prism.js -t brfs -v",
+    "watch-sass": "mkdirp dist/styles && node-sass -wr assets/styles -o dist/styles",
+    "watch": "watchify ./src/index.js -o dist/data-prism.js -t brfs -v",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "brfs": "^1.4.3",
+    "browserify": "^13.1.1",
+    "mkdirp": "^0.5.1",
+    "node-sass": "^4.5.0",
+    "watchify": "^3.7.0"
+  },
+  "dependencies": {
+    "flyd": "^0.2.4",
+    "ramda": "^0.23.0",
+    "snabbdom": "^0.6.8",
+    "union-type": "^0.3.3"
+  }
+}
