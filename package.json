@@ -23,6 +23,7 @@
     "csv-parse": "^1.2.0",
     "flyd": "^0.2.4",
     "ramda": "^0.23.0",
+    "ramda-fantasy": "^0.8.0",
     "snabbdom": "^0.6.8",
     "union-type": "^0.3.3"
   }

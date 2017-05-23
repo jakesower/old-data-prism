@@ -1,4 +1,6 @@
 const R = require('ramda');
+const Maybe = require('ramda-fantasy').Maybe;
+const {Just, Nothing} = Maybe;
 const flyd = require('flyd');
 const Type = require('union-type');
 const stream = flyd.stream;
@@ -10,8 +12,14 @@ const patch = require('snabbdom').init([
 ]);
 
 const view = require('./view');
-
 const Action = require('./types');
+
+const EMPTY_FILTER = id => {
+  id,
+  fn: Nothing(),
+  columns: {},
+  userInputs: {}
+};
 
 const update = Action.caseOn({
   StartUpload: (model) => {
@@ -22,8 +30,19 @@ const update = Action.caseOn({
   SetData: (newData, model) =>
     R.merge(model, {
       dataUploading: false,
-      dataset: newData
+      dataset: newData,
+      page: 'PrepareData'
     }),
+
+  SetPage: R.assocPath(['state', 'grid', 'page']),
+
+  CreateFilter: model => R.evolve({
+    filterId: R.inc,
+    filters: R.append(EMPTY_FILTER(model.filterId)),
+    editingFilter: model.filterId
+  }, model),
+  SetEditingFilter: R.assocPath(['state', 'prepare', 'editingFilter']),
+  SetFilterFunc: R.assocPath(['state', 'prepare', 'filterFunc']),
 });
 
 
@@ -31,7 +50,19 @@ const update = Action.caseOn({
 const init = {
   page: 'UploadData',
   dataUploading: false,
-  dataset: []
+  dataset: Nothing(),
+  filterId: 0,
+  filters: [],
+  state: {              // TODO: consider puttings these into components
+    grid: {
+      page: 1,
+      perPage: 20
+    },
+    prepare: {
+      editingFilter: Nothing(),
+      editingDerived: false
+    }
+  }
 };
 
 
@@ -60,14 +91,16 @@ function readCsv(fileDomId) {
   r.onload = function(e) {
     const result = e.target.result;
     const handleData = (err, data) => {
+      console.log({ columns: data[0], records: R.slice(1, Infinity, data) })
       action$(Action.SetData({
         columns: data[0],
-        data: R.slice(1, Infinity, data)
+        records: R.slice(1, Infinity, data)
       }));
     }
 
     parseCsv(result, handleData);
   };
+
   r.readAsText(file);
 }
 

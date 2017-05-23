@@ -3,7 +3,7 @@ const h = require('snabbdom/h').default;
 
 const pages = {
   UploadData: require('./views/upload-data'),
-  // PrepareData: require('./views/prepare-data')
+  PrepareData: require('./views/prepare-data')
 };
 
 module.exports = R.curry(function(action$, model) {

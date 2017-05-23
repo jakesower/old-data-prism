@@ -3,10 +3,13 @@ const Type = require('union-type');
 
 const Dataset = Type({
   columns: [Array],
-  data: [Array]
+  records: [Array]
 });
 
 module.exports = Type({
   StartUpload: [],
-  SetData: [Dataset]
+  SetData: [Object],   // TODO: use Dataset here (perhaps when union-type is updated?)
+  SetPage: [Number],
+  SetEditingFilter: [Boolean],
+  SetFilterFn: [String]
 })
