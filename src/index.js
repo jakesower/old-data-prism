@@ -11,22 +11,19 @@ const patch = require('snabbdom').init([
 
 const view = require('./view');
 
-const Action = Type({
-  StartUpload: [],
-  // SetData: [Array]
-})
+const Action = require('./types');
 
 const update = Action.caseOn({
   StartUpload: (model) => {
-    // readCsv('data-file');
+    readCsv('data-file');
     return R.merge(model, {'dataUploading': true});
   },
 
-  // SetData: (newData, model) =>
-  //   R.merge(model, {
-  //     dataUploading: false,
-  //     data: newData
-  //   }),
+  SetData: (newData, model) =>
+    R.merge(model, {
+      dataUploading: false,
+      dataset: newData
+    }),
 });
 
 
@@ -51,25 +48,25 @@ const vnode$ = flyd.map(view(action$), model$);
 window.addEventListener('DOMContentLoaded', function() {
   const container = document.querySelector('#main');
   flyd.scan(patch, container, vnode$);
-  action$(Action.StartUpload())
 })
 
 
 function readCsv(fileDomId) {
-  console.log('hola')
   var input = document.getElementById(fileDomId);
   var file = input.files[0];
 
   var r = new FileReader();
   // r.onerror = function(e){error(e.target.error.name);};
-  r.onload  = function(e) {
+  r.onload = function(e) {
     const result = e.target.result;
-    const parsed = parseCsv(result);
+    const handleData = (err, data) => {
+      action$(Action.SetData({
+        columns: data[0],
+        data: R.slice(1, Infinity, data)
+      }));
+    }
 
-    action$(Action.SetData({
-      columns: parsed[0],
-      data: R.slice(1, Infinity, parsed)
-    }));
+    parseCsv(result, handleData);
   };
   r.readAsText(file);
 }

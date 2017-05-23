@@ -1,6 +1,6 @@
 @import "reset.scss";
 @import "variables.scss";
-@import "fonts.scss";
+// @import "fonts.scss";
 
 @mixin page-colors($pure-color) {
   $light: lighten($pure-color, 40%);

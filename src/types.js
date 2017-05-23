@@ -2,7 +2,7 @@ const Type = require('union-type');
 
 
 const Dataset = Type({
-  columns: [String],
+  columns: [Array],
   data: [Array]
 });
 
