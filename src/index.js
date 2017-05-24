@@ -14,12 +14,12 @@ const patch = require('snabbdom').init([
 const view = require('./view');
 const Action = require('./types');
 
-const EMPTY_FILTER = id => {
-  id,
+const EMPTY_FILTER = id => ({
+  id: id,
   fn: Nothing(),
   columns: {},
   userInputs: {}
-};
+});
 
 const update = Action.caseOn({
   StartUpload: (model) => {
@@ -91,7 +91,6 @@ function readCsv(fileDomId) {
   r.onload = function(e) {
     const result = e.target.result;
     const handleData = (err, data) => {
-      console.log({ columns: data[0], records: R.slice(1, Infinity, data) })
       action$(Action.SetData({
         columns: data[0],
         records: R.slice(1, Infinity, data)

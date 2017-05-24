@@ -1,6 +1,8 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 
+const Maybe = require('ramda-fantasy').Maybe;
+const {Just, Nothing} = Maybe;
 const Action = require('../types');
 
 module.exports = R.curry((action$, model) => {
@@ -21,26 +23,34 @@ module.exports = R.curry((action$, model) => {
       }, str);
   }
 
-  return h('div', {class: {"main-container": true}}, [
-    h('aside', {class: "prepare-controls"}, [
-      h('button', {}, "Derive Field"),
-      h('button', {on: {click: [action$, Action.CreateFilter()]}}, "Add Filter"),
-      h('button', {}, "Perform Grouping")
+  return h('div', {class: {"main-container": true}}, R.reduce(R.concat, [], [
+    [
+      h('aside', {class: "prepare-controls"}, [
+        h('button', {}, "Derive Field"),
+        h('button', {on: {click: [action$, Action.CreateFilter()]}}, "Add Filter"),
+        h('button', {}, "Perform Grouping")
+      ])
+    ],
+
+    (model.filterId === Nothing() ? [] : [
+      
     ]),
 
-    h('main', {}, [
-      h('div', {class: {"page-controls": true}}, [
-        pageButton("<<", 1),
-        pageButton("<", page - 1),
-        h('strong', {class: {"button": true}}, `${page} / ${numPages}`),
-        pageButton(">", page + 1),
-        pageButton(">>", numPages)
-      ]),
+    [
+      h('main', {}, [
+        h('div', {class: {"page-controls": true}}, [
+          pageButton("<<", 1),
+          pageButton("<", page - 1),
+          h('strong', {class: {"button": true}}, `${page} / ${numPages}`),
+          pageButton(">", page + 1),
+          pageButton(">>", numPages)
+        ]),
 
-      h('table', {}, R.concat(
-        [h('tr', {}, R.map(c => h('th', {}, c), columns))],
-        toRows(recordsOnPage)
-      ))
-    ])
-  ])
+        h('table', {}, R.concat(
+          [h('tr', {}, R.map(c => h('th', {}, c), columns))],
+          toRows(recordsOnPage)
+        ))
+      ])
+    ]
+  ]))
 });

@@ -10,6 +10,6 @@ module.exports = Type({
   StartUpload: [],
   SetData: [Object],   // TODO: use Dataset here (perhaps when union-type is updated?)
   SetPage: [Number],
-  SetEditingFilter: [Boolean],
+  CreateFilter: [],
   SetFilterFn: [String]
 })
