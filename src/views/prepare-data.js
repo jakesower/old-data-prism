@@ -1,9 +1,12 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
-
 const Maybe = require('ramda-fantasy').Maybe;
 const {Just, Nothing} = Maybe;
-const Action = require('../types');
+const forwardTo = require('flyd-forwardto');
+
+const Action = require('../types').Action;
+const filters = require('../lib/filters');
+const editFilter = require('../components/edit-filter');
 
 module.exports = R.curry((action$, model) => {
   const {page, perPage} = model.state.grid;
@@ -23,34 +26,50 @@ module.exports = R.curry((action$, model) => {
       }, str);
   }
 
-  return h('div', {class: {"main-container": true}}, R.reduce(R.concat, [], [
-    [
-      h('aside', {class: "prepare-controls"}, [
-        h('button', {}, "Derive Field"),
-        h('button', {on: {click: [action$, Action.CreateFilter()]}}, "Add Filter"),
-        h('button', {}, "Perform Grouping")
-      ])
-    ],
+  const relevantColumns = filter => {
+    const {columns, records} = model.dataset;
+    const pairs = R.zip(columns, records);
 
-    (model.filterId === Nothing() ? [] : [
-      
-    ]),
+    const t = R.compose(
+      R.filter(R.all(filter), R.nth(1)),
+      R.map(R.nth(0))
+    );
 
-    [
-      h('main', {}, [
-        h('div', {class: {"page-controls": true}}, [
-          pageButton("<<", 1),
-          pageButton("<", page - 1),
-          h('strong', {class: {"button": true}}, `${page} / ${numPages}`),
-          pageButton(">", page + 1),
-          pageButton(">>", numPages)
-        ]),
+    return t(pairs);
+  }
 
-        h('table', {}, R.concat(
-          [h('tr', {}, R.map(c => h('th', {}, c), columns))],
-          toRows(recordsOnPage)
-        ))
-      ])
-    ]
+  const showFilter = R.curry((_) => []);
+  const showOrEditFilter = filter =>
+    filter.editing ?
+      editFilter({
+        action$: forwardTo(action$, Action.SetFilterEditState(filter)),
+        dataset,
+        filter.editState
+      }) :
+      showFilter(filter);
+
+  return h('div', {class: {"main-container": true}}, R.flatten([
+    h('aside', {class: "prepare-controls"}, R.flatten([
+      R.map(showOrEditFilter, model.filters),
+
+      h('button', {}, "Derive Field"),
+      h('button', {on: {click: [action$, Action.CreateFilter()]}}, "Add Filter"),
+      h('button', {}, "Perform Grouping")
+    ])),
+
+    h('main', {}, [
+      h('div', {class: {"page-controls": true}}, [
+        pageButton("<<", 1),
+        pageButton("<", page - 1),
+        h('strong', {class: {"button": true}}, `${page} / ${numPages}`),
+        pageButton(">", page + 1),
+        pageButton(">>", numPages)
+      ]),
+
+      h('table', {}, R.concat(
+        [h('tr', {}, R.map(c => h('th', {}, c), columns))],
+        toRows(recordsOnPage)
+      ))
+    ])
   ]))
 });

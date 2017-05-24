@@ -1,15 +1,18 @@
 const R = require('ramda');
 
-module.exports = {
-  equals: {
-    columnTest: R.T,
+const filters = [
+  {
+    name: "Equality",
     columnSlots: [{
-      name: "Column"
+      name: "Column",
+      test: R.T
     }],
     userSlots: [{
-      key: "val"
+      key: "val",
       name: ""
     }],
-    rowFunc: R.always((us, cs) => us[0] === cs[0])
+    fn: (us, cs) => us[0] === cs[0]
   }
-}
+];
+
+module.exports = R.sortBy(R.prop('name'), filters);

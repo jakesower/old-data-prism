@@ -12,13 +12,18 @@ const patch = require('snabbdom').init([
 ]);
 
 const view = require('./view');
-const Action = require('./types');
+const Action = require('./types').Action;
 
 const EMPTY_FILTER = id => ({
   id: id,
+  enabled: false,
+  editing: true,
+
   fn: Nothing(),
   columns: {},
-  userInputs: {}
+  userInputs: {},
+
+  editState: {} // defer this
 });
 
 const update = Action.caseOn({
@@ -35,14 +40,14 @@ const update = Action.caseOn({
     }),
 
   SetPage: R.assocPath(['state', 'grid', 'page']),
+  SetEditingFilter: R.assocPath(['state', 'prepare', 'editingFilter']),
+  SetFilterFunc: R.assocPath(['state', 'prepare', 'filterFunc']),
 
   CreateFilter: model => R.evolve({
     filterId: R.inc,
     filters: R.append(EMPTY_FILTER(model.filterId)),
     editingFilter: model.filterId
   }, model),
-  SetEditingFilter: R.assocPath(['state', 'prepare', 'editingFilter']),
-  SetFilterFunc: R.assocPath(['state', 'prepare', 'filterFunc']),
 });
 
 
@@ -51,7 +56,6 @@ const init = {
   page: 'UploadData',
   dataUploading: false,
   dataset: Nothing(),
-  filterId: 0,
   filters: [],
   state: {              // TODO: consider puttings these into components
     grid: {
