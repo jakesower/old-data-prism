@@ -1,11 +1,11 @@
 const Type = require('union-type');
-const Maybe = require('ramda-fantasy').Maybe;
-
+const Filter = require('./components/filter');
 
 const Dataset = Type({
   columns: [Array],
   records: [Array]
 });
+
 
 module.exports = {
   Action: Type({
@@ -13,7 +13,7 @@ module.exports = {
     SetData: [Object],   // TODO: use Dataset here (perhaps when union-type is updated?)
     SetPage: [Number],
     CreateFilter: [],
-    SetFilterFn: [String]
+    SetFilterState: [Object, Filter.Action]
   }),
 
   Dataset: Dataset

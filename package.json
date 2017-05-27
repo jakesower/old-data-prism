@@ -10,12 +10,14 @@
     "build-sass": "mkdirp dist/styles && node-sass -r assets/styles/main.scss --output-style=compressed -o dist/styles",
     "watch-sass": "mkdirp dist/styles && node-sass -wr assets/styles/main.scss --output-style=compressed -o dist/styles",
     "watch": "mkdirp dist && watchify ./src/index.js -o dist/data-prism.js -t brfs -v",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test/ --reporter nyan"
   },
   "devDependencies": {
     "brfs": "^1.4.3",
     "browserify": "^13.1.1",
+    "chai": "^4.0.0",
     "mkdirp": "^0.5.1",
+    "mocha": "^3.4.2",
     "node-sass": "^4.5.0",
     "watchify": "^3.7.0"
   },
@@ -24,8 +26,9 @@
     "flyd": "^0.2.4",
     "flyd-forwardto": "^0.0.2",
     "ramda": "^0.23.0",
-    "ramda-fantasy": "^0.8.0",
+    "sanctuary": "^0.12.2",
     "snabbdom": "^0.6.8",
-    "union-type": "^0.3.3"
+    "sum-type": "^0.11.1",
+    "union-type": "^0.4.0"
   }
 }

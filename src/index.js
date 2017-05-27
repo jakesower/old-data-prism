@@ -1,6 +1,5 @@
 const R = require('ramda');
-const Maybe = require('ramda-fantasy').Maybe;
-const {Just, Nothing} = Maybe;
+const S = require('sanctuary');
 const flyd = require('flyd');
 const Type = require('union-type');
 const stream = flyd.stream;
@@ -13,18 +12,7 @@ const patch = require('snabbdom').init([
 
 const view = require('./view');
 const Action = require('./types').Action;
-
-const EMPTY_FILTER = id => ({
-  id: id,
-  enabled: false,
-  editing: true,
-
-  fn: Nothing(),
-  columns: {},
-  userInputs: {},
-
-  editState: {} // defer this
-});
+const Filter = require('./components/filter');
 
 const update = Action.caseOn({
   StartUpload: (model) => {
@@ -40,14 +28,19 @@ const update = Action.caseOn({
     }),
 
   SetPage: R.assocPath(['state', 'grid', 'page']),
-  SetEditingFilter: R.assocPath(['state', 'prepare', 'editingFilter']),
-  SetFilterFunc: R.assocPath(['state', 'prepare', 'filterFunc']),
+  SetFilterState: (filter, action, model) => {
+    const idx = R.indexOf(filter, model.filters);
+    return R.evolve({
+      filters: R.adjust(Filter.update(action), idx)
+    }, model);
+  },
 
   CreateFilter: model => R.evolve({
-    filterId: R.inc,
-    filters: R.append(EMPTY_FILTER(model.filterId)),
-    editingFilter: model.filterId
+    uid: S.inc,
+    filters: S.append(Filter.init(model.uid))
   }, model),
+
+  _: function(){ console.error(arguments)}
 });
 
 
@@ -55,16 +48,13 @@ const update = Action.caseOn({
 const init = {
   page: 'UploadData',
   dataUploading: false,
-  dataset: Nothing(),
+  dataset: S.Nothing,
+  uid: 1,
   filters: [],
   state: {              // TODO: consider puttings these into components
     grid: {
       page: 1,
       perPage: 20
-    },
-    prepare: {
-      editingFilter: Nothing(),
-      editingDerived: false
     }
   }
 };
@@ -73,7 +63,7 @@ const init = {
 // Streams
 
 const action$ = flyd.stream();
-const model$ = flyd.scan(R.flip(update), init, action$);
+const model$ = flyd.scan(S.flip(update), init, action$);
 const vnode$ = flyd.map(view(action$), model$);
 
 
@@ -108,4 +98,5 @@ function readCsv(fileDomId) {
 }
 
 
+// flyd.on(console.log, action$)
 flyd.on(console.log, model$)

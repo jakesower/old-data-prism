@@ -13,7 +13,7 @@ module.exports = R.curry((action$, model) => {
     h('main', {}, [
       h('input', {
         attrs: {type: 'file', id: 'data-file'},
-        on: {change: [action$, Action.StartUpload()]}
+        on: {change: [action$, Action.StartUpload]}
       }, [])
     ])
   ])

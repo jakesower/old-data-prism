@@ -1,12 +1,12 @@
 const R = require('ramda');
+const S = require('sanctuary');
 const h = require('snabbdom/h').default;
-const Maybe = require('ramda-fantasy').Maybe;
-const {Just, Nothing} = Maybe;
 const forwardTo = require('flyd-forwardto');
 
 const Action = require('../types').Action;
+const Filter = require('../components/filter');
 const filters = require('../lib/filters');
-const editFilter = require('../components/edit-filter');
+
 
 module.exports = R.curry((action$, model) => {
   const {page, perPage} = model.state.grid;
@@ -28,32 +28,27 @@ module.exports = R.curry((action$, model) => {
 
   const relevantColumns = filter => {
     const {columns, records} = model.dataset;
-    const pairs = R.zip(columns, records);
+    const pairs = S.zip(columns, records);
 
-    const t = R.compose(
-      R.filter(R.all(filter), R.nth(1)),
-      R.map(R.nth(0))
+    const t = S.compose(
+      S.filter(S.all(filter), S.nth(1)),
+      S.map(S.nth(0))
     );
 
     return t(pairs);
   }
 
-  const showFilter = R.curry((_) => []);
-  const showOrEditFilter = filter =>
-    filter.editing ?
-      editFilter({
-        action$: forwardTo(action$, Action.SetFilterEditState(filter)),
-        dataset,
-        filter.editState
-      }) :
-      showFilter(filter);
-
   return h('div', {class: {"main-container": true}}, R.flatten([
     h('aside', {class: "prepare-controls"}, R.flatten([
-      R.map(showOrEditFilter, model.filters),
+      R.map(filter =>
+        Filter.view(
+          // forwardTo(action$, console.log),
+          forwardTo(action$, Action.SetFilterState(filter)),
+          model.dataset, filter),
+        model.filters),
 
       h('button', {}, "Derive Field"),
-      h('button', {on: {click: [action$, Action.CreateFilter()]}}, "Add Filter"),
+      h('button', {on: {click: [action$, Action.CreateFilter]}}, "Add Filter"),
       h('button', {}, "Perform Grouping")
     ])),
 
