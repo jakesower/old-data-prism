@@ -35,8 +35,8 @@ const relevantColumns = R.curry((dataset, columnSlot) => {
 const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
   SetFunc: R.assocPath(['editState', 'func']),
-  Cancel: () => {},
-  Save: () => {},
+  Cancel: x => x,
+  Save: x => x,
   Delete: () => {}  // NOOP -- this should be handled externally
 })
 
@@ -46,7 +46,7 @@ const init = id => ({
   enabled: false,
   editing: true,
 
-  func: S.Nothing,
+  func: null,
   columns: {},
   userInputs: {},
 
