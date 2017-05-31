@@ -35,8 +35,13 @@ const relevantColumns = R.curry((dataset, columnSlot) => {
 const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
   SetFunc: R.assocPath(['editState', 'func']),
-  Cancel: x => R.assoc('editing', false),
-  Save: x => x,
+  Cancel: R.assoc('editing', false),
+  Save: model =>
+    R.merge(model, {
+      func: S.fromMaybe("", model.editState.func),
+      columns: model.editState.columns,
+      userInputs: model.editState.userInputs
+    }),
   Delete: x => x  // NOOP -- this should be handled externally
 })
 
