@@ -40,7 +40,8 @@ const update = Action.caseOn({
     R.merge(model, {
       func: S.fromMaybe("", model.editState.func),
       columns: model.editState.columns,
-      userInputs: model.editState.userInputs
+      userInputs: model.editState.userInputs,
+      editing: false
     }),
   Delete: x => x  // NOOP -- this should be handled externally
 })

@@ -7,7 +7,7 @@ module.exports = {
       name: "Column",
       test: R.T
     }],
-    userSlots: [{
+    userInputs: [{
       key: "val",
       name: ""
     }],

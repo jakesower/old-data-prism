@@ -1,6 +1,5 @@
 const assert = require('chai').assert;
 const Filter = require('../src/components/filter');
-const FILTERS = require('../src/lib/filters');
 
 const flyd = require('flyd');
 const stream = flyd.stream;
@@ -18,6 +17,34 @@ const careBears = {
     ['Oopsy Bear', 'Shooting Star', '2007']
   ]
 };
+
+const FILTERS = {
+  Equality: {
+    name: "Equality",
+    columnSlots: [{
+      name: "val",
+      test: R.T
+    }],
+    userInputs: [{
+      key: "val",
+      name: ""
+    }],
+    fn: (us, cs) => us.val === cs.val
+  },
+
+  LT: {
+    name: "Less Than",
+    columnSlots: [{
+      name: "val",
+      test: n => !isNaN(n),
+    }],
+    userInputs: [{
+      name: "val"
+      test: n => !isNaN(n),
+    }],
+    fn: (us, cs) => parseFloat(cs.val) < parseFloat(us.val)
+  }
+}
 
 
 describe('filter actions', function() {
@@ -46,20 +73,20 @@ describe('filter actions', function() {
       editState: {
         func: S.Just("Equality"),
         columns: {column: 0},
-        userSlots: {val: "Tenderheart Bear"}
+        userInputs: {val: "Tenderheart Bear"}
       }
     });
 
     action$(Action.Save);
 
     assert.equal(model$().func, "Equality");
-    assert.equal(model$().columns, {column: 0});
-    assert.equal(model$().userSlots, {val: "Tenderheart Bear"});
+    assert.deepEqual(model$().columns, {column: 0});
+    assert.deepEqual(model$().userInputs, {val: "Tenderheart Bear"});
     assert.equal(model$().editing, false);
   });
 
 
-  it('resets the editing state on cancel if previously valid', function() {
+  it('stops editing on cancel', function() {
     const model$ = Model$({
       func: FILTERS.Equality.name,
       columns: {column: 0},
@@ -68,5 +95,10 @@ describe('filter actions', function() {
 
     action$(Action.Cancel);
     assert.equal(model$().editing, false);
+  });
+
+
+  it('can generate a delete action (which has unspecified behavior)', function() {
+    assert.doesNotThrow(action$(Action.Delete));
   })
 })
