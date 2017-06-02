@@ -10,7 +10,7 @@
     "build-sass": "mkdirp dist/styles && node-sass -r assets/styles/main.scss --output-style=compressed -o dist/styles",
     "watch-sass": "mkdirp dist/styles && node-sass -wr assets/styles/main.scss --output-style=compressed -o dist/styles",
     "watch": "mkdirp dist && watchify ./src/index.js -o dist/data-prism.js -t brfs -v",
-    "test": "mocha test/ --reporter nyan"
+    "test": "find ./test -name '*.spec.js' | xargs mocha -R spec --reporter nyan"
   },
   "devDependencies": {
     "brfs": "^1.4.3",

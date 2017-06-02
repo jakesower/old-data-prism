@@ -1,5 +1,5 @@
 const assert = require('chai').assert;
-const Filter = require('../src/components/filter');
+const Filter = require('../../src/components/filter');
 
 const flyd = require('flyd');
 const stream = flyd.stream;
@@ -39,7 +39,7 @@ const FILTERS = {
       test: n => !isNaN(n),
     }],
     userInputs: [{
-      name: "val"
+      name: "val",
       test: n => !isNaN(n),
     }],
     fn: (us, cs) => parseFloat(cs.val) < parseFloat(us.val)
@@ -101,4 +101,4 @@ describe('filter actions', function() {
   it('can generate a delete action (which has unspecified behavior)', function() {
     assert.doesNotThrow(action$(Action.Delete));
   })
-})
+});
