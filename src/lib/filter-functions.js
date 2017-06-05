@@ -29,13 +29,16 @@ const relevantColumns = R.curry((dataset, columnSlot) => {
  */
 const apply = R.curry((filter, columns, operands, dataset) => {
   // StrMap Int -> Record -> StrMap String
-  const xCols = rec => R.map(R.nth(i, rec), columns);
+  const xCols = rec => R.map(i => R.nth(i, rec), columns);
+  // console.log(R.map(xCols, dataset.records))
+  // console.log(operands)
+  // console.log(filter.fn(operands, xCols(dataset.records[0])))
 
   return {
     headers: dataset.headers,
-    records: R.filter(r => filter.fn(operands, r), dataset.records)
+    records: R.filter(r => filter.fn(operands, xCols(r)), dataset.records)
   }
-  
+
 })
 
 

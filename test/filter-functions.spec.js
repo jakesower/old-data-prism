@@ -2,7 +2,7 @@ const assert = require('chai').assert;
 const S = require('sanctuary');
 const R = require('ramda');
 
-const {relevantColumns} = require('../src/lib/filter-functions');
+const FF = require('../src/lib/filter-functions');
 const DF = require('../src/lib/dataset-functions');
 
 const careBears = {
@@ -53,7 +53,7 @@ describe('filters', function() {
 
     R.mapObjIndexed(
       function(expected, k) {
-        const cs = R.map(idx => relevantColumns(careBears, idx), SAMPLE_FILTERS[k].columnSlots);
+        const cs = R.map(idx => FF.relevantColumns(careBears, idx), SAMPLE_FILTERS[k].columnSlots);
         assert.deepEqual(cs, expected);
       },
       expectations
@@ -61,15 +61,18 @@ describe('filters', function() {
   });
 
 
-  it('applies filters properly', function() {
+  it('applies contrived filters properly', function() {
     const expectations = [
-      { in: DF.apply(SAMPLE_FILTERS.Equality, {val: 1}, {val: "Heart"}),
-      , out: {headers: careBears.headers, records: [careBears.records[0]]}}
+      { in: FF.apply(SAMPLE_FILTERS.Equality, {val: 1}, {val: "Heart"})
+      , out: {headers: careBears.headers, records: [careBears.records[0]]}},
+
+      { in: FF.apply(SAMPLE_FILTERS.LT, {val: 2}, {val: "2001"})
+      , out: {headers: careBears.headers, records: R.slice(0, 2, careBears.records)}}
     ];
 
     R.mapObjIndexed(
       function(expected, k) {
-        assert.equal(expected.in(careBears), out)
+        assert.deepEqual(expected.in(careBears), expected.out)
       },
       expectations
     )

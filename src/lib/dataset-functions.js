@@ -1,9 +1,9 @@
 const R = require('ramda');
 
 const columns = function({headers, records}) {
-  const mix = R.addIndex(R.map);
+  const mapWithIndex = R.addIndex(R.map);
 
-  return mix((col, idx) => ({
+  return mapWithIndex((col, idx) => ({
     index: idx,
     header: col,
     values: R.map(R.nth(idx))(records)

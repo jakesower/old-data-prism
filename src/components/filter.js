@@ -17,21 +17,6 @@ const Action = Type({
 });
 
 
-// const relevantColumns = R.curry((dataset, columnSlot) => {
-//   const {columns, records} = dataset;
-//   const pairs = R.zip(columns, records);
-//   console.log(pairs)
-//
-//   const t = R.compose(
-//     R.filter(R.all(columnSlot.test), R.nth(1)),
-//     R.map(R.nth(0))
-//   );
-//
-//   return R.into([], t, pairs);
-// });
-
-
-
 const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
   SetFunc: R.assocPath(['editState', 'func']),
