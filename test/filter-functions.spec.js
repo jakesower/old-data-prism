@@ -3,9 +3,10 @@ const S = require('sanctuary');
 const R = require('ramda');
 
 const {relevantColumns} = require('../src/lib/filter-functions');
+const DF = require('../src/lib/dataset-functions');
 
 const careBears = {
-  columns: ['Name', 'Belly Badge', 'Debut Year'],
+  headers: ['Name', 'Belly Badge', 'Debut Year'],
   records: [
     ['Tenderheart Bear', 'Heart', '1982'],
     ['Grumpy Bear', 'Raincloud', '1982'],
@@ -44,8 +45,33 @@ const SAMPLE_FILTERS = {
 
 
 describe('filters', function() {
-  it('filters columns on a test predicate', function() {
-    const rcs = relevantColumns(careBears, SAMPLE_FILTERS.Equality.columnSlots[0]);
-    assert.deepEqual(rcs, ['Name', 'Belly Badge', 'Debut Year']);
+  it('filters columns based on test predicates', function() {
+    const expectations = {
+      Equality: [DF.columns(careBears)],
+      LT: [DF.columns(careBears).filter(c => c.header === 'Debut Year')]
+    }
+
+    R.mapObjIndexed(
+      function(expected, k) {
+        const cs = R.map(idx => relevantColumns(careBears, idx), SAMPLE_FILTERS[k].columnSlots);
+        assert.deepEqual(cs, expected);
+      },
+      expectations
+    )
+  });
+
+
+  it('applies filters properly', function() {
+    const expectations = [
+      { in: DF.apply(SAMPLE_FILTERS.Equality, {val: 1}, {val: "Heart"}),
+      , out: {headers: careBears.headers, records: [careBears.records[0]]}}
+    ];
+
+    R.mapObjIndexed(
+      function(expected, k) {
+        assert.equal(expected.in(careBears), out)
+      },
+      expectations
+    )
   })
 });

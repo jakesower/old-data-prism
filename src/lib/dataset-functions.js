@@ -1,12 +1,13 @@
 const R = require('ramda');
 
-const columnValues = function({columns, records}) {
+const columns = function({headers, records}) {
   const mix = R.addIndex(R.map);
 
   return mix((col, idx) => ({
-    column: col,
+    index: idx,
+    header: col,
     values: R.map(R.nth(idx))(records)
-  }), columns);
+  }), headers);
 }
 
-module.exports = {columnValues};
+module.exports = {columns};

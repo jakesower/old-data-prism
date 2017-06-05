@@ -1,5 +1,7 @@
 const R = require('ramda');
 
+const DF = require('./dataset-functions');
+
 /**
  * Runs the columnSlot's predicates over the columns in the dataset, picking
  * out the names of columns that qualify
@@ -7,20 +9,37 @@ const R = require('ramda');
  * Dataset -> {test: (String -> Boolean)} -> List ColumnName
  */
 const relevantColumns = R.curry((dataset, columnSlot) => {
-  const {columns, records} = dataset;
-  const pairs = R.zip(columns, records);
+  const columns = DF.columns(dataset);
 
   const t = R.compose(
-    // List Pair -> List Pair
-    R.filter(x => R.all(columnSlot.test, R.nth(1, x))),
-    // List Pair -> List ColumnName
-    R.map(R.nth(0))
+    // List Column -> List Column
+    R.filter(x => R.all(columnSlot.test, x.values))
   );
 
-  return R.into([], t, pairs);
+  return R.into([], t, columns);
 });
 
 
+/**
+ * Apply a filter across the dataset. Each filter receives arguments of two
+ * types: columns and operands. Columns are indicated by the index of the
+ * column in the records. Operands are provided by the user.
+ *
+ * Filter -> StrMap Int -> StrMap String -> Dataset -> Dataset
+ */
+const apply = R.curry((filter, columns, operands, dataset) => {
+  // StrMap Int -> Record -> StrMap String
+  const xCols = rec => R.map(R.nth(i, rec), columns);
+
+  return {
+    headers: dataset.headers,
+    records: R.filter(r => filter.fn(operands, r), dataset.records)
+  }
+  
+})
+
+
 module.exports = {
-  relevantColumns
+  relevantColumns,
+  apply
 };

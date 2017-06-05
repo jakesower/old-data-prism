@@ -86,7 +86,7 @@ function readCsv(fileDomId) {
     const result = e.target.result;
     const handleData = (err, data) => {
       action$(Action.SetData({
-        columns: data[0],
+        headers: data[0],
         records: R.slice(1, Infinity, data)
       }));
     }
