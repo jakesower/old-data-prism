@@ -4,13 +4,13 @@ module.exports = {
   Equality: {
     name: "Equality",
     columnSlots: [{
-      name: "Column",
+      name: "val",
       test: R.T
     }],
     userInputs: [{
       key: "val",
       name: ""
     }],
-    fn: (us, cs) => us[0] === cs[0]
+    fn: (us, cs) => us.val === cs.val
   }
 };

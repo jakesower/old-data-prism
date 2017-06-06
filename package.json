@@ -25,7 +25,7 @@
     "csv-parse": "^1.2.0",
     "flyd": "^0.2.4",
     "flyd-forwardto": "^0.0.2",
-    "ramda": "^0.23.0",
+    "ramda": "^0.24.0",
     "sanctuary": "^0.12.2",
     "snabbdom": "^0.6.8",
     "sum-type": "^0.11.1",

@@ -4,6 +4,7 @@ const R = require('ramda');
 
 const FF = require('../src/lib/filter-functions');
 const DF = require('../src/lib/dataset-functions');
+const FILTERS = require('../src/lib/filters');
 
 const careBears = {
   headers: ['Name', 'Belly Badge', 'Debut Year'],
@@ -64,17 +65,42 @@ describe('filters', function() {
   it('applies contrived filters properly', function() {
     const expectations = [
       { in: FF.apply(SAMPLE_FILTERS.Equality, {val: 1}, {val: "Heart"})
-      , out: {headers: careBears.headers, records: [careBears.records[0]]}},
+      , out: [careBears.records[0]] },
 
       { in: FF.apply(SAMPLE_FILTERS.LT, {val: 2}, {val: "2001"})
-      , out: {headers: careBears.headers, records: R.slice(0, 2, careBears.records)}}
+      , out: R.slice(0, 2, careBears.records) }
     ];
 
     R.mapObjIndexed(
       function(expected, k) {
-        assert.deepEqual(expected.in(careBears), expected.out)
+        assert.deepEqual(expected.in(careBears).records, expected.out)
       },
       expectations
     )
+  });
+
+
+  describe('real filters', function() {
+    const testCases = {
+      Equality: [
+        { inCols: {val: 1}
+        , inUser: {val: "Raincloud"}
+        , out: R.slice(1, 2, careBears.records)}
+      ]
+    };
+
+    it('has a test for every existing filter ^_^', function() {
+      assert.deepEqual(R.keys(testCases), R.keys(FILTERS));
+    });
+
+    R.forEachObjIndexed(function(expectations, filterName) {
+      const filter = FILTERS[filterName];
+
+      it('has working tests for the ' + filter + ' filter', function() {
+        R.forEach(function({inCols, inUser, out}) {
+          assert.deepEqual(FF.apply(filter, inCols, inUser, careBears).records, out);
+        }, expectations);
+      })
+    }, testCases);
   })
 });
