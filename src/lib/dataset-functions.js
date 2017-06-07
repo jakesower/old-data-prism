@@ -10,4 +10,23 @@ const columns = function({headers, records}) {
   }), headers);
 }
 
-module.exports = {columns};
+/**
+ * Runs the columnSlot's predicates over the columns in the dataset, picking
+ * out the names of columns that qualify
+ *
+ * Dataset -> {test: (String -> Boolean)} -> List ColumnName
+ */
+const relevantColumns = R.curry((dataset, test) => {
+  const t = R.compose(
+    // List Column -> List Column
+    R.filter(x => R.all(test, x.values))
+  );
+
+  return R.into([], t, columns(dataset));
+});
+
+
+module.exports = {
+  columns,
+  relevantColumns
+};

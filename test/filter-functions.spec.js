@@ -54,7 +54,9 @@ describe('filters', function() {
 
     R.mapObjIndexed(
       function(expected, k) {
-        const cs = R.map(idx => FF.relevantColumns(careBears, idx), SAMPLE_FILTERS[k].columnSlots);
+        const cs = R.map(test =>
+          DF.relevantColumns(careBears, test),
+          R.map(R.prop('test'), SAMPLE_FILTERS[k].columnSlots));
         assert.deepEqual(cs, expected);
       },
       expectations
