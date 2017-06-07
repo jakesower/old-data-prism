@@ -10,6 +10,12 @@ const columns = function({headers, records}) {
   }), headers);
 }
 
+
+const appendColumn = (dataset, column) => ({
+  headers: R.append(column.header, dataset.headers),
+  records: R.zipWith(R.append, column.values, dataset.records)
+});
+
 /**
  * Runs the columnSlot's predicates over the columns in the dataset, picking
  * out the names of columns that qualify
@@ -28,5 +34,6 @@ const relevantColumns = R.curry((dataset, test) => {
 
 module.exports = {
   columns,
-  relevantColumns
+  relevantColumns,
+  appendColumn
 };
