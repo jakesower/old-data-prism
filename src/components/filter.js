@@ -6,6 +6,7 @@ const Type = require('union-type');
 const FILTERS = require('../lib/filters');
 
 const {targetValue, lookup} = require('../lib/utils');
+const {relevantColumns} = require('../lib/filter-functions');
 
 const isMaybe = t => S.type(t) === 'sanctuary/Maybe';
 const Action = Type({
@@ -64,23 +65,9 @@ function edit(action$, dataset, model) {
       filterName),
     S.keys(FILTERS).sort());
 
-  // const columnInputs
+  const toOption = opt => h('option', {value: opt.index}, opt.header);
 
-  console.log(filter)
-  // console.log(FILTERS)
-  // console.log(
-  //   S.pipe([
-  //     S.map(S.flip(S.prop)(FILTERS)),
-  //     S.map(S.prop('columnSlots'))
-  //   ])(func)
-  // );
-  // console.log(lookup(func, filters).map(relevantColumns))
-
-  // const columnMarkup = filterDef => {
-  //   return h('div', )
-  // }
-
-  return h('div', {class: {"filter-form": true}}, R.flatten([
+  const selectorVdom = [
     h('h2', {}, "Edit Filter"),
     h('div', {}, [
       h('span', {}, "Function"),
@@ -88,25 +75,39 @@ function edit(action$, dataset, model) {
           on: {change: R.compose(action$, Action.SetFunc, S.of(S.Maybe), targetValue)}
         },
         R.prepend(h('option', {}, ''), functions)),
-    ]),
-    S.maybe([], filt =>
-      h('div', {class: {columns: true}}, S.pipe([
-        S.map(colSlot =>
-          h('div', {}, [
-            h('span', {}, colSlot.name),
-            h('select', {}, S.map(
-              col => h('option', {}, col),
-              relevantColumns(dataset, colSlot)))
-          ])
-        , filt.columnSlots)
-      ])),
-    filter)
-  ]));
+    ])
+  ];
+
+  const columnVdom = filt =>
+    h('div', {class: {columns: true}},
+      S.map(colSlot =>
+        h('div', {}, [
+          h('span', {}, colSlot.name),
+          h('select', {}, S.map(toOption, relevantColumns(dataset, colSlot)))
+        ])
+      , filt.columnSlots)
+    );
+
+  const inputVdom = filt =>
+    h('div', {class: {userInput: true}},
+      S.map(inputSlot =>
+        h('div', {}, [
+          h('span', {}, inputSlot.name),
+          h('input', {type: 'text', name: inputSlot.name}, [])
+        ])
+      , filt.userInputs)
+    );
+
+  return h('div', {class: {"filter-form": true}},
+    S.maybe(selectorVdom,
+      filt => R.flatten([selectorVdom, columnVdom(filt), inputVdom(filt)]),
+      filter)
+  )
 }
 
 
 function show(action$, model) {
-
+  return h('div', {}, 'oh hai');
 }
 
 

@@ -10,7 +10,7 @@ const filters = require('../lib/filters');
 
 module.exports = R.curry((action$, model) => {
   const {page, perPage} = model.state.grid;
-  const {columns, records} = model.dataset;
+  const {headers, records} = model.dataset;
   const numPages = Math.ceil(records.length / perPage);
   const recordsOnPage = R.slice((page - 1) * perPage, page*perPage, records);
 
@@ -27,8 +27,8 @@ module.exports = R.curry((action$, model) => {
   }
 
   const relevantColumns = filter => {
-    const {columns, records} = model.dataset;
-    const pairs = S.zip(columns, records);
+    const {headers, records} = model.dataset;
+    const pairs = S.zip(headers, records);
 
     const t = S.compose(
       S.filter(S.all(filter), S.nth(1)),
@@ -62,7 +62,7 @@ module.exports = R.curry((action$, model) => {
       ]),
 
       h('table', {}, R.concat(
-        [h('tr', {}, R.map(c => h('th', {}, c), columns))],
+        [h('tr', {}, R.map(c => h('th', {}, c), headers))],
         toRows(recordsOnPage)
       ))
     ])
