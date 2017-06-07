@@ -1,6 +1,12 @@
 const R = require('ramda');
 
-const columns = function({headers, records}) {
+// const DF = require('./deriver-functions');
+// const FF = require('./filter-functions');
+
+const FILTERS = require('./filters');
+const DERIVERS = require('./derivers');
+
+const columns = ({headers, records}) => {
   const mapWithIndex = R.addIndex(R.map);
 
   return mapWithIndex((col, idx) => ({
@@ -32,8 +38,20 @@ const relevantColumns = R.curry((dataset, test) => {
 });
 
 
+/**
+ * Apply a sequence of operations to the dataset. In many ways, this is the
+ * beating heart of the entire system.
+ *
+ * Dataset -> (Dataset -> Dataset) -> Dataset
+ */
+const applyOperations = (dataset, operations) => {
+  return R.reduce((ds, o) => o(ds), dataset, operations);
+}
+
+
 module.exports = {
   columns,
   relevantColumns,
-  appendColumn
+  appendColumn,
+  applyOperations
 };

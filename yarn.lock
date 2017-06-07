@@ -522,6 +522,10 @@ commander@2.9.0:
   dependencies:
     graceful-readlink ">= 1.0.0"
 
+complex.js@2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/complex.js/-/complex.js-2.0.1.tgz#ea90c7a05aeceaf3a376d2c0f6a78421727d6879"
+
 concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
@@ -648,6 +652,10 @@ debug@2.6.0, debug@^2.2.0:
 decamelize@^1.1.1, decamelize@^1.1.2:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/decamelize/-/decamelize-1.2.0.tgz#f6534d15148269b20352e7bee26f501f9a191290"
+
+decimal.js@7.1.1:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/decimal.js/-/decimal.js-7.1.1.tgz#1adcad7d70d7a91c426d756f1eb6566c3be6cbcf"
 
 deep-eql@^2.0.1:
   version "2.0.2"
@@ -898,6 +906,10 @@ form-data@~2.1.1:
     asynckit "^0.4.0"
     combined-stream "^1.0.5"
     mime-types "^2.1.12"
+
+fraction.js@4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/fraction.js/-/fraction.js-4.0.0.tgz#73974e2f8b51ef709536d624cc90782e2bb61274"
 
 fs.realpath@^1.0.0:
   version "1.0.0"
@@ -1450,6 +1462,17 @@ lru-cache@^4.0.1:
 map-obj@^1.0.0, map-obj@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/map-obj/-/map-obj-1.0.1.tgz#d933ceb9205d82bdcf4886f6742bdc2b4dea146d"
+
+mathjs@^3.13.3:
+  version "3.13.3"
+  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-3.13.3.tgz#39135ea761f57c083da43638248e3f640727e290"
+  dependencies:
+    complex.js "2.0.1"
+    decimal.js "7.1.1"
+    fraction.js "4.0.0"
+    seed-random "2.2.0"
+    tiny-emitter "1.0.2"
+    typed-function "0.10.5"
 
 meow@^3.7.0:
   version "3.7.0"
@@ -2149,6 +2172,10 @@ scss-tokenizer@^0.2.3:
     js-base64 "^2.1.8"
     source-map "^0.4.2"
 
+seed-random@2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/seed-random/-/seed-random-2.2.0.tgz#2a9b19e250a817099231a5b99a4daf80b7fbed54"
+
 "semver@2 || 3 || 4 || 5", semver@^5.3.0, semver@~5.3.0:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.3.0.tgz#9b2ce5d3de02d17c6012ad326aa6b4d0cf54f94f"
@@ -2422,6 +2449,10 @@ timers-browserify@^1.0.1:
   dependencies:
     process "~0.11.0"
 
+tiny-emitter@1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/tiny-emitter/-/tiny-emitter-1.0.2.tgz#8e49470d3f55f89e247210368a6bb9fb51aa1601"
+
 to-arraybuffer@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/to-arraybuffer/-/to-arraybuffer-1.0.1.tgz#7d229b1fcc637e466ca081180836a7aabff83f43"
@@ -2457,6 +2488,10 @@ type-detect@^3.0.0:
 type-detect@^4.0.0:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-4.0.3.tgz#0e3f2670b44099b0b46c284d136a7ef49c74c2ea"
+
+typed-function@0.10.5:
+  version "0.10.5"
+  resolved "https://registry.yarnpkg.com/typed-function/-/typed-function-0.10.5.tgz#2e0f18abd065219fab694a446a65c6d1981832c0"
 
 typedarray@^0.0.6, typedarray@~0.0.5:
   version "0.0.6"

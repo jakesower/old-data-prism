@@ -12,18 +12,17 @@ const DSF = require('./dataset-functions');
  * Filter -> StrMap Int -> StrMap String -> Dataset -> Dataset
  */
 const apply = R.curry((deriver, columns, operands, dataset) => {
-  const xCols = rec => R.map(i => R.nth(i, rec), columns);
-  const fn = R.curry(deriver.fn)(operands);
-  const xRecs = R.map(xCols, dataset.records);
-
-  const trans = R.compose(
-    R.map(xCols),
-    R.map(R.curry(deriver.fn)(operands))
+  const dsCols = DSF.columns(dataset);
+  const nthCol = R.flip(R.nth)(dsCols);
+  const colVals = R.pipe(
+    R.map(nthCol),
+    R.map(R.prop('values'))
   );
+  const colHeads = R.pipe(R.map(nthCol), R.map(R.prop('header')));
 
   return DSF.appendColumn(dataset, {
-    header: 'Moo',
-    values: R.into([], trans, dataset.records)
+    header: `${deriver.name} (${R.concat(R.values(colHeads(columns)), R.values(operands)).join(', ')})`,
+    values: deriver.fn(operands, colVals(columns))
   })
 })
 

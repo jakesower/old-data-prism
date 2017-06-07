@@ -39,6 +39,7 @@ module.exports = function(itemType, itemPool) {
     id: id,
     enabled: false,
     editing: true,
+    type: itemType,
 
     func: null,
     columns: {},
@@ -111,7 +112,7 @@ module.exports = function(itemType, itemPool) {
   function show(action$, model) {
     return h('div', {}, 'oh hai');
   }
-  
+
 
   return {Action, view, update, init};
 }

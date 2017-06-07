@@ -3,6 +3,10 @@ const S = require('sanctuary');
 const R = require('ramda');
 
 const DSF = require('../src/lib/dataset-functions');
+const DF = require('../src/lib/deriver-functions');
+const FF = require('../src/lib/filter-functions');
+const FILTERS = require('../src/lib/filters');
+const DERIVERS = require('../src/lib/filters');
 
 const careBears = {
   headers: ['Name', 'Belly Badge', 'Debut', 'Debut Year'],
@@ -55,6 +59,23 @@ describe('dataset functions', function() {
       },
       expectations
     );
+  });
+
+
+  it('applies a sequence of operations', function() {
+    // Care Bears debuting on a Friday
+    const ops = [
+      DF.apply(DERIVERS.FormattedDate, {date: 2}, {format: "ddd"}),
+      FF.apply(FILTERS.Equality, {val: 4}, {val: "Fri"})
+    ];
+
+    assert.deepEqual(DSF.applyOperations(careBears, ops), {
+      headers: ['Name', 'Belly Badge', 'Debut', 'Debut Year', 'Formatted Date (Debut)'],
+      records: [
+        ['Tenderheart Bear', 'Heart', '1982-09-24', '1982', 'Fri'],
+        ['Grumpy Bear', 'Raincloud', '1982-09-24', '1982', 'Fri']
+      ]
+    });
   })
 
 });
