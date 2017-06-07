@@ -13,7 +13,7 @@ const isMaybe = t => S.type(t) === 'sanctuary/Maybe';
 module.exports = function(itemType, itemPool) {
   const Action = Type({
     StartEdit: [],
-    SetFunc: [isMaybe],
+    SetFunc: [R.T],
     Cancel: [],
     Save: [],
     Delete: []
@@ -26,7 +26,7 @@ module.exports = function(itemType, itemPool) {
     Cancel: R.assoc('editing', false),
     Save: model =>
       R.merge(model, {
-        func: S.fromMaybe("", model.editState.func),
+        func: model.editState.func,
         columns: model.editState.columns,
         userInputs: model.editState.userInputs,
         editing: false
@@ -46,7 +46,7 @@ module.exports = function(itemType, itemPool) {
     userInputs: {},
 
     editState: {
-      func: S.Nothing,
+      func: null,
       columns: {},
       userInputs: {}
     }
@@ -60,7 +60,7 @@ module.exports = function(itemType, itemPool) {
 
   function edit(action$, dataset, model) {
     const {func, columns, userInputs} = model.editState;
-    const itemDef = S.map(S.flip(S.prop)(itemPool))(func);
+    const itemDef = func ? itemPool[func] : S.Nothing;
 
     const functions = S.map(itemName =>
       h('option',
@@ -75,7 +75,7 @@ module.exports = function(itemType, itemPool) {
       h('div', {}, [
         h('span', {}, "Function"),
         h('select', {
-            on: {change: R.compose(action$, Action.SetFunc, S.of(S.Maybe), targetValue)}
+            on: {change: R.compose(action$, Action.SetFunc, targetValue)}
           },
           R.prepend(h('option', {}, ''), functions)),
       ])

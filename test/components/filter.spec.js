@@ -63,15 +63,15 @@ describe('filter actions', function() {
   it('can set a function', function() {
     const model$ = Model$({});
 
-    action$(Action.SetFunc(S.Just(FILTERS.Equality.name)));
-    assert(S.equals(model$().editState.func, S.Just("Equality")));
+    action$(Action.SetFunc(FILTERS.Equality.name));
+    assert(S.equals(model$().editState.func, "Equality"));
   });
 
 
   it('saves with valid arguments', function() {
     const model$ = Model$({
       editState: {
-        func: S.Just("Equality"),
+        func: "Equality",
         columns: {column: 0},
         userInputs: {val: "Tenderheart Bear"}
       }

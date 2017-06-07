@@ -45,10 +45,10 @@ const update = Action.caseOn({
 
 
 
-const init = {
+const init = () => ({
   page: 'UploadData',
   dataUploading: false,
-  dataset: S.Nothing,
+  dataset: null,
   uid: 1,
   filters: [],
   state: {              // TODO: consider puttings these into components
@@ -57,15 +57,29 @@ const init = {
       perPage: 20
     }
   }
+});
+
+
+// State Functions
+const saveState = (model) => {
+  localStorage.setItem('state', JSON.stringify(model));
 };
+
+const restoreState = () => {
+  return init();
+  const restored = JSON.parse(localStorage.getItem('state'));
+  return restored === null ? init() : restored;
+};
+
 
 
 // Streams
 
 const action$ = flyd.stream();
-const model$ = flyd.scan(S.flip(update), init, action$);
+const model$ = flyd.scan(S.flip(update), restoreState(), action$);
 const vnode$ = flyd.map(view(action$), model$);
 
+flyd.map(saveState, model$);
 
 
 // Side effects
@@ -73,7 +87,8 @@ const vnode$ = flyd.map(view(action$), model$);
 window.addEventListener('DOMContentLoaded', function() {
   const container = document.querySelector('#main');
   flyd.scan(patch, container, vnode$);
-})
+});
+
 
 
 function readCsv(fileDomId) {

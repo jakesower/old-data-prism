@@ -6,7 +6,7 @@ const DSF = require('../src/lib/dataset-functions');
 const DF = require('../src/lib/deriver-functions');
 const FF = require('../src/lib/filter-functions');
 const FILTERS = require('../src/lib/filters');
-const DERIVERS = require('../src/lib/filters');
+const DERIVERS = require('../src/lib/derivers');
 
 const careBears = {
   headers: ['Name', 'Belly Badge', 'Debut', 'Debut Year'],
@@ -70,7 +70,7 @@ describe('dataset functions', function() {
     ];
 
     assert.deepEqual(DSF.applyOperations(careBears, ops), {
-      headers: ['Name', 'Belly Badge', 'Debut', 'Debut Year', 'Formatted Date (Debut)'],
+      headers: ['Name', 'Belly Badge', 'Debut', 'Debut Year', 'Formatted Date (Debut, ddd)'],
       records: [
         ['Tenderheart Bear', 'Heart', '1982-09-24', '1982', 'Fri'],
         ['Grumpy Bear', 'Raincloud', '1982-09-24', '1982', 'Fri']

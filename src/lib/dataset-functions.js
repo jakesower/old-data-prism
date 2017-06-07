@@ -1,4 +1,5 @@
 const R = require('ramda');
+const S = require('sanctuary');
 
 // const DF = require('./deriver-functions');
 // const FF = require('./filter-functions');
@@ -44,9 +45,7 @@ const relevantColumns = R.curry((dataset, test) => {
  *
  * Dataset -> (Dataset -> Dataset) -> Dataset
  */
-const applyOperations = (dataset, operations) => {
-  return R.reduce((ds, o) => o(ds), dataset, operations);
-}
+ const applyOperations = R.reduce(S.T);
 
 
 module.exports = {
