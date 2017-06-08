@@ -66,7 +66,7 @@ const saveState = (model) => {
 };
 
 const restoreState = () => {
-  return init();
+  // return init();
   const restored = JSON.parse(localStorage.getItem('state'));
   return restored === null ? init() : restored;
 };

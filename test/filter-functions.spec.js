@@ -70,6 +70,13 @@ describe('filters', function() {
         { inCols: {val: 1}
         , inUser: {val: "Raincloud"}
         , out: R.slice(1, 2, careBears.records)}
+      ],
+
+      LT: [
+        { inCols: {val: 3}
+        , inUser: {val: "2001"}
+        , out: R.slice(0, 2, careBears.records)
+        }
       ]
     };
 

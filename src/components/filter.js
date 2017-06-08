@@ -1,4 +1,4 @@
 const FILTERS = require('../lib/filters');
-const editor = require('./prepare-editor')('Filter', FILTERS);
+const editor = require('./operation')('Filter', FILTERS);
 
 module.exports = editor;

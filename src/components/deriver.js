@@ -1,4 +1,4 @@
 const DERIVERS = require('../lib/derivers');
-const editor = require('./prepare-editor')('Deriver', DERIVERS);
+const editor = require('./operation')('Deriver', DERIVERS);
 
 module.exports = editor;
