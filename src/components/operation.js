@@ -8,7 +8,7 @@ const DERIVERS = require('../lib/derivers');
 const {targetValue} = require('../lib/utils');
 const {relevantColumns} = require('../lib/dataset-functions');
 
-module.exports = function(itemType, itemPool) {
+module.exports = function(itemPool, dataset) {
   const Action = Type({
     StartEdit: [],
     SetFunc: [String],
@@ -27,7 +27,7 @@ module.exports = function(itemType, itemPool) {
       editState: {columns: {[key]: val}}
     }),
     SetUserInput: (key, val, model) => R.mergeDeepRight(model, {
-      editState: {userInput: {[key]: val}}
+      editState: {userInputs: {[key]: val}}
     }),
     Cancel: R.assoc('editing', false),
     Save: model =>
@@ -45,7 +45,6 @@ module.exports = function(itemType, itemPool) {
     id: id,
     enabled: false,
     editing: true,
-    type: itemType,
 
     func: null,
     columns: {},
@@ -59,12 +58,12 @@ module.exports = function(itemType, itemPool) {
   });
 
 
-  const view = R.curry(function(action$, dataset, model) {
-    return model.editing ? edit(action$, dataset, model) : show(action$, model);
+  const view = R.curry(function(action$, model) {
+    return model.editing ? edit(action$, model) : show(action$, model);
   });
 
 
-  function edit(action$, dataset, model) {
+  function edit(action$, model) {
     const {func, columns, userInputs} = model.editState;
     const itemDef = func ? S.Just(itemPool[func]) : S.Nothing;
 
@@ -102,36 +101,41 @@ module.exports = function(itemType, itemPool) {
     ]
 
 
-    const columnOptions = S.map(item =>
-      S.map(col =>
-        h('option', {
+    // Item is the Filter/Deriver definition
+    const columnVdom = item => {
+      const option = R.curry((key, col) => {
+        return h('option', {
           attrs: {
-            selected: (item[key].index === col[key].index),
-            value: col[key].index
+            selected: (columns[key] === col.index),
+            value: col.index
           }},
-          col.header),
-        relevantColumns(dataset, item.test)),
-      itemDef
-    );
-    const columnVdom = item =>
-      h('div', {class: {columns: true}},
-        S.map(colSlot =>
-          h('div', {}, [
+          col.header)
+      })
+
+      return h('div', {class: {columns: true}},
+        S.map(colSlot => {
+          const potentialPicks = relevantColumns(dataset, colSlot.test);
+
+          return h('div', {}, [
             h('span', {}, colSlot.display),
             h('select', {
-              on: {change: R.compose(action$, Action.SetColumn(colSlot.val), parseInt, targetValue)}
+              on: {change: R.compose(action$, Action.SetColumn(colSlot.key), parseInt, targetValue)}
             },
-            withBlank(S.map(colSlot)))
-          ])
+            withBlank(S.map(option(colSlot.key), potentialPicks)))
+          ])}
         , item.columnSlots)
       );
+    }
 
     const inputVdom = item =>
       h('div', {class: {userInput: true}},
         S.map(inputSlot =>
           h('div', {}, [
             h('span', {}, inputSlot.display),
-            h('input', {type: 'text', name: inputSlot.name}, [])
+            h('input', {
+              attrs: {value: userInputs[inputSlot.key]},
+              on: {keyup: R.compose(action$, Action.SetUserInput(inputSlot.key), targetValue)}
+            }, [])
           ])
         , item.userInputs)
       );
@@ -146,7 +150,7 @@ module.exports = function(itemType, itemPool) {
 
   function show(action$, model) {
     return h('div', {class: {operation: true}}, [
-      // h('div', model.func.display(model.userInput, model.columns)),
+      h('div', itemPool[model.func].display(model.userInputs, model.columns)),
 
       h('div', {class: {controls: true}}, [
         h('button', {

@@ -28,16 +28,16 @@ const update = Action.caseOn({
     }),
 
   SetPage: R.assocPath(['state', 'grid', 'page']),
-  SetFilterState: (filter, action, model) => {
-    const idx = R.indexOf(filter, model.filters);
+  SetOperationState: (filter, action, model) => {
+    const idx = R.indexOf(filter, model.operations);
     return R.evolve({
-      filters: R.adjust(Filter.update(action), idx)
+      operations: R.adjust(Filter.update(action), idx)
     }, model);
   },
 
   CreateFilter: model => R.evolve({
     uid: S.inc,
-    filters: S.append(Filter.init(model.uid))
+    operations: S.append(Operation.Filter.init(model.uid))
   }, model),
 
   _: function(){ console.error(arguments)}
@@ -50,7 +50,7 @@ const init = () => ({
   dataUploading: false,
   dataset: null,
   uid: 1,
-  filters: [],
+  operations: [],
   state: {              // TODO: consider puttings these into components
     grid: {
       page: 1,

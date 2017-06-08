@@ -3,9 +3,14 @@ const S = require('sanctuary');
 const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 
-const Action = require('../types').Action;
+const {Action, Operation} = require('../types');
 const Filter = require('../components/filter');
 const filters = require('../lib/filters');
+
+const viewOperation = Operation.caseOn({
+  Filter: Filter.view,
+  Deriver: Deriver.view
+})
 
 
 module.exports = R.curry((action$, model) => {
@@ -26,26 +31,15 @@ module.exports = R.curry((action$, model) => {
       }, str);
   }
 
-  const relevantColumns = filter => {
-    const {headers, records} = model.dataset;
-    const pairs = S.zip(headers, records);
-
-    const t = S.compose(
-      S.filter(S.all(filter), S.nth(1)),
-      S.map(S.nth(0))
-    );
-
-    return t(pairs);
-  }
-
   return h('div', {class: {"main-container": true}}, R.flatten([
     h('aside', {class: "prepare-controls"}, R.flatten([
-      R.map(filter =>
-        Filter.view(
-          // forwardTo(action$, console.log),
-          forwardTo(action$, Action.SetFilterState(filter)),
-          model.dataset, filter),
-        model.filters),
+      R.map(operation =>
+        viewOperation(operation)(
+          forwardTo(action$, Action.SetOperationState(operation)),
+          model.dataset,
+          operation
+        ),
+        model.operation),
 
       h('button', {}, "Derive Field"),
       h('button', {on: {click: [action$, Action.CreateFilter]}}, "Add Filter"),

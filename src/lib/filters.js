@@ -4,7 +4,7 @@ module.exports = {
   Equality: {
     name: "Equality",
     columnSlots: [{
-      name: "val",
+      key: "val",
       display: "Column",
       test: R.T
     }],
@@ -15,18 +15,18 @@ module.exports = {
     }],
 
     fn: (us, cs) => us.val === cs.val,
-    // display: `${us.val} = ${cs.val}`
+    display: (us, cs) => `${us.val} = ${cs.val}`
   },
 
   LT: {
     name: "Less Than",
     columnSlots: [{
-      name: "val",
+      key: "val",
       display: "Column",
       test: n => !isNaN(n),
     }],
     userInputs: [{
-      name: "val",
+      key: "val",
       display: "is less than",
       test: n => !isNaN(n),
     }],

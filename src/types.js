@@ -1,5 +1,5 @@
 const Type = require('union-type');
-const Filter = require('./components/filter');
+const OperationComponent = require('./components/operation');
 
 const Dataset = Type({
   columns: [Array],
@@ -7,14 +7,19 @@ const Dataset = Type({
 });
 
 
-module.exports = {
-  Action: Type({
-    StartUpload: [],
-    SetData: [Object],   // TODO: use Dataset here (perhaps when union-type is updated?)
-    SetPage: [Number],
-    CreateFilter: [],
-    SetFilterState: [Object, Filter.Action]
-  }),
+const Operation = Type({
+  Filter: [Object],
+  Deriver: [Object]
+});
 
-  Dataset: Dataset
-};
+
+const Action = Type({
+  StartUpload: [],
+  SetData: [Object],   // TODO: use Dataset here (perhaps when union-type is updated?)
+  SetPage: [Number],
+  CreateOperation: Operation,
+  SetOpearationState: [Operation, OperationComponent.Action]
+});
+
+
+module.exports = {Dataset, Operation, Action};

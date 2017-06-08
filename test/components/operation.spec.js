@@ -1,5 +1,5 @@
 const assert = require('chai').assert;
-const Operation = require('../../src/components/operation');
+const OperationComponent = require('../../src/components/operation');
 
 const flyd = require('flyd');
 const stream = flyd.stream;
@@ -27,7 +27,8 @@ const OPERATIONS = {
       key: "val",
       name: ""
     }],
-    fn: (us, cs) => us.val === cs.val
+    fn: (us, cs) => us.val === cs.val,
+    display: () => "hi"
   },
 
   LT: {
@@ -40,18 +41,19 @@ const OPERATIONS = {
       name: "val",
       test: n => !isNaN(n),
     }],
-    fn: (us, cs) => parseFloat(cs.val) < parseFloat(us.val)
+    fn: (us, cs) => parseFloat(cs.val) < parseFloat(us.val),
+    display: () => "hi"
   }
 }
 
-const {Action, view, update, init} = Operation('Operation', OPERATIONS);
+const {Action, view, update, init} = OperationComponent(OPERATIONS, careBears);
 
 
 describe('operation actions', function() {
   const action$ = stream();
   const Model$ = m => flyd.scan(S.flip(update), R.merge(init(0), m), action$);
 
-  const viewCheck = m => () => view(action$, careBears, m); // just add model!
+  const viewCheck = m => () => view(action$, m); // just add model!
 
   it('can start an edit', function() {
     const model$ = Model$({editing: false});
@@ -110,7 +112,7 @@ describe('operation actions', function() {
 
     action$(Action.SetUserInput("val", "moo"));
 
-    assert.equal(model$().editState.userInput.val, "moo");
+    assert.equal(model$().editState.userInputs.val, "moo");
     assert.doesNotThrow(viewCheck(model$()));
   });
 

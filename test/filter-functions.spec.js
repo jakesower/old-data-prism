@@ -5,6 +5,8 @@ const R = require('ramda');
 const FF = require('../src/lib/filter-functions');
 const DSF = require('../src/lib/dataset-functions');
 const FILTERS = require('../src/lib/filters');
+// 
+// const {Operaation} = require('../src/types');
 
 const careBears = {
   headers: ['Name', 'Belly Badge', 'Debut', 'Debut Year'],
