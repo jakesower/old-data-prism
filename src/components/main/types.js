@@ -7,17 +7,6 @@ const Dataset = Type({
 });
 
 
-const Operation = Type({
-  Filter: [Object],
-  Deriver: [Object]
-});
-
-Operation.map = fn =>
-  Operation.case({
-    Filter: v => Operation.Filter(fn(v)),
-    Deriver: v => Operation.Deriver(fn(v))
-  });
-
 const Action = Type({
   StartUpload: [() => true],
   SetData: [Object],   // TODO: use Dataset here (perhaps when union-type is updated?)
@@ -27,4 +16,4 @@ const Action = Type({
 });
 
 
-module.exports = {Dataset, Operation, Action};
+module.exports = {Dataset, Action};

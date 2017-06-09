@@ -35,7 +35,7 @@ const update = Action.caseOn({
   CreateFilter: model => {
     return R.evolve({
       uid: S.inc,
-      operations: S.append(Operation.Filter(OperationComponent.init(model.uid)))
+      operations: S.append(OperationComponent.init('Filter', model.uid))
     }, model)
   },
 

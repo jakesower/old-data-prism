@@ -6,16 +6,12 @@ const Type = require('union-type');
 const {targetValue} = require('../lib/utils');
 const {relevantColumns} = require('../lib/dataset-functions');
 
-const {Operation} = require('./main/types');
 const {Action} = require('./operation/types');
-console.log(Operation)
 
 
-// This needs to treat Operation as a functor
-const OM = Operation.map;
 const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
-  SetFunc: OM(R.assocPath(['editState', 'func'])),
+  SetFunc: R.assocPath(['editState', 'func']),
   SetColumn: (key, val, model) => R.mergeDeepRight(model, {
     editState: {columns: {[key]: val}}
   }),
@@ -34,7 +30,8 @@ const update = Action.caseOn({
 })
 
 
-const init = id => ({
+const init = (type, id) => ({
+  type: type,
   id: id,
   enabled: false,
   editing: true,
