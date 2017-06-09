@@ -2,8 +2,8 @@ const R = require('ramda');
 const h = require('snabbdom/h').default;
 
 const pages = {
-  UploadData: require('./views/upload-data'),
-  PrepareData: require('./views/prepare-data')
+  UploadData: require('./pages/upload-data'),
+  PrepareData: require('./pages/prepare-data')
 };
 
 module.exports = R.curry(function(action$, model) {

@@ -4,14 +4,15 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 
 const {Action, Operation} = require('../types');
-const Filter = require('../components/filter');
-const filters = require('../lib/filters');
+const OperationComponent = require('../../operation');
+const FILTERS = require('../../../lib/filters');
+const DERIVERS = require('../../../lib/filters');
 
-const viewOperation = Operation.caseOn({
-  Filter: Filter.view,
-  Deriver: Deriver.view
-})
-
+const viewOC = Operation.case({
+  // Filter: (ds, a$, op) => OperationComponent.view(FILTERS, ds, a$, op),
+  Filter: op => OperationComponent.view(FILTERS, R.__, R.__, op),
+  Deriver: OperationComponent.view(DERIVERS)
+});
 
 module.exports = R.curry((action$, model) => {
   const {page, perPage} = model.state.grid;
@@ -31,15 +32,18 @@ module.exports = R.curry((action$, model) => {
       }, str);
   }
 
+  console.log(model.operations)
+
   return h('div', {class: {"main-container": true}}, R.flatten([
     h('aside', {class: "prepare-controls"}, R.flatten([
-      R.map(operation =>
-        viewOperation(operation)(
-          forwardTo(action$, Action.SetOperationState(operation)),
+      R.map(operation => {
+        const x = viewOC(operation)(
           model.dataset,
-          operation
-        ),
-        model.operation),
+          forwardTo(action$, Action.SetOperationState(operation))
+        )
+        return x;
+        },
+        model.operations),
 
       h('button', {}, "Derive Field"),
       h('button', {on: {click: [action$, Action.CreateFilter]}}, "Add Filter"),

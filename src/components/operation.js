@@ -3,65 +3,56 @@ const S = require('sanctuary');
 const h = require('snabbdom/h').default;
 const Type = require('union-type');
 
-const DERIVERS = require('../lib/derivers');
-
 const {targetValue} = require('../lib/utils');
 const {relevantColumns} = require('../lib/dataset-functions');
 
-module.exports = function(itemPool, dataset) {
-  const Action = Type({
-    StartEdit: [],
-    SetFunc: [String],
-    SetColumn: [String, Number],
-    SetUserInput: [String, String],
-    Cancel: [],
-    Save: [],
-    Delete: []
-  });
+const {Operation} = require('./main/types');
+const {Action} = require('./operation/types');
+console.log(Operation)
 
 
-  const update = Action.caseOn({
-    StartEdit: R.assoc('editing', true),
-    SetFunc: R.assocPath(['editState', 'func']),
-    SetColumn: (key, val, model) => R.mergeDeepRight(model, {
-      editState: {columns: {[key]: val}}
+// This needs to treat Operation as a functor
+const OM = Operation.map;
+const update = Action.caseOn({
+  StartEdit: R.assoc('editing', true),
+  SetFunc: OM(R.assocPath(['editState', 'func'])),
+  SetColumn: (key, val, model) => R.mergeDeepRight(model, {
+    editState: {columns: {[key]: val}}
+  }),
+  SetUserInput: (key, val, model) => R.mergeDeepRight(model, {
+    editState: {userInputs: {[key]: val}}
+  }),
+  Cancel: R.assoc('editing', false),
+  Save: model =>
+    R.merge(model, {
+      func: model.editState.func,
+      columns: model.editState.columns,
+      userInputs: model.editState.userInputs,
+      editing: false
     }),
-    SetUserInput: (key, val, model) => R.mergeDeepRight(model, {
-      editState: {userInputs: {[key]: val}}
-    }),
-    Cancel: R.assoc('editing', false),
-    Save: model =>
-      R.merge(model, {
-        func: model.editState.func,
-        columns: model.editState.columns,
-        userInputs: model.editState.userInputs,
-        editing: false
-      }),
-    Delete: x => x  // NOOP -- this should be handled externally
-  })
+  Delete: x => x  // NOOP -- this should be handled externally
+})
 
 
-  const init = id => ({
-    id: id,
-    enabled: false,
-    editing: true,
+const init = id => ({
+  id: id,
+  enabled: false,
+  editing: true,
 
+  func: null,
+  columns: {},
+  userInputs: {},
+
+  editState: {
     func: null,
     columns: {},
-    userInputs: {},
-
-    editState: {
-      func: null,
-      columns: {},
-      userInputs: {}
-    }
-  });
+    userInputs: {}
+  }
+});
 
 
-  const view = R.curry(function(action$, model) {
-    return model.editing ? edit(action$, model) : show(action$, model);
-  });
-
+const view = R.curry(function(itemPool, dataset, action$, model) {
+  return model.editing ? edit(action$, model) : show(action$, model);
 
   function edit(action$, model) {
     const {func, columns, userInputs} = model.editState;
@@ -164,7 +155,6 @@ module.exports = function(itemPool, dataset) {
       ])
     ]);
   }
+});
 
-
-  return {Action, view, update, init};
-}
+module.exports = {Action, view, update, init};

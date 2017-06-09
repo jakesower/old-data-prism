@@ -1,5 +1,5 @@
 const Type = require('union-type');
-const OperationComponent = require('./components/operation');
+const OperationTypes = require('../operation/types');
 
 const Dataset = Type({
   columns: [Array],
@@ -12,13 +12,18 @@ const Operation = Type({
   Deriver: [Object]
 });
 
+Operation.map = fn =>
+  Operation.case({
+    Filter: v => Operation.Filter(fn(v)),
+    Deriver: v => Operation.Deriver(fn(v))
+  });
 
 const Action = Type({
-  StartUpload: [],
+  StartUpload: [() => true],
   SetData: [Object],   // TODO: use Dataset here (perhaps when union-type is updated?)
   SetPage: [Number],
-  CreateOperation: Operation,
-  SetOpearationState: [Operation, OperationComponent.Action]
+  CreateFilter: [],
+  SetOperationState: [Operation, OperationTypes.Action]
 });
 
 
