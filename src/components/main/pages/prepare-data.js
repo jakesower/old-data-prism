@@ -4,19 +4,23 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 
 const {Action, Operation} = require('../types');
+const {applyOperations} = require('../../../lib/dataset-functions');
 const OperationComponent = require('../../operation');
 const FILTERS = require('../../../lib/filters');
 const DERIVERS = require('../../../lib/filters');
 
-const viewOC = Operation.case({
-  // Filter: (ds, a$, op) => OperationComponent.view(FILTERS, ds, a$, op),
-  Filter: op => OperationComponent.view(FILTERS, R.__, R.__, op),
-  Deriver: OperationComponent.view(DERIVERS)
-});
+const viewOC = op => {
+  const cases = {
+    Filter: op => OperationComponent.view(FILTERS, R.__, R.__, op),
+    Deriver: OperationComponent.view(DERIVERS)
+  };
+
+  return cases[op.type](op);
+};
 
 module.exports = R.curry((action$, model) => {
   const {page, perPage} = model.state.grid;
-  const {headers, records} = model.dataset;
+  const {headers, records} = applyOperations(model.dataset, model.operations);
   const numPages = Math.ceil(records.length / perPage);
   const recordsOnPage = R.slice((page - 1) * perPage, page*perPage, records);
 
@@ -31,8 +35,6 @@ module.exports = R.curry((action$, model) => {
         on: {click: [action$, Action.SetPage(pageNum)]}
       }, str);
   }
-
-  console.log(model.operations)
 
   return h('div', {class: {"main-container": true}}, R.flatten([
     h('aside', {class: "prepare-controls"}, R.flatten([

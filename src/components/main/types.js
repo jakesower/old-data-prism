@@ -12,7 +12,7 @@ const Action = Type({
   SetData: [Object],   // TODO: use Dataset here (perhaps when union-type is updated?)
   SetPage: [Number],
   CreateFilter: [],
-  SetOperationState: [Operation, OperationTypes.Action]
+  SetOperationState: [() => true, OperationTypes.Action]
 });
 
 

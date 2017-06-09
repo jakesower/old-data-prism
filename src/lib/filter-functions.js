@@ -1,6 +1,7 @@
 const R = require('ramda');
 
 const DF = require('./dataset-functions');
+const FILTERS = require('./filters');
 
 
 /**
@@ -13,18 +14,22 @@ const DF = require('./dataset-functions');
 const apply = R.curry((filter, columns, operands, dataset) => {
   // StrMap Int -> Record -> StrMap String
   const xCols = rec => R.map(i => R.nth(i, rec), columns);
-  // console.log(R.map(xCols, dataset.records))
-  // console.log(operands)
-  // console.log(filter.fn(operands, xCols(dataset.records[0])))
 
   return {
     headers: dataset.headers,
     records: R.filter(r => filter.fn(operands, xCols(r)), dataset.records)
   }
+});
 
-})
+
+const applyOperation = R.curry((dataset, filter) => {
+  return filter.enabled ?
+    apply(FILTERS[filter.func], filter.columns, filter.userInputs, dataset) :
+    dataset;
+});
 
 
 module.exports = {
-  apply
+  apply,
+  applyOperation
 };

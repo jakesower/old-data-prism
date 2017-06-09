@@ -24,7 +24,8 @@ const update = Action.caseOn({
       func: model.editState.func,
       columns: model.editState.columns,
       userInputs: model.editState.userInputs,
-      editing: false
+      editing: false,
+      enabled: true
     }),
   Delete: x => x  // NOOP -- this should be handled externally
 })

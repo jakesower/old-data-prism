@@ -5,6 +5,7 @@ const R = require('ramda');
 const DSF = require('../src/lib/dataset-functions');
 const DF = require('../src/lib/deriver-functions');
 const FF = require('../src/lib/filter-functions');
+const OPF = require('../src/lib/operation-functions'); // TODO: should in its own tests
 const FILTERS = require('../src/lib/filters');
 const DERIVERS = require('../src/lib/derivers');
 
@@ -62,14 +63,15 @@ describe('dataset functions', function() {
   });
 
 
+  // TODO: move into operation test
   it('applies a sequence of operations', function() {
     // Care Bears debuting on a Friday
     const ops = [
-      DF.apply(DERIVERS.FormattedDate, {date: 2}, {format: "ddd"}),
-      FF.apply(FILTERS.Equality, {val: 4}, {val: "Fri"})
+      {type: "Deriver", enabled: true, func: "FormattedDate", columns: {date: 2}, userInputs: {format: "ddd"}},
+      {type: "Filter", enabled: true, func: "Equality", columns: {val: 4}, userInputs: {val: "Fri"}}
     ];
 
-    assert.deepEqual(DSF.applyOperations(careBears, ops), {
+    assert.deepEqual(OPF.applyOperations(careBears, ops), {
       headers: ['Name', 'Belly Badge', 'Debut', 'Debut Year', 'Formatted Date (Debut, ddd)'],
       records: [
         ['Tenderheart Bear', 'Heart', '1982-09-24', '1982', 'Fri'],

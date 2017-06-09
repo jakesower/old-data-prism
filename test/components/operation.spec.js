@@ -88,6 +88,7 @@ describe('operation actions', function() {
     assert.equal(model$().func, "Equality");
     assert.deepEqual(model$().columns, {column: 0});
     assert.deepEqual(model$().userInputs, {val: "Tenderheart Bear"});
+    assert.equal(model$().enabled, true);
     assert.equal(model$().editing, false);
     assert.doesNotThrow(viewCheck(model$()));
   });

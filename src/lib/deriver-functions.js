@@ -1,6 +1,7 @@
 const R = require('ramda');
 
 const DSF = require('./dataset-functions');
+const DERIVERS = require('./derivers');
 
 
 /**
@@ -24,9 +25,17 @@ const apply = R.curry((deriver, columns, operands, dataset) => {
     header: `${deriver.name} (${R.concat(R.values(colHeads(columns)), R.values(operands)).join(', ')})`,
     values: deriver.fn(operands, colVals(columns))
   })
-})
+});
+
+
+const applyOperation = R.curry((dataset, deriver) => {
+  return deriver.enabled ?
+    apply(DERIVERS[deriver.func], deriver.columns, deriver.userInputs, dataset) :
+    dataset;
+});
 
 
 module.exports = {
-  apply
+  apply,
+  applyOperation
 };
