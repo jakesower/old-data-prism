@@ -4,15 +4,15 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 
 const {Action, Operation} = require('../types');
-const {applyOperations} = require('../../../lib/dataset-functions');
+const {applyOperations} = require('../../../lib/operation-functions');
 const OperationComponent = require('../../operation');
 const FILTERS = require('../../../lib/filters');
-const DERIVERS = require('../../../lib/filters');
+const DERIVERS = require('../../../lib/derivers');
 
 const viewOC = op => {
   const cases = {
     Filter: op => OperationComponent.view(FILTERS, R.__, R.__, op),
-    Deriver: OperationComponent.view(DERIVERS)
+    Deriver: op => OperationComponent.view(DERIVERS, R.__, R.__, op)
   };
 
   return cases[op.type](op);
@@ -47,7 +47,7 @@ module.exports = R.curry((action$, model) => {
         },
         model.operations),
 
-      h('button', {}, "Derive Field"),
+      h('button', {on: {click: [action$, Action.CreateDeriver]}}, "Derive Field"),
       h('button', {on: {click: [action$, Action.CreateFilter]}}, "Add Filter"),
       h('button', {}, "Perform Grouping")
     ])),

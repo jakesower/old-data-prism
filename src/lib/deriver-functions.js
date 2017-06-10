@@ -29,9 +29,7 @@ const apply = R.curry((deriver, columns, operands, dataset) => {
 
 
 const applyOperation = R.curry((dataset, deriver) => {
-  return deriver.enabled ?
-    apply(DERIVERS[deriver.func], deriver.columns, deriver.userInputs, dataset) :
-    dataset;
+  return apply(DERIVERS[deriver.func], deriver.columns, deriver.userInputs, dataset);
 });
 
 

@@ -6,8 +6,6 @@ const view = require('./main/view');
 const {Action, Operation} = require('./main/types');
 const OperationComponent = require('./operation');
 
-const FILTERS = require('../lib/filters');
-
 const update = Action.caseOn({
   StartUpload: (action$, model) => { // keep action$ out of here TODO
     readCsv(action$, 'data-file');
@@ -25,8 +23,7 @@ const update = Action.caseOn({
 
   SetOperationState: (operation, action, model) => {
     const idx = R.indexOf(operation, model.operations);
-    // console.log('hai??')
-    // console.log({action, operation, model});
+
     return R.evolve({
       operations: R.adjust(OperationComponent.update(action), idx)
     }, model);
@@ -36,6 +33,13 @@ const update = Action.caseOn({
     return R.evolve({
       uid: S.inc,
       operations: S.append(OperationComponent.init('Filter', model.uid))
+    }, model)
+  },
+
+  CreateDeriver: model => {
+    return R.evolve({
+      uid: S.inc,
+      operations: S.append(OperationComponent.init('Deriver', model.uid))
     }, model)
   },
 

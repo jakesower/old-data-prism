@@ -9,16 +9,18 @@ module.exports = {
     name: "Formatted Date",
 
     columnSlots: [{
-      name: "date",
+      key: "date",
+      display: "date",
       test: x => !isNaN(Date.parse(x))
     }],
 
     userInputs: [{
-      name: "format",
-      key: "format"
+      key: "format",
+      display: "moo"
     }],
 
-    fn: (us, cs) => R.map(d => moment(d).format(us.format), cs.date)
+    fn: (us, cs) => R.map(d => moment(d).format(us.format), cs.date),
+    display: (us, cs) => `Meeza a display`
   },
 
 
@@ -26,12 +28,14 @@ module.exports = {
     name: "Quantile",
 
     columnSlots: [{
-      name: "n",
+      key: "n",
+      display: "n",
       test: x => !isNaN(x)
     }],
 
     userInputs: [{
-      name: "order",
+      key: "order",
+      display: "xx",
       test: x => !isNaN(x)
     }],
 
@@ -45,6 +49,7 @@ module.exports = {
       return R.map(n =>
         (R.findLastIndex(m => parseFloat(n) >= m, cutoffs) + 1).toString()
         , cs.n);
-    }
+    },
+    display: (us, cs) => `Meeza a display`
   }
 };

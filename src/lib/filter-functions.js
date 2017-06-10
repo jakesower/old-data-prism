@@ -23,9 +23,7 @@ const apply = R.curry((filter, columns, operands, dataset) => {
 
 
 const applyOperation = R.curry((dataset, filter) => {
-  return filter.enabled ?
-    apply(FILTERS[filter.func], filter.columns, filter.userInputs, dataset) :
-    dataset;
+  return apply(FILTERS[filter.func], filter.columns, filter.userInputs, dataset);
 });
 
 

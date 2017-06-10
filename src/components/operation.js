@@ -11,7 +11,10 @@ const {Action} = require('./operation/types');
 
 const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
-  SetFunc: R.assocPath(['editState', 'func']),
+  SetFunc: (f,m) => {
+    console.log([f, m])
+    return R.assocPath(['editState', 'func'])(f)(m)
+  },
   SetColumn: (key, val, model) => R.mergeDeepRight(model, {
     editState: {columns: {[key]: val}}
   }),
@@ -28,7 +31,7 @@ const update = Action.caseOn({
       enabled: true
     }),
   Delete: x => x  // NOOP -- this should be handled externally
-})
+});
 
 
 const init = (type, id) => ({
@@ -66,7 +69,7 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
     const withBlank = R.prepend(h('option', {}, ''));
 
     const selectorVdom = [
-      h('h2', {}, "Edit Filter"),
+      h('h2', {}, "Edit " + model.type),
       h('div', {}, [
         h('span', {}, "Function"),
         h('select', {

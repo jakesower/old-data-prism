@@ -3,15 +3,16 @@ const R = require('ramda');
 module.exports = {
   Equality: {
     name: "Equality",
+
     columnSlots: [{
       key: "val",
       display: "Column",
       test: R.T
     }],
+
     userInputs: [{
       key: "val",
       display: "is equal to",
-      name: "Value"
     }],
 
     fn: (us, cs) => us.val === cs.val,
@@ -30,6 +31,7 @@ module.exports = {
       display: "is less than",
       test: n => !isNaN(n),
     }],
-    fn: (us, cs) => parseFloat(cs.val) < parseFloat(us.val)
+    fn: (us, cs) => parseFloat(cs.val) < parseFloat(us.val),
+    display: (us, cs) => `Meeza a display`
   }
 };

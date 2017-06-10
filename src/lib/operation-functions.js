@@ -10,8 +10,9 @@ const opHandlers = {
 }
 
 const applyOperation = (dataset, operation) => {
-  console.log(operation);
-  return opHandlers[operation.type](dataset, operation);
+  return operation.enabled ?
+    opHandlers[operation.type](dataset, operation) :
+    dataset;
 }
 
 /**
