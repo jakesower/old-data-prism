@@ -1,4 +1,5 @@
 const R = require('ramda');
+const h = require('snabbdom/h').default;
 
 module.exports = {
   Equality: {
@@ -16,7 +17,11 @@ module.exports = {
     }],
 
     fn: (us, cs) => us.val === cs.val,
-    display: (us, cs) => `${us.val} = ${cs.val}`
+    display: (us, cs, dataset) =>
+      h('div', {}, [
+        h('span', {class: {"column-name": true}}, dataset.headers[cs.val]),
+        ` = ${us.val}`
+      ])
   },
 
   LT: {
@@ -32,6 +37,10 @@ module.exports = {
       test: n => !isNaN(n),
     }],
     fn: (us, cs) => parseFloat(cs.val) < parseFloat(us.val),
-    display: (us, cs) => `Meeza a display`
+    display: (us, cs, dataset) =>
+      h('div', {}, [
+        h('span', {class: {"column-name": true}}, dataset.headers[cs.val]),
+        ` < ${us.val}`
+      ])
   }
 };

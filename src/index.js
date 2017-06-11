@@ -5,6 +5,7 @@ const patch = require('snabbdom').init([
   require('snabbdom/modules/class').default,
   require('snabbdom/modules/eventlisteners').default,
   require('snabbdom/modules/attributes').default,
+  require('snabbdom/modules/props').default,
 ]);
 
 const Main = require('./components/main.js');
@@ -15,7 +16,7 @@ const saveState = (model) => {
 };
 
 const restoreState = () => {
-  return Main.init(null);
+  // return Main.init(null);
   const restored = JSON.parse(localStorage.getItem('state'));
   return restored === null ? Main.init : restored;
 };

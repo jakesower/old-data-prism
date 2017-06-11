@@ -12,7 +12,6 @@ const {Action} = require('./operation/types');
 const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
   SetFunc: (f,m) => {
-    console.log([f, m])
     return R.assocPath(['editState', 'func'])(f)(m)
   },
   SetColumn: (key, val, model) => R.mergeDeepRight(model, {
@@ -142,14 +141,19 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
 
   function show(action$, model) {
     return h('div', {class: {operation: true}}, [
-      h('div', itemPool[model.func].display(model.userInputs, model.columns)),
+      h('div', {
+        class: {definition: true, ["operation-"+model.type.toLowerCase()]: true},
+        // props: {innerHTML: itemPool[model.func].display(model.userInputs, model.columns, dataset)}
+      }, itemPool[model.func].display(model.userInputs, model.columns, dataset)),
 
       h('div', {class: {controls: true}}, [
-        h('button', {
+        h('span', {
+          class: {edit: true},
           on: {click: [action$, Action.StartEdit]}
         }, 'Edit'),
 
-        h('button', {
+        h('span', {
+          class: {remove: true},
           on: {click: [action$, Action.Remove]}
         }, 'Delete')
 

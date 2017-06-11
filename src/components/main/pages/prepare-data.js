@@ -20,7 +20,8 @@ const viewOC = op => {
 
 module.exports = R.curry((action$, model) => {
   const {page, perPage} = model.state.grid;
-  const {headers, records} = applyOperations(model.dataset, model.operations);
+  const dataset = applyOperations(model.dataset, model.operations);
+  const {headers, records} = dataset;
   const numPages = Math.ceil(records.length / perPage);
   const recordsOnPage = R.slice((page - 1) * perPage, page*perPage, records);
 
@@ -40,7 +41,7 @@ module.exports = R.curry((action$, model) => {
     h('aside', {class: "prepare-controls"}, R.flatten([
       R.map(operation => {
         const x = viewOC(operation)(
-          model.dataset,
+          dataset,
           forwardTo(action$, Action.SetOperationState(operation))
         )
         return x;
