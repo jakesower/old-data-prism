@@ -18,90 +18,42 @@ const careBears = {
 
 const {Action, view, update, init} = MainComponent;
 
+const sampleFilter = {
+  type: 'Filter',
+  id: 0,
+  enabled: true,
+  editing: false,
+
+  func: "Equality",
+  columns: {val: 1},
+  userInputs: {val: 'Tornado'},
+
+  editState: {}
+};
+
 
 describe('main component actions', function() {
+  const sampleInit = R.merge(init(null), {dataset: careBears});
   const action$ = stream();
-  const Model$ = m => flyd.scan(S.flip(update), R.merge(init(0), m), action$);
+  const Model$ = m => flyd.scan(S.flip(update), R.merge(sampleInit, m), action$);
 
-  const viewCheck = m => () => view(OPERATIONS, careBears, action$, m); // just add model!
+  const viewCheck = m => () => view(action$, m); // just add model!
+
+
+  it('renders with an initial state', function() {
+    assert.doesNotThrow(viewCheck(Model$({})()));
+  });
+
 
   it('can start an edit', function() {
-    const model$ = Model$({editing: false});
-
-    assert.equal(model$().editing, false);
-    action$(Action.StartEdit);
-    assert.equal(model$().editing, true);
-    assert.doesNotThrow(viewCheck(model$()));
-  });
-
-
-  it('can set a function', function() {
-    const model$ = Model$({});
-
-    action$(Action.SetFunc(OPERATIONS.Equality.name));
-    assert(S.equals(model$().editState.func, "Equality"));
-    assert.doesNotThrow(viewCheck(model$()));
-  });
-
-
-  it('saves with valid arguments', function() {
     const model$ = Model$({
-      editState: {
-        func: "Equality",
-        columns: {column: 0},
-        userInputs: {val: "Tenderheart Bear"}
-      }
+      operations: [sampleFilter]
     });
 
-    action$(Action.Save);
-
-    assert.equal(model$().func, "Equality");
-    assert.deepEqual(model$().columns, {column: 0});
-    assert.deepEqual(model$().userInputs, {val: "Tenderheart Bear"});
-    assert.equal(model$().enabled, true);
-    assert.equal(model$().editing, false);
+    action$(Action.DeleteOperation(sampleFilter));
+    assert.deepEqual(model$().operations, []);
     assert.doesNotThrow(viewCheck(model$()));
   });
 
 
-  it('updates columns', function() {
-    const model$ = Model$({
-      editState: {func: "Equality", columns: {}, userInput: {}}
-    });
-
-    action$(Action.SetColumn("val", 1));
-
-    assert.equal(model$().editState.columns.val, 1);
-    assert.doesNotThrow(viewCheck(model$()));
-  });
-
-
-  it('updates user input', function() {
-    const model$ = Model$({
-      editState: {func: "Equality", columns: {}, userInput: {}}
-    });
-
-    action$(Action.SetUserInput("val", "moo"));
-
-    assert.equal(model$().editState.userInputs.val, "moo");
-    assert.doesNotThrow(viewCheck(model$()));
-  });
-
-
-  it('stops editing on cancel', function() {
-    const model$ = Model$({
-      func: OPERATIONS.Equality.name,
-      columns: {column: 0},
-      userSlots: {val: "Messy Bear"}
-    });
-
-    action$(Action.Cancel);
-    assert.equal(model$().editing, false);
-    assert.doesNotThrow(viewCheck(model$()));
-  });
-
-
-  it('can generate a delete action (which has unspecified behavior)', function() {
-    assert.doesNotThrow(action$(Action.Delete));
-  })
 });

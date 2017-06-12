@@ -13,6 +13,7 @@ const Action = Type({
   SetPage: [Number],
   CreateFilter: [],
   CreateDeriver: [],
+  DeleteOperation: [() => true],
   SetOperationState: [() => true, OperationTypes.Action]
 });
 

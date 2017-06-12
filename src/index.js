@@ -16,13 +16,14 @@ const saveState = (model) => {
 };
 
 const restoreState = () => {
-  // return Main.init(null);
+  return Main.init(null);
   const restored = JSON.parse(localStorage.getItem('state'));
   return restored === null ? Main.init : restored;
 };
 
 
 // Streams
+console.log(restoreState());
 const action$ = flyd.stream();
 const model$ = flyd.scan(S.flip(Main.update), restoreState(), action$);
 const vnode$ = flyd.map(Main.view(action$), model$);

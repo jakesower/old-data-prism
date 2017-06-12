@@ -86,7 +86,7 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
         }, model.func ? 'Update' : 'Apply'),
 
         h('button', {
-          on: {click: [action$, Action.Cancel]}
+          on: {click: [action$, model.enabled ? Action.Cancel : Action.Delete]}
         }, 'Cancel')
       ])
     ]

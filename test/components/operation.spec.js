@@ -51,9 +51,15 @@ const {Action, view, update, init} = OperationComponent;
 
 describe('operation actions', function() {
   const action$ = stream();
-  const Model$ = m => flyd.scan(S.flip(update), R.merge(init(0), m), action$);
+  const Model$ = m => flyd.scan(S.flip(update), R.merge(init('Operation', 0), m), action$);
 
   const viewCheck = m => () => view(OPERATIONS, careBears, action$, m); // just add model!
+
+
+  it('renders with init data', function() {
+    assert.doesNotThrow(viewCheck(Model$({})()));
+  });
+
 
   it('can start an edit', function() {
     const model$ = Model$({editing: false});

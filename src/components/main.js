@@ -43,6 +43,12 @@ const update = Action.caseOn({
     }, model)
   },
 
+  DeleteOperation: (operation, model) => {
+    return R.assoc('operations',
+      S.filter(op => op.id !== operation.id, model.operations),
+      model);
+  },
+
   _: function(){ console.error(arguments)}
 });
 

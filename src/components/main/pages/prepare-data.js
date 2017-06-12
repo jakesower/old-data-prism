@@ -45,16 +45,10 @@ module.exports = R.curry((action$, model) => {
           dataset,
           // forwardTo(action$, Action.SetOperationState(operation))
           forwardTo(action$, a => {
-            console.log(a);
-            console.log(OperationAction);
-            const x = OperationAction.case({
+            return OperationAction.case({
               Delete: () => Action.DeleteOperation(operation),
               _: () => Action.SetOperationState(operation, a)
             }, a);
-            console.log(x)
-            console.log(Action.SetOperationState(operation, a))
-            // return Action.SetOperationState(operation, a);
-            return x;
           })
         )},
         model.operations),
