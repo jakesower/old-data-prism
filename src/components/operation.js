@@ -154,7 +154,7 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
 
         h('span', {
           class: {remove: true},
-          on: {click: [action$, Action.Remove]}
+          on: {click: [action$, Action.Delete]}
         }, 'Delete')
 
       ])

@@ -4,6 +4,7 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 
 const {Action, Operation} = require('../types');
+const OperationAction = require('../../operation/types').Action;
 const {applyOperations} = require('../../../lib/operation-functions');
 const OperationComponent = require('../../operation');
 const FILTERS = require('../../../lib/filters');
@@ -40,12 +41,22 @@ module.exports = R.curry((action$, model) => {
   return h('div', {class: {"main-container": true}}, R.flatten([
     h('aside', {class: "prepare-controls"}, R.flatten([
       R.map(operation => {
-        const x = viewOC(operation)(
+        return viewOC(operation)(
           dataset,
-          forwardTo(action$, Action.SetOperationState(operation))
-        )
-        return x;
-        },
+          // forwardTo(action$, Action.SetOperationState(operation))
+          forwardTo(action$, a => {
+            console.log(a);
+            console.log(OperationAction);
+            const x = OperationAction.case({
+              Delete: () => Action.DeleteOperation(operation),
+              _: () => Action.SetOperationState(operation, a)
+            }, a);
+            console.log(x)
+            console.log(Action.SetOperationState(operation, a))
+            // return Action.SetOperationState(operation, a);
+            return x;
+          })
+        )},
         model.operations),
 
       h('button', {on: {click: [action$, Action.CreateDeriver]}}, "Derive Field"),
