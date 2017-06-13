@@ -8,12 +8,12 @@ const DSF = require('../src/lib/dataset-functions');
 const DERIVERS = require('../src/lib/derivers');
 
 const careBears = {
-  headers: ['Name', 'Belly Badge', 'Debut', 'Generation'],
+  headers: ['Name', 'Lucky Number', 'Debut', 'Generation'],
   records: [
-    ['Tenderheart Bear', 'Heart', '1982-09-24', '1'],
-    ['Grumpy Bear', 'Raincloud', '1982-09-24', '1'],
-    ['Messy Bear', 'Tornado', '2005-10-18', '3'],
-    ['Oopsy Bear', 'Shooting Star', '2007-08-04', '4']
+    ['Tenderheart Bear', '2', '1982-09-24', '1'],
+    ['Grumpy Bear', '3', '1982-09-24', '1'],
+    ['Messy Bear', '5', '2005-10-18', '3'],
+    ['Oopsy Bear', '7', '2007-08-04', '4']
   ]
 };
 
@@ -75,6 +75,13 @@ describe('derivers', function() {
         { inCols: {n: 3}
         , inUser: {order: 3}
         , out: ["1", "1", "2", "3"]}
+      ],
+
+      Sum: [
+        { inCols: {addends: [1, 3]}
+        , inUser: {}
+        , out: ["3", "4", "8", "11"]
+        }
       ]
     };
 

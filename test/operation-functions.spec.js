@@ -11,21 +11,21 @@ const careBears = {
   ]
 };
 
-describe('dataset functions', function() {
-  it('applies a sequence of operations', function() {
-    // Care Bears debuting on a Friday
-    const ops = [
-      {type: "Deriver", enabled: true, func: "FormattedDate", columns: {date: 2}, userInputs: {format: "ddd"}},
-      {type: "Filter", enabled: true, func: "Equality", columns: {val: 4}, userInputs: {val: "Fri"}}
-    ];
-
-    assert.deepEqual(OPF.applyOperations(careBears, ops), {
-      headers: ['Name', 'Belly Badge', 'Debut', 'Debut Year', 'Formatted Date (Debut, ddd)'],
-      records: [
-        ['Tenderheart Bear', 'Heart', '1982-09-24', '1982', 'Fri'],
-        ['Grumpy Bear', 'Raincloud', '1982-09-24', '1982', 'Fri']
-      ]
-    });
-  })
+describe('operation functions', function() {
+  // it('applies a sequence of operations', function() {
+  //   // Care Bears debuting on a Friday
+  //   const ops = [
+  //     {type: "Deriver", enabled: true, func: "FormattedDate", columns: {date: 2}, userInputs: {format: "ddd"}},
+  //     {type: "Filter", enabled: true, func: "Equality", columns: {val: 4}, userInputs: {val: "Fri"}}
+  //   ];
+  //
+  //   assert.deepEqual(OPF.applyOperations(careBears, ops), {
+  //     headers: ['Name', 'Belly Badge', 'Debut', 'Debut Year', 'Formatted Date (Debut, ddd)'],
+  //     records: [
+  //       ['Tenderheart Bear', 'Heart', '1982-09-24', '1982', 'Fri'],
+  //       ['Grumpy Bear', 'Raincloud', '1982-09-24', '1982', 'Fri']
+  //     ]
+  //   });
+  // })
 
 });

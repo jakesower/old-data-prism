@@ -5,8 +5,9 @@ const R = require('ramda');
 const FF = require('../src/lib/filter-functions');
 const DSF = require('../src/lib/dataset-functions');
 const FILTERS = require('../src/lib/filters');
-// 
-// const {Operaation} = require('../src/types');
+
+// console.log(R.map(R.prop('columnSlots'), FILTERS))
+
 
 const careBears = {
   headers: ['Name', 'Belly Badge', 'Debut', 'Debut Year'],
@@ -66,6 +67,11 @@ describe('filters', function() {
   });
 
 
+  it('applies list filters properly', function() {
+    
+  });
+
+
   describe('real filters', function() {
     const testCases = {
       Equality: [
@@ -76,10 +82,31 @@ describe('filters', function() {
 
       LT: [
         { inCols: {val: 3}
-        , inUser: {val: "2001"}
+        , inUser: {val: "2005"}
         , out: R.slice(0, 2, careBears.records)
         }
-      ]
+      ],
+
+      LTE: [
+        { inCols: {val: 3}
+        , inUser: {val: "2005"}
+        , out: R.slice(0, 3, careBears.records)
+        }
+      ],
+
+      GT: [
+        { inCols: {val: 3}
+        , inUser: {val: "2005"}
+        , out: R.slice(3, 4, careBears.records)
+        }
+      ],
+
+      GTE: [
+        { inCols: {val: 3}
+        , inUser: {val: "2005"}
+        , out: R.slice(2, 4, careBears.records)
+        }
+      ],
     };
 
     it('has a test for every existing filter ^_^', function() {

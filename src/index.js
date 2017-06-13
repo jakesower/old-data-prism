@@ -23,7 +23,6 @@ const restoreState = () => {
 
 
 // Streams
-console.log(restoreState());
 const action$ = flyd.stream();
 const model$ = flyd.scan(S.flip(Main.update), restoreState(), action$);
 const vnode$ = flyd.map(Main.view(action$), model$);
