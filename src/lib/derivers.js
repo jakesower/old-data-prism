@@ -1,6 +1,10 @@
 const R = require('ramda');
+const h = require('snabbdom/h').default;
 const Type = require('union-type');
 const moment = require('moment');
+
+const col = R.curry((dataset, cName) =>
+  h('span', {class: {"column-name": true}}, dataset.headers[cName]));
 
 
 const FormattedDate = {
@@ -66,7 +70,10 @@ const Quantile = {
     };
 
     const name = quartileNames[us.order] || `${us.order}-quantile`;
-    return `${name} on <span class="column-name">${dataset.headers[cs.n]}</span>`;
+    return h('div', {}, [
+      `${name} on `,
+      col(dataset, cs.n)
+    ]);
   }
 };
 
