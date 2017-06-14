@@ -14,16 +14,20 @@ const DERIVERS = require('./derivers');
  */
 const apply = R.curry((deriver, columns, operands, dataset) => {
   const dsCols = DSF.columns(dataset);
-  const nthCol = R.flip(R.nth)(dsCols);
-  const colVals = R.pipe(
-    R.map(nthCol),
-    R.map(R.prop('values'))
+  const nthCol = n => dsCols[n];
+  const colVal = R.pipe(
+    nthCol,
+    R.prop('values')
   );
-  const colHeads = R.pipe(R.map(nthCol), R.map(R.prop('header')));
+
+  const colVals = v =>
+    Array.isArray(v) ?
+      R.transpose(R.map(colVal, v)) :
+      colVal(v);
 
   return DSF.appendColumn(dataset, {
-    header: `${deriver.name} (${R.concat(R.values(colHeads(columns)), R.values(operands)).join(', ')})`,
-    values: deriver.fn(operands, colVals(columns))
+    header: `${deriver.name} ()`,
+    values: deriver.fn(operands, R.map(colVals, columns))
   })
 });
 
