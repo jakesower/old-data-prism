@@ -78,7 +78,7 @@ const Sum = {
   columnSlots: [{
     key: "addends",
     display: "addends",
-    test: n => !isNan(n),
+    test: n => !isNaN(n),
     type: "list"
   }],
 
