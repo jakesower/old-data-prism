@@ -1,5 +1,6 @@
 const R = require('ramda');
 const S = require('sanctuary');
+const {$, def, $Dataset} = require('./sanctuary-types');
 
 const DF = require('./deriver-functions');
 const FF = require('./filter-functions');
@@ -10,7 +11,6 @@ const opHandlers = {
 }
 
 const applyOperation = (dataset, operation) => {
-  console.log(opHandlers[operation.type])
   return operation.enabled ?
     opHandlers[operation.type](dataset, operation) :
     dataset;
@@ -23,8 +23,10 @@ const applyOperation = (dataset, operation) => {
  * Dataset -> List (Dataset -> Dataset) -> Dataset
  */
  // const applyOperations = R.reduce(S.T);
-const applyOperations = R.reduce(applyOperation);
-
+const applyOperations = def('applyOperations', {},
+  [$Dataset, $.Array($.Function([$Dataset, $Dataset])), $Dataset],
+  R.reduce(applyOperation)
+);
 
 module.exports = {
   applyOperations
