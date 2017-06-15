@@ -14,7 +14,7 @@ const DERIVERS = require('./derivers');
  * Filter -> StrMap Int -> StrMap String -> Dataset -> Dataset
  */
 const apply = def('apply', {},
-[$Deriver, $.StrMap($.Any), $.StrMap($.String), $Dataset, $Dataset],
+  [$Deriver, $.StrMap($.Any), $.StrMap($.String), $Dataset, $Dataset],
   (deriver, columns, operands, dataset) => {
     const dsCols = DSF.columns(dataset);
     const nthCol = n => dsCols[n];
