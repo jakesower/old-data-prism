@@ -122,7 +122,16 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
             value: col.index
           }},
           col.header)
-      })
+      });
+
+      const mOption = R.curry((key, idx, col) => {
+        return h('option', {
+          attrs: {
+            selected: (columns[key][idx] === col.index),
+            value: col.index
+          }},
+          col.header)
+      });
 
       return h('div', {class: {columns: true}},
         S.map(colSlot => {
@@ -139,15 +148,33 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
           }
 
           // list type
-          return R.addIndex(R.map)((col, idx) => {
+          const existing = R.addIndex(R.map)((col, idx) => {
             return h('div', {}, [
-              h('span', {}, colSlot.display),
               h('select', {
-                on: {change: R.compose(action$, Action.SetMultiColumn(idx, colSlot.key), parseInt, targetValue)}
+                on: {change: R.compose(
+                  action$,
+                  v => S.equals(NaN, v) ?
+                    Action.RemoveMultiColumn(colSlot.key, idx) :
+                    Action.SetMultiColumn(colSlot.key, idx, v),
+                  parseInt,
+                  targetValue)}
               },
-              withBlank(S.map(option(colSlot.key), potentialPicks)))
-            ]);
-          })
+              R.prepend(h('option', {}, '(delete)'))(S.map(mOption(colSlot.key, idx), potentialPicks)))
+            ])
+          }, columns[colSlot.key]);
+
+          const newMulti = h('div', {}, [
+            h('select', {
+              on: {change: R.compose(action$, Action.AddMultiColumn(colSlot.key), parseInt, targetValue)}
+            },
+            R.prepend(h('option', {}, '(select another?)'))(S.map(option(colSlot.key), potentialPicks)))
+          ]);
+
+          return h('div', {}, R.flatten([
+            h('span', {}, colSlot.display),
+            existing,
+            newMulti
+          ]));
 
         }, item.columnSlots)
       );

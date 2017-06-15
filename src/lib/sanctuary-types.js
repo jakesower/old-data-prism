@@ -58,6 +58,6 @@ const myTypes = {
 const env = $.env.concat(R.values(myTypes));
 
 module.exports = R.merge(myTypes, {
-  def: $.create({checkTypes: true, env: env}),
+  def: $.create({checkTypes: !!process.env.CHECK_TYPES, env: env}),
   '$': $
 })

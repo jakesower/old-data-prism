@@ -92,10 +92,11 @@ const Sum = {
   // fn: (us, cs) => R.map(R.sum, cs.addends),
   fn: (us, cs) => R.map(x => R.sum(x).toString(), cs.addends),
   display: (us, cs, dataset) => {
-    const colSpans = R.map(col(dataset), R.values(cs.addends));
-    return h('div', {}, [
-      `Sum of ${R.join(', ', colSpans)}`
-    ])
+    const colSpans = R.map(col(dataset), cs.addends);
+    return h('div', {}, R.flatten([
+      "Sum of ",
+      R.intersperse(', ', colSpans)
+    ]))
   }
 }
 
