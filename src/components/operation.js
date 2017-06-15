@@ -11,12 +11,33 @@ const {Action} = require('./operation/types');
 
 const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
-  SetFunc: (f,m) => {
-    return R.assocPath(['editState', 'func'])(f)(m)
+  SetFunc: (operations, func, model) => {
+    const colSlots = operations[func].columnSlots;
+    const cols = R.pipe(
+      R.map(s => ({[s.key]: s.type === 'single' ? null : []})),
+      R.reduce(R.merge, {})
+    )(colSlots);
+
+    return R.pipe(
+      R.set(R.lensPath(['editState', 'func']), func),
+      R.set(R.lensPath(['editState', 'columns']), cols)
+    )(model);
   },
   SetColumn: (key, val, model) => R.mergeDeepRight(model, {
     editState: {columns: {[key]: val}}
   }),
+  SetMultiColumn: (key, idx, val, model) => {
+    const lens = R.lensPath(['editState', 'columns', key, idx]);
+    return R.set(lens, val, model);
+  },
+  AddMultiColumn: (key, val, model) => {
+    const lens = R.lensPath(['editState', 'columns', key]);
+    return R.over(lens, R.append(val), model);
+  },
+  RemoveMultiColumn: (key, idx, model) => {
+    const lens = R.lensPath(['editState', 'columns', key]);
+    return R.over(lens, R.remove(idx, 1), model);
+  },
   SetUserInput: (key, val, model) => R.mergeDeepRight(model, {
     editState: {userInputs: {[key]: val}}
   }),
@@ -72,7 +93,7 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
       h('div', {}, [
         h('span', {}, "Function"),
         h('select', {
-            on: {change: R.compose(action$, Action.SetFunc, targetValue)}
+            on: {change: R.compose(action$, Action.SetFunc(itemPool), targetValue)}
           },
           R.prepend(h('option', {}, ''), functions)),
       ])
@@ -107,14 +128,28 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
         S.map(colSlot => {
           const potentialPicks = relevantColumns(dataset, colSlot.test);
 
-          return h('div', {}, [
-            h('span', {}, colSlot.display),
-            h('select', {
-              on: {change: R.compose(action$, Action.SetColumn(colSlot.key), parseInt, targetValue)}
-            },
-            withBlank(S.map(option(colSlot.key), potentialPicks)))
-          ])}
-        , item.columnSlots)
+          if(colSlot.type === 'single') {
+            return h('div', {}, [
+              h('span', {}, colSlot.display),
+              h('select', {
+                on: {change: R.compose(action$, Action.SetColumn(colSlot.key), parseInt, targetValue)}
+              },
+              withBlank(S.map(option(colSlot.key), potentialPicks)))
+            ]);
+          }
+
+          // list type
+          return R.addIndex(R.map)((col, idx) => {
+            return h('div', {}, [
+              h('span', {}, colSlot.display),
+              h('select', {
+                on: {change: R.compose(action$, Action.SetMultiColumn(idx, colSlot.key), parseInt, targetValue)}
+              },
+              withBlank(S.map(option(colSlot.key), potentialPicks)))
+            ]);
+          })
+
+        }, item.columnSlots)
       );
     }
 

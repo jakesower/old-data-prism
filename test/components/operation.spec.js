@@ -18,31 +18,44 @@ const careBears = {
 
 const OPERATIONS = {
   Equality: {
-    name: "Equality",
+    key: "Equality",
     columnSlots: [{
-      name: "val",
-      test: R.T
+      key: "val",
+      test: R.T,
+      type: 'single'
     }],
     userInputs: [{
-      key: "val",
-      name: ""
+      key: "val"
     }],
     fn: (us, cs) => us.val === cs.val,
     display: () => "hi"
   },
 
   LT: {
-    name: "Less Than",
+    key: "Less Than",
     columnSlots: [{
-      name: "val",
+      key: "val",
+      type: 'single',
       test: n => !isNaN(n),
     }],
     userInputs: [{
-      name: "val",
+      key: "val",
       test: n => !isNaN(n),
     }],
     fn: (us, cs) => parseFloat(cs.val) < parseFloat(us.val),
     display: () => "hi"
+  },
+
+  Sum: {
+    key: "Sum",
+    columnSlots: [{
+      key: "addends",
+      test: R.T,
+      type: 'list'
+    }],
+    userInputs: [],
+    fn: (us, cs) => R.sum(cs.addends),
+    display: () => "oh hai"
   }
 }
 
@@ -50,38 +63,41 @@ const {Action, view, update, init} = OperationComponent;
 
 
 describe('operation actions', function() {
-  const action$ = stream();
-  const Model$ = m => flyd.scan(S.flip(update), R.merge(init('Operation', 0), m), action$);
-
-  const viewCheck = m => () => view(OPERATIONS, careBears, action$, m); // just add model!
+  const Model$ = (a$, m) => flyd.scan(S.flip(update), R.merge(init('Operation', 0), m), a$);
+  const viewCheck = (a$, m) => () => view(OPERATIONS, careBears, a$, m);
 
 
   it('renders with init data', function() {
-    assert.doesNotThrow(viewCheck(Model$({})()));
+    const action$ = stream();
+    assert.doesNotThrow(viewCheck(action$, Model$(action$, {})()));
   });
 
 
   it('can start an edit', function() {
-    const model$ = Model$({editing: false});
+    const action$ = stream();
+    const model$ = Model$(action$, {editing: false});
 
     assert.equal(model$().editing, false);
     action$(Action.StartEdit);
     assert.equal(model$().editing, true);
-    assert.doesNotThrow(viewCheck(model$()));
+    assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
 
   it('can set a function', function() {
-    const model$ = Model$({});
+    const action$ = stream();
+    const model$ = Model$(action$, {});
 
-    action$(Action.SetFunc(OPERATIONS.Equality.name));
+    action$(Action.SetFunc(OPERATIONS, OPERATIONS.Equality.key));
     assert(S.equals(model$().editState.func, "Equality"));
-    assert.doesNotThrow(viewCheck(model$()));
+    assert.deepEqual(model$().editState.columns, {val: null})
+    assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
 
   it('saves with valid arguments', function() {
-    const model$ = Model$({
+    const action$ = stream();
+    const model$ = Model$(action$, {
       editState: {
         func: "Equality",
         columns: {column: 0},
@@ -96,48 +112,90 @@ describe('operation actions', function() {
     assert.deepEqual(model$().userInputs, {val: "Tenderheart Bear"});
     assert.equal(model$().enabled, true);
     assert.equal(model$().editing, false);
-    assert.doesNotThrow(viewCheck(model$()));
+    assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
 
-  it('updates columns', function() {
-    const model$ = Model$({
-      editState: {func: "Equality", columns: {}, userInput: {}}
+  it('updates single columns', function() {
+    const action$ = stream();
+    const model$ = Model$(action$, {
+      editState: {func: "Equality", columns: {val: null}, userInputs: {}}
     });
 
     action$(Action.SetColumn("val", 1));
 
     assert.equal(model$().editState.columns.val, 1);
-    assert.doesNotThrow(viewCheck(model$()));
+    assert.doesNotThrow(viewCheck(action$, model$()));
+  });
+
+
+  it('adds to multi columns', function() {
+    const action$ = stream();
+    const model$ = Model$(action$, {});
+
+    action$(Action.SetFunc(OPERATIONS, OPERATIONS.Sum.key));
+    action$(Action.AddMultiColumn('addends', 2));
+
+    assert.deepEqual(model$().editState.columns.addends, [2]);
+    assert.doesNotThrow(viewCheck(action$, model$()));
+  });
+
+
+  it('updates multi columns', function() {
+    const action$ = stream();
+    const model$ = Model$(action$, {});
+
+    action$(Action.SetFunc(OPERATIONS, OPERATIONS.Sum.key));
+    action$(Action.AddMultiColumn('addends', 2));
+    action$(Action.SetMultiColumn('addends', 0, 3));
+
+    assert.deepEqual(model$().editState.columns.addends, [3]);
+    assert.doesNotThrow(viewCheck(action$, model$()));
+  });
+
+
+  it('removes multi columns', function() {
+    const action$ = stream();
+    const model$ = Model$(action$, {});
+
+    action$(Action.SetFunc(OPERATIONS, OPERATIONS.Sum.key));
+    action$(Action.AddMultiColumn('addends', 2));
+    action$(Action.RemoveMultiColumn('addends', 0));
+
+    assert.deepEqual(model$().editState.columns.addends, []);
+    assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
 
   it('updates user input', function() {
-    const model$ = Model$({
-      editState: {func: "Equality", columns: {}, userInput: {}}
+    const action$ = stream();
+    const model$ = Model$(action$, {
+      editState: {func: "Equality", columns: {val: null}, userInput: {}}
     });
 
     action$(Action.SetUserInput("val", "moo"));
 
     assert.equal(model$().editState.userInputs.val, "moo");
-    assert.doesNotThrow(viewCheck(model$()));
+    assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
 
   it('stops editing on cancel', function() {
-    const model$ = Model$({
-      func: OPERATIONS.Equality.name,
+    const action$ = stream();
+    const model$ = Model$(action$, {
+      func: OPERATIONS.Equality.key,
       columns: {column: 0},
       userSlots: {val: "Messy Bear"}
     });
 
     action$(Action.Cancel);
     assert.equal(model$().editing, false);
-    assert.doesNotThrow(viewCheck(model$()));
+    assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
 
   it('can generate a delete action (which has unspecified behavior)', function() {
+    const action$ = stream();
     assert.doesNotThrow(action$(Action.Delete));
   })
 });
