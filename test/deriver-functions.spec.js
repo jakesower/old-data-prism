@@ -22,15 +22,18 @@ const SAMPLE_DERIVERS = {
     name: "Formatted Date",
 
     columnSlots: [{
-      name: "date",
+      key: "date",
+      display: "date",
+      type: "single",
       test: x => !isNan(Date.parse(x))
     }],
     userInputs: [{
-      name: "format",
+      display: "format",
       key: "format"
     }],
 
-    fn: (us, cs) => R.map(d => moment(d).format(us.format), cs.date)
+    fn: (us, cs) => R.map(d => moment(d).format(us.format), cs.date),
+    display: () => "derived"
   }
 }
 
@@ -69,11 +72,11 @@ describe('derivers', function() {
 
       Quantile: [
         { inCols: {n: 3}
-        , inUser: {order: 2}
+        , inUser: {order: "2"}
         , out: ["1", "1", "2", "2"]},
 
         { inCols: {n: 3}
-        , inUser: {order: 3}
+        , inUser: {order: "3"}
         , out: ["1", "1", "2", "3"]}
       ],
 

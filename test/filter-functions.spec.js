@@ -23,27 +23,33 @@ const SAMPLE_FILTERS = {
   Equality: {
     name: "Equality",
     columnSlots: [{
-      name: "val",
-      test: R.T
+      key: "val",
+      test: R.T,
+      type: "single",
+      display: "val"
     }],
     userInputs: [{
       key: "val",
-      name: ""
+      display: "val"
     }],
-    fn: (us, cs) => us.val === cs.val
+    fn: (us, cs) => us.val === cs.val,
+    display: () => 'hi'
   },
 
   LT: {
     name: "Less Than",
     columnSlots: [{
-      name: "val",
+      key: "val",
+      display: "val",
       test: n => !isNaN(n),
+      type: "single"
     }],
     userInputs: [{
-      name: "val",
-      test: n => !isNaN(n),
+      key: "val",
+      display: "val",
     }],
-    fn: (us, cs) => parseFloat(cs.val) < parseFloat(us.val)
+    fn: (us, cs) => parseFloat(cs.val) < parseFloat(us.val),
+    display: () => 'hi'
   }
 }
 
@@ -68,7 +74,7 @@ describe('filters', function() {
 
 
   it('applies list filters properly', function() {
-    
+
   });
 
 

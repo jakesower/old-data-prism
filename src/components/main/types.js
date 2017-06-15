@@ -1,3 +1,4 @@
+const $ = require('sanctuary-def');
 const Type = require('union-type');
 const OperationTypes = require('../operation/types');
 

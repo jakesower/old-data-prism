@@ -1112,16 +1112,6 @@ https-browserify@~0.0.0:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/https-browserify/-/https-browserify-0.0.1.tgz#3f91365cabe60b77ed0ebba24b454e3e09d95a82"
 
-hyperscript-attribute-to-property@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/hyperscript-attribute-to-property/-/hyperscript-attribute-to-property-1.0.0.tgz#825308d49bb8e2957923f731981bcc811cad7aff"
-
-"hyperx@github:jamen/hyperx":
-  version "2.0.5"
-  resolved "https://codeload.github.com/jamen/hyperx/tar.gz/ddf5471fb3338cd8312a104bbd975b636c6fcde3"
-  dependencies:
-    hyperscript-attribute-to-property "^1.0.0"
-
 ieee754@^1.1.4:
   version "1.1.8"
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.1.8.tgz#be33d40ac10ef1926701f6f08a2d86fbfd1ad3e4"
@@ -2129,6 +2119,13 @@ sanctuary-def@0.9.0:
     sanctuary-type-classes "2.0.x"
     sanctuary-type-identifiers "1.0.x"
 
+sanctuary-def@^0.12.1:
+  version "0.12.1"
+  resolved "https://registry.yarnpkg.com/sanctuary-def/-/sanctuary-def-0.12.1.tgz#bb9b2ad9407b1519d1ee61fd293b24e86a2044b3"
+  dependencies:
+    sanctuary-type-classes "6.0.x"
+    sanctuary-type-identifiers "2.0.x"
+
 sanctuary-type-classes@2.0.x:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/sanctuary-type-classes/-/sanctuary-type-classes-2.0.1.tgz#06b6cfd78e3e8d85cd93f5c2d7b08796b68d1e74"
@@ -2141,9 +2138,19 @@ sanctuary-type-classes@3.0.1:
   dependencies:
     sanctuary-type-identifiers "1.0.x"
 
+sanctuary-type-classes@6.0.x:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/sanctuary-type-classes/-/sanctuary-type-classes-6.0.0.tgz#1db3f8c1247de018471e978fe4956a03eb62f464"
+  dependencies:
+    sanctuary-type-identifiers "1.0.x"
+
 sanctuary-type-identifiers@1.0.0, sanctuary-type-identifiers@1.0.x:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/sanctuary-type-identifiers/-/sanctuary-type-identifiers-1.0.0.tgz#e8f359f006cb5e624cfb8464603fc114608bde9f"
+
+sanctuary-type-identifiers@2.0.x:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/sanctuary-type-identifiers/-/sanctuary-type-identifiers-2.0.1.tgz#fc524cf6dd92cebfcbb0dd9509eff193159a20ed"
 
 sanctuary@^0.12.2:
   version "0.12.2"
@@ -2215,16 +2222,9 @@ signal-exit@^3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
 
-snabbdom@^0.6.3, snabbdom@^0.6.8:
+snabbdom@^0.6.8:
   version "0.6.9"
   resolved "https://registry.yarnpkg.com/snabbdom/-/snabbdom-0.6.9.tgz#65a392f4c82ca7e8ec72aa0d2fa797cf5c73b8d7"
-
-snabby@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/snabby/-/snabby-0.2.0.tgz#0a082c63db421e14d2b21a9fdcb18a403dfedc2a"
-  dependencies:
-    hyperx jamen/hyperx
-    snabbdom "^0.6.3"
 
 sntp@1.x.x:
   version "1.0.9"
