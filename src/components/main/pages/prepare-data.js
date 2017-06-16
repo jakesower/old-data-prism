@@ -29,6 +29,7 @@ module.exports = R.curry((action$, model) => {
   const toCells = R.map(datum => h('td', {}, datum));
   const toRows = R.map(record => h('tr', {}, toCells(record)));
 
+  // TODO: elminate clamp bug by handling zero-page data sets
   const pageButton = (str, pageNum) => {
     return R.clamp(1, numPages, pageNum) === page ?
       h('a', {class: {button: true, disabled: true}}, str) :
