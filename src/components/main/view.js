@@ -1,6 +1,8 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 
+const {Action} = require('./types');
+
 const pages = {
   UploadData: require('./pages/upload-data'),
   PrepareData: require('./pages/prepare-data')
@@ -14,8 +16,14 @@ module.exports = R.curry(function(action$, model) {
   }, [
     h('nav', {}, [
       h('h1', {}, 'Data Prism'),
-      h('a', {class: {selected: model.page === 'UploadData'}}, 'Upload Data'),
-      h('a', {class: {selected: model.page === 'PrepareData'}}, 'Prepare Data')
+      h('a', {
+        class: {selected: model.page === 'UploadData'},
+        on: {click: [action$, Action.SetTab('UploadData')]}
+      }, 'Upload Data'),
+      h('a', {
+        class: {selected: model.page === 'PrepareData'},
+        on: {click: [action$, Action.SetTab('PrepareData')]}
+      }, 'Prepare Data')
     ]),
     pages[model.page](action$, model)
   ]);

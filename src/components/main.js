@@ -21,6 +21,8 @@ const update = Action.caseOn({
 
   SetPage: R.assocPath(['state', 'grid', 'page']),
 
+  SetTab: R.assoc('page'),
+
   SetOperationState: (operation, action, model) => {
     const idx = R.indexOf(operation, model.operations);
 
