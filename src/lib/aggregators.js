@@ -10,7 +10,7 @@ const Count = {
   columnSlots: [],
   userInputs: [],
 
-  fn: (us, cs, group) => group.length,
+  fn: (group, us, cs) => group.length,
   // display: (us, cs, dataset) => `<span class="column-name">${dataset.headers[cs.date]}</span> with format ${us.format}`
 };
 

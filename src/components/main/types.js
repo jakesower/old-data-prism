@@ -18,6 +18,7 @@ const GroupAction = Type({
   StartEdit: [],
   Cancel: [],
   Delete: [],
+  Save: [],
 
   AddColumn: [Number],
   RemoveColumn: [Number],

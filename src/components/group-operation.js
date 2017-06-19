@@ -11,9 +11,9 @@ const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
   Cancel: R.assoc('editing', false),
   Delete: x => x,  // NOOP -- this should be handled externally
+  Save: [],
 
-  AddColumn: [Number],
-  RemoveColumn: [Number],
+  SetColumns: [Array],
 
   AddAggregator: [Object],
   SetAggregator: [Number, Object],
@@ -21,8 +21,7 @@ const update = Action.caseOn({
 });
 
 
-const init = (type, id) => ({
-  type: type,
+const init = id => ({
   id: id,
   enabled: false,
   editing: true,
@@ -37,7 +36,7 @@ const init = (type, id) => ({
 });
 
 
-const view = R.curry(function(dataset, action$, model) {
+const view = R.curry(function(aggregators, dataset, action$, model) {
   return model.editing ? edit(action$, model) : show(action$, model);
 
 
