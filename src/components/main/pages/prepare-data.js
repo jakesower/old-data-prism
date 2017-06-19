@@ -7,6 +7,7 @@ const {Action, Operation} = require('../types');
 const OperationAction = require('../../operation/types').Action;
 const {applyOperations} = require('../../../lib/operation-functions');
 const OperationComponent = require('../../operation');
+const GridComponent = require('../../grid');
 const FILTERS = require('../../../lib/filters');
 const DERIVERS = require('../../../lib/derivers');
 
@@ -20,24 +21,9 @@ const viewOC = op => {
 };
 
 module.exports = R.curry((action$, model) => {
-  const {page, perPage} = model.state.grid;
+  if (!model.dataset) return h('div', {}, '');
+
   const dataset = applyOperations(model.dataset, model.operations);
-  const {headers, records} = dataset;
-  const numPages = Math.ceil(records.length / perPage);
-  const recordsOnPage = R.slice((page - 1) * perPage, page*perPage, records);
-
-  const toCells = R.map(datum => h('td', {}, datum));
-  const toRows = R.map(record => h('tr', {}, toCells(record)));
-
-  // TODO: elminate clamp bug by handling zero-page data sets
-  const pageButton = (str, pageNum) => {
-    return R.clamp(1, numPages, pageNum) === page ?
-      h('a', {class: {button: true, disabled: true}}, str) :
-      h('a', {
-        class: {button: true},
-        on: {click: [action$, Action.SetPage(pageNum)]}
-      }, str);
-  }
 
   return h('div', {class: {"main-container": true}}, R.flatten([
     h('aside', {class: "prepare-controls"}, R.flatten([
@@ -60,18 +46,11 @@ module.exports = R.curry((action$, model) => {
     ])),
 
     h('main', {}, [
-      h('div', {class: {"page-controls": true}}, [
-        pageButton("<<", 1),
-        pageButton("<", page - 1),
-        h('strong', {class: {"button": true}}, `${page} / ${numPages}`),
-        pageButton(">", page + 1),
-        pageButton(">>", numPages)
-      ]),
-
-      h('table', {}, R.concat(
-        [h('tr', {}, R.map(c => h('th', {}, c), headers))],
-        toRows(recordsOnPage)
-      ))
+      GridComponent.view(
+        dataset,
+        forwardTo(action$, Action.SetGridState('prepareData')),
+        model.grids.prepareData
+      )
     ])
   ]))
 });

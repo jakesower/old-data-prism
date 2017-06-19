@@ -3,13 +3,13 @@ const OperationTypes = require('../operation/types');
 
 const Action = Type({
   StartUpload: [() => true],
-  SetData: [Object],   // TODO: use Dataset here (perhaps when union-type is updated?)
-  SetPage: [Number], // <-- for the grid; should be put in component
-  SetTab: [String],  // <-- really should be SetPage
+  SetData: [Object],
+  SetPage: [String],
   CreateFilter: [],
   CreateDeriver: [],
   DeleteOperation: [() => true],
-  SetOperationState: [() => true, OperationTypes.Action]
+  SetOperationState: [() => true, OperationTypes.Action],
+  SetGridState: [String, Object],
 });
 
 

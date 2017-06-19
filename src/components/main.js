@@ -5,6 +5,7 @@ const parseCsv = require('csv-parse');
 const view = require('./main/view');
 const {Action, Operation} = require('./main/types');
 const OperationComponent = require('./operation');
+const GridComponent = require('./grid');
 
 const update = Action.caseOn({
   StartUpload: (action$, model) => { // keep action$ out of here TODO
@@ -19,9 +20,7 @@ const update = Action.caseOn({
       page: 'PrepareData'
     }),
 
-  SetPage: R.assocPath(['state', 'grid', 'page']),
-
-  SetTab: R.assoc('page'),
+  SetPage: R.assoc('page'),
 
   SetOperationState: (operation, action, model) => {
     const idx = R.indexOf(operation, model.operations);
@@ -30,6 +29,9 @@ const update = Action.caseOn({
       operations: R.adjust(OperationComponent.update(action), idx)
     }, model);
   },
+
+  SetGridState: (gridId, action, model) =>
+    R.set(R.lensPath(['grids', gridId]), GridComponent.update(action, model), model),
 
   CreateFilter: model => {
     return R.evolve({
@@ -62,12 +64,9 @@ const firstInit = {
   dataset: null,
   uid: 1,
   operations: [],
-  state: {              // TODO: consider puttings these into components
-    grid: {
-      page: 1,
-      perPage: 20
-    }
-  }
+  grids: {
+    prepareData: GridComponent.init(),
+  },
 };
 
 const init = state => state || firstInit;

@@ -18,11 +18,11 @@ module.exports = R.curry(function(action$, model) {
       h('h1', {}, 'Data Prism'),
       h('a', {
         class: {selected: model.page === 'UploadData'},
-        on: {click: [action$, Action.SetTab('UploadData')]}
+        on: {click: [action$, Action.SetPage('UploadData')]}
       }, 'Upload Data'),
       h('a', {
         class: {selected: model.page === 'PrepareData'},
-        on: {click: [action$, Action.SetTab('PrepareData')]}
+        on: {click: [action$, Action.SetPage('PrepareData')]}
       }, 'Prepare Data')
     ]),
     pages[model.page](action$, model)
