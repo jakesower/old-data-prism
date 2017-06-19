@@ -47,6 +47,13 @@ const update = Action.caseOn({
     }, model)
   },
 
+  CreateGrouping: model => {
+    return R.evolve({
+      uid: S.inc,
+      operations: S.append(OperationComponent.init('Grouping', model.uid))
+    })
+  },
+
   DeleteOperation: (operation, model) => {
     return R.assoc('operations',
       S.filter(op => op.id !== operation.id, model.operations),

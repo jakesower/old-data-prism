@@ -7,10 +7,25 @@ const Action = Type({
   SetPage: [String],
   CreateFilter: [],
   CreateDeriver: [],
+  CreateGrouping: [],
   DeleteOperation: [() => true],
   SetOperationState: [() => true, OperationTypes.Action],
   SetGridState: [String, Object],
 });
+
+
+const GroupAction = Type({
+  StartEdit: [],
+  Cancel: [],
+  Delete: [],
+
+  AddColumn: [Number],
+  RemoveColumn: [Number],
+
+  AddAggregator: [Object],
+  SetAggregator: [Number, Object],
+  RemoveAggregator: [Number]
+})
 
 
 module.exports = {Action};
