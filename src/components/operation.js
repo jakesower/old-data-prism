@@ -105,24 +105,6 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
 
     // Item is the Filter/Deriver definition
     const columnVdom = item => {
-      // const option = R.curry((key, col) => {
-      //   return h('option', {
-      //     attrs: {
-      //       selected: (columns[key] === col.index),
-      //       value: col.index
-      //     }},
-      //     col.header)
-      // });
-      //
-      const mOption = R.curry((key, idx, col) => {
-        return h('option', {
-          attrs: {
-            selected: (columns[key][idx] === col.index),
-            value: col.index
-          }},
-          col.header)
-      });
-
       return h('div', {class: {columns: true}},
         S.map(colSlot => {
           const potentialPicks = relevantColumns(dataset, colSlot.test);
