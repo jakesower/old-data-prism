@@ -30,7 +30,6 @@ module.exports = R.curry((action$, model) => {
       R.map(operation => {
         return viewOC(operation)(
           dataset,
-          // forwardTo(action$, Action.SetOperationState(operation))
           forwardTo(action$, a => {
             return OperationAction.case({
               Delete: () => Action.DeleteOperation(operation),

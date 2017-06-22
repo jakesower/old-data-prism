@@ -2,9 +2,11 @@ const R = require('ramda');
 const S = require('sanctuary');
 const h = require('snabbdom/h').default;
 const Type = require('union-type');
+const forwardTo = require('flyd-forwardto');
 
 const {targetValue} = require('../lib/utils');
 const {relevantColumns} = require('../lib/dataset-functions');
+const ColumnSelector = require('./column-selector');
 
 const {Action} = require('./operation/types');
 
@@ -26,18 +28,6 @@ const update = Action.caseOn({
   SetColumn: (key, val, model) => R.mergeDeepRight(model, {
     editState: {columns: {[key]: val}}
   }),
-  SetMultiColumn: (key, idx, val, model) => {
-    const lens = R.lensPath(['editState', 'columns', key, idx]);
-    return R.set(lens, val, model);
-  },
-  AddMultiColumn: (key, val, model) => {
-    const lens = R.lensPath(['editState', 'columns', key]);
-    return R.over(lens, R.append(val), model);
-  },
-  RemoveMultiColumn: (key, idx, model) => {
-    const lens = R.lensPath(['editState', 'columns', key]);
-    return R.over(lens, R.remove(idx, 1), model);
-  },
   SetUserInput: (key, val, model) => R.mergeDeepRight(model, {
     editState: {userInputs: {[key]: val}}
   }),
@@ -115,15 +105,15 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
 
     // Item is the Filter/Deriver definition
     const columnVdom = item => {
-      const option = R.curry((key, col) => {
-        return h('option', {
-          attrs: {
-            selected: (columns[key] === col.index),
-            value: col.index
-          }},
-          col.header)
-      });
-
+      // const option = R.curry((key, col) => {
+      //   return h('option', {
+      //     attrs: {
+      //       selected: (columns[key] === col.index),
+      //       value: col.index
+      //     }},
+      //     col.header)
+      // });
+      //
       const mOption = R.curry((key, idx, col) => {
         return h('option', {
           attrs: {
@@ -136,46 +126,17 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
       return h('div', {class: {columns: true}},
         S.map(colSlot => {
           const potentialPicks = relevantColumns(dataset, colSlot.test);
+          const optionPair = col => ({val: col.index, display: col.header});
+          const fn = colSlot.type === 'single' ? 'single' : 'multi';
+          const clean = colSlot.type === 'single' ?
+            R.compose(Action.SetColumn(colSlot.key), parseInt) :
+            R.compose(Action.SetColumn(colSlot.key), R.map(parseInt), R.filter(x => x !== ''));
 
-          if(colSlot.type === 'single') {
-            return h('div', {}, [
-              h('span', {}, colSlot.display),
-              h('select', {
-                on: {change: R.compose(action$, Action.SetColumn(colSlot.key), parseInt, targetValue)}
-              },
-              withBlank(S.map(option(colSlot.key), potentialPicks)))
-            ]);
-          }
-
-          // list type
-          const existing = R.addIndex(R.map)((col, idx) => {
-            return h('div', {}, [
-              h('select', {
-                on: {change: R.compose(
-                  action$,
-                  v => S.equals(NaN, v) ?
-                    Action.RemoveMultiColumn(colSlot.key, idx) :
-                    Action.SetMultiColumn(colSlot.key, idx, v),
-                  parseInt,
-                  targetValue)}
-              },
-              R.prepend(h('option', {}, '(delete)'))(S.map(mOption(colSlot.key, idx), potentialPicks)))
-            ])
-          }, columns[colSlot.key]);
-
-          const newMulti = h('div', {}, [
-            h('select', {
-              on: {change: R.compose(action$, Action.AddMultiColumn(colSlot.key), parseInt, targetValue)}
-            },
-            R.prepend(h('option', {}, '(select another?)'))(S.map(option(colSlot.key), potentialPicks)))
-          ]);
-
-          return h('div', {}, R.flatten([
-            h('span', {}, colSlot.display),
-            existing,
-            newMulti
-          ]));
-
+          return ColumnSelector[fn](
+            S.map(optionPair, potentialPicks),
+            forwardTo(action$, clean),
+            columns[colSlot.key]
+          );
         }, item.columnSlots)
       );
     }
