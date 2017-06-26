@@ -8,7 +8,6 @@ const withBlank = R.prepend(h('option', {}, ''));
 
 
 const single = R.curry(function(items, action$, selected) {
-  console.log({items, selected})
   const option = item => {
     return h('option', {
       attrs: {

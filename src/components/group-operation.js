@@ -2,22 +2,41 @@ const R = require('ramda');
 const S = require('sanctuary');
 const h = require('snabbdom/h').default;
 const Type = require('union-type');
-
-
+const ColumnSelector = require('./column-selector');
+const DSF = require('../lib/dataset-functions');
+const OperationAction = require('./operation/types').Action;
+const OperationComponent = require('./operation');
+const AGGREGATORS = require('../lib/filters');
 const Action = require('./main/types').GroupAction;
-
 
 const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
   Cancel: R.assoc('editing', false),
   Delete: x => x,  // NOOP -- this should be handled externally
-  Save: [],
+  Save: model =>
+    R.merge(model, {
+      columns: model.editState.columns,
+      aggregators: model.editState.aggregators,
+      editing: false,
+      enabled: true
+    }),
 
-  SetColumns: [Array],
+  SetColumns: R.assocPath(['editState', 'columns']),
 
-  AddAggregator: [Object],
-  SetAggregator: [Number, Object],
-  RemoveAggregator: [Number]
+  CreateAggregator: R.evolve({
+    uid: S.inc,
+    operations: S.append(OperationComponent.init('Aggregator', model.uid))
+  }),
+  SetAggregator: (agg, action, model) => {
+    const idx = R.indexOf(agg, model.aggregators);
+    return R.evolve({
+      aggregators: R.adjust(OperationComponent.update(action), idx)
+    }, model);
+  },
+  DeleteAggregator: (agg, model) =>
+    R.assoc('aggregators',
+      S.filter(a => a.id !== agg.id, model.aggregators),
+      model);
 });
 
 
@@ -25,6 +44,7 @@ const init = id => ({
   id: id,
   enabled: false,
   editing: true,
+  uid: 0,
 
   columns: [],
   aggregators: [],
@@ -39,13 +59,6 @@ const init = id => ({
 const view = R.curry(function(aggregators, dataset, action$, model) {
   return model.editing ? edit(action$, model) : show(action$, model);
 
-
-  // General approach:
-  // 1. Select columns on which to group
-  // 2. Display a "group grid" of some sort
-  // 3. Present aggregator functions that take a group and produce a value
-
-
   function edit(action$, model) {
     const {columns, aggregators} = model.editState;
 
@@ -58,104 +71,56 @@ const view = R.curry(function(aggregators, dataset, action$, model) {
     const toOption = opt => h('option', {value: opt.index}, opt.header);
     const withBlank = R.prepend(h('option', {}, ''));
 
-    const controlsVdom = [
-      h('div', {class: {controls: true}}, [
+    const controlsVdom = h('div', {class: {controls: true}}, [
+      h('button', {
+        on: {click: [action$, Action.Save]},
+        attrs: {disabled: !func}
+      }, model.func ? 'Update' : 'Apply'),
+
+      h('button', {
+        on: {click: [action$, model.enabled ? Action.Cancel : Action.Delete]}
+      }, 'Cancel')
+    ]);
+
+    // column groupings
+    const columnsVdom = h('div', {class: {columns: true}},
+      S.map(col => {
+        const optionPair = col => ({val: col.index, display: col.header});
+        const clean = R.compose(Action.SetColumns, R.map(parseInt), R.filter(x => x !== ''));
+
+        return ColumnSelector.multi(
+          S.map(optionPair, potentialPicks),
+          forwardTo(action$, clean),
+          columns
+        );
+      }, DSF.columns(dataset));
+    );
+
+    // aggrgator operations
+    const aggregatorVdom = h('div', {class: {aggregators: true}}, [
+      const existingAggs = R.map(operation =>
+        OperationComponent.view(AGGREGATORS, dataset,
+          forwardTo(action$, a => {
+            return OperationAction.case({
+              Delete: () => Action.DeleteAggregator(operation),
+              _: () => Action.SetAggregator(operation, a)
+            }, a);
+          }),
+          operation
+        ),
+        model.operations),
+
+      return [
+        existingAggs,
         h('button', {
-          on: {click: [action$, Action.Save]},
-          attrs: {disabled: !func}
-        }, model.func ? 'Update' : 'Apply'),
+          on: {click: [action$, Action.CreateAggregator]}
+        }, "Add Aggregator")
+      ];
+    ]);
 
-        h('button', {
-          on: {click: [action$, model.enabled ? Action.Cancel : Action.Delete]}
-        }, 'Cancel')
-      ])
-    ]
-
-
-    const columnsVdom = item => {
-      const option = R.curry((key, col) => {
-        return h('option', {
-          attrs: {
-            selected: (columns[key] === col.index),
-            value: col.index
-          }},
-          col.header)
-      });
-
-      const mOption = R.curry((key, idx, col) => {
-        return h('option', {
-          attrs: {
-            selected: (columns[key][idx] === col.index),
-            value: col.index
-          }},
-          col.header)
-      });
-
-      return h('div', {class: {columns: true}},
-        S.map(colSlot => {
-          const potentialPicks = relevantColumns(dataset, colSlot.test);
-
-          if(colSlot.type === 'single') {
-            return h('div', {}, [
-              h('span', {}, colSlot.display),
-              h('select', {
-                on: {change: R.compose(action$, Action.SetColumn(colSlot.key), parseInt, targetValue)}
-              },
-              withBlank(S.map(option(colSlot.key), potentialPicks)))
-            ]);
-          }
-
-          // list type
-          const existing = R.addIndex(R.map)((col, idx) => {
-            return h('div', {}, [
-              h('select', {
-                on: {change: R.compose(
-                  action$,
-                  v => S.equals(NaN, v) ?
-                    Action.RemoveMultiColumn(colSlot.key, idx) :
-                    Action.SetMultiColumn(colSlot.key, idx, v),
-                  parseInt,
-                  targetValue)}
-              },
-              R.prepend(h('option', {}, '(delete)'))(S.map(mOption(colSlot.key, idx), potentialPicks)))
-            ])
-          }, columns[colSlot.key]);
-
-          const newMulti = h('div', {}, [
-            h('select', {
-              on: {change: R.compose(action$, Action.AddMultiColumn(colSlot.key), parseInt, targetValue)}
-            },
-            R.prepend(h('option', {}, '(select another?)'))(S.map(option(colSlot.key), potentialPicks)))
-          ]);
-
-          return h('div', {}, R.flatten([
-            h('span', {}, colSlot.display),
-            existing,
-            newMulti
-          ]));
-
-        }, item.columnSlots)
-      );
-    }
-
-    const inputVdom = item =>
-      h('div', {class: {userInput: true}},
-        S.map(inputSlot =>
-          h('div', {}, [
-            h('span', {}, inputSlot.display),
-            h('input', {
-              attrs: {value: userInputs[inputSlot.key]},
-              on: {keyup: R.compose(action$, Action.SetUserInput(inputSlot.key), targetValue)}
-            }, [])
-          ])
-        , item.userInputs)
-      );
-
-    return h('div', {class: {"operation-form": true}},
-      S.maybe(R.flatten([selectorVdom, controlsVdom]),
-        d => R.flatten([selectorVdom, columnVdom(d), inputVdom(d), controlsVdom]),
-        itemDef)
-    )
+    return h('div', {class: {"operation-form": true}}, R.flatten([
+      controlsVdom, columnsVdom, aggregatorVdom
+    ]));
   }
 
 

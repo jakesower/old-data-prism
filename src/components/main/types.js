@@ -20,12 +20,11 @@ const GroupAction = Type({
   Delete: [],
   Save: [],
 
-  AddColumn: [Number],
-  RemoveColumn: [Number],
+  SetColumns: [Array],
 
-  AddAggregator: [Object],
+  CreateAggregator: [Object],
   SetAggregator: [Number, Object],
-  RemoveAggregator: [Number]
+  DeleteAggregator: [Number]
 })
 
 
