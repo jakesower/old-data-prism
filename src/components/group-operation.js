@@ -23,20 +23,23 @@ const update = Action.caseOn({
 
   SetColumns: R.assocPath(['editState', 'columns']),
 
-  CreateAggregator: R.evolve({
-    uid: S.inc,
-    operations: S.append(OperationComponent.init('Aggregator', model.uid))
-  }),
+  CreateAggregator: model =>
+    R.evolve({
+      uid: S.inc,
+      aggregators: S.append(OperationComponent.init('Aggregator', model.uid))
+    }),
+
   SetAggregator: (agg, action, model) => {
     const idx = R.indexOf(agg, model.aggregators);
     return R.evolve({
       aggregators: R.adjust(OperationComponent.update(action), idx)
     }, model);
   },
+
   DeleteAggregator: (agg, model) =>
     R.assoc('aggregators',
       S.filter(a => a.id !== agg.id, model.aggregators),
-      model);
+      model)
 });
 
 
@@ -66,7 +69,7 @@ const view = R.curry(function(aggregators, dataset, action$, model) {
       h('option',
         {attrs: {selected: (itemName === func), value: itemName}},
         itemName),
-      S.keys(itemPool).sort());
+      S.keys(aggregators).sort());
 
     const toOption = opt => h('option', {value: opt.index}, opt.header);
     const withBlank = R.prepend(h('option', {}, ''));
@@ -93,29 +96,27 @@ const view = R.curry(function(aggregators, dataset, action$, model) {
           forwardTo(action$, clean),
           columns
         );
-      }, DSF.columns(dataset));
+      }, DSF.columns(dataset))
     );
 
     // aggrgator operations
-    const aggregatorVdom = h('div', {class: {aggregators: true}}, [
-      const existingAggs = R.map(operation =>
-        OperationComponent.view(AGGREGATORS, dataset,
-          forwardTo(action$, a => {
-            return OperationAction.case({
-              Delete: () => Action.DeleteAggregator(operation),
-              _: () => Action.SetAggregator(operation, a)
-            }, a);
-          }),
-          operation
-        ),
-        model.operations),
+    const existingAggs = R.map(operation =>
+      OperationComponent.view(AGGREGATORS, dataset,
+        forwardTo(action$, a => {
+          return OperationAction.case({
+            Delete: () => Action.DeleteAggregator(operation),
+            _: () => Action.SetAggregator(operation, a)
+          }, a);
+        }),
+        operation
+      ),
+      model.operations);
 
-      return [
-        existingAggs,
-        h('button', {
-          on: {click: [action$, Action.CreateAggregator]}
-        }, "Add Aggregator")
-      ];
+    const aggregatorVdom = h('div', {class: {aggregators: true}}, [
+      existingAggs,
+      h('button', {
+        on: {click: [action$, Action.CreateAggregator]}
+      }, "Add Aggregator")
     ]);
 
     return h('div', {class: {"operation-form": true}}, R.flatten([

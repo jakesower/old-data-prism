@@ -28,4 +28,4 @@ const GroupAction = Type({
 })
 
 
-module.exports = {Action};
+module.exports = {Action, GroupAction};

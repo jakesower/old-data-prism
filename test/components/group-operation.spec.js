@@ -133,7 +133,7 @@ describe('operation actions', function() {
       editState: {columns: [], aggregators: []}
     });
 
-    action$(Action.AddAggregator({func: 'Count', columnInputs: [], userInputs: []}));
+    action$(Action.CreateAggregator({func: 'Count', columnInputs: [], userInputs: []}));
 
     assert.deepEquals(model$().editState.aggregators, {func: 'Count', columnInputs: [], userInputs: []});
     assert.doesNotThrow(viewCheck(action$, model$()));
@@ -146,7 +146,7 @@ describe('operation actions', function() {
       editState: {columns: [], aggregators: []}
     });
 
-    action$(Action.AddAggregator({func: 'Count', columnInputs: [], userInputs: []}));
+    action$(Action.CreateAggregator({func: 'Count', columnInputs: [], userInputs: []}));
 
     assert.deepEquals(model$().editState.aggregators, {func: 'Count', columnInputs: [], userInputs: []});
     assert.doesNotThrow(viewCheck(action$, model$()));
@@ -159,7 +159,7 @@ describe('operation actions', function() {
       editState: {columns: [], aggregators: []}
     });
 
-    action$(Action.AddAggregator({
+    action$(Action.CreateAggregator({
       func: 'Maximum',
       columnInputs: {val: 2},
       userInputs: []

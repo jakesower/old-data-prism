@@ -129,40 +129,14 @@ describe('operation actions', function() {
   });
 
 
-  it('adds to multi columns', function() {
+  it('updates columns with multiple values', function() {
     const action$ = stream();
     const model$ = Model$(action$, {});
 
     action$(Action.SetFunc(OPERATIONS, OPERATIONS.Sum.key));
-    action$(Action.AddMultiColumn('addends', 2));
+    action$(Action.SetColumn('addends', [0, 3]));
 
-    assert.deepEqual(model$().editState.columns.addends, [2]);
-    assert.doesNotThrow(viewCheck(action$, model$()));
-  });
-
-
-  it('updates multi columns', function() {
-    const action$ = stream();
-    const model$ = Model$(action$, {});
-
-    action$(Action.SetFunc(OPERATIONS, OPERATIONS.Sum.key));
-    action$(Action.AddMultiColumn('addends', 2));
-    action$(Action.SetMultiColumn('addends', 0, 3));
-
-    assert.deepEqual(model$().editState.columns.addends, [3]);
-    assert.doesNotThrow(viewCheck(action$, model$()));
-  });
-
-
-  it('removes multi columns', function() {
-    const action$ = stream();
-    const model$ = Model$(action$, {});
-
-    action$(Action.SetFunc(OPERATIONS, OPERATIONS.Sum.key));
-    action$(Action.AddMultiColumn('addends', 2));
-    action$(Action.RemoveMultiColumn('addends', 0));
-
-    assert.deepEqual(model$().editState.columns.addends, []);
+    assert.deepEqual(model$().editState.columns.addends, [0, 3]);
     assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
@@ -170,7 +144,7 @@ describe('operation actions', function() {
   it('updates user input', function() {
     const action$ = stream();
     const model$ = Model$(action$, {
-      editState: {func: "Equality", columns: {val: null}, userInput: {}}
+      editState: {func: "Equality", columns: {val: null}, userInputs: {}}
     });
 
     action$(Action.SetUserInput("val", "moo"));
