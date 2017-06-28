@@ -1,13 +1,14 @@
 const R = require('ramda');
 const S = require('sanctuary');
 const h = require('snabbdom/h').default;
+const forwardTo = require('flyd-forwardto');
 const Type = require('union-type');
 const ColumnSelector = require('./column-selector');
 const DSF = require('../lib/dataset-functions');
 const OperationAction = require('./operation/types').Action;
 const OperationComponent = require('./operation');
-const AGGREGATORS = require('../lib/filters');
 const Action = require('./main/types').GroupAction;
+
 
 const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
@@ -24,10 +25,11 @@ const update = Action.caseOn({
   SetColumns: R.assocPath(['editState', 'columns']),
 
   CreateAggregator: model =>
-    R.evolve({
-      uid: S.inc,
-      aggregators: S.append(OperationComponent.init('Aggregator', model.uid))
-    }),
+    R.pipe(
+      R.set(R.lensPath(['editState', 'aggregators']),
+        S.append(OperationComponent.init('Aggregator', model.uid))),
+      R.evolve({uid: S.inc})
+    )(model),
 
   SetAggregator: (agg, action, model) => {
     const idx = R.indexOf(agg, model.aggregators);
@@ -36,9 +38,9 @@ const update = Action.caseOn({
     }, model);
   },
 
-  DeleteAggregator: (agg, model) =>
+  DeleteAggregator: (idx, model) =>
     R.assoc('aggregators',
-      S.filter(a => a.id !== agg.id, model.aggregators),
+      S.filter(a => a.id !== idx, model.aggregators),
       model)
 });
 
@@ -59,17 +61,11 @@ const init = id => ({
 });
 
 
-const view = R.curry(function(aggregators, dataset, action$, model) {
+const view = R.curry(function(aggregatorPool, dataset, action$, model) {
   return model.editing ? edit(action$, model) : show(action$, model);
 
   function edit(action$, model) {
     const {columns, aggregators} = model.editState;
-
-    const functions = S.map(itemName =>
-      h('option',
-        {attrs: {selected: (itemName === func), value: itemName}},
-        itemName),
-      S.keys(aggregators).sort());
 
     const toOption = opt => h('option', {value: opt.index}, opt.header);
     const withBlank = R.prepend(h('option', {}, ''));
@@ -77,7 +73,7 @@ const view = R.curry(function(aggregators, dataset, action$, model) {
     const controlsVdom = h('div', {class: {controls: true}}, [
       h('button', {
         on: {click: [action$, Action.Save]},
-        attrs: {disabled: !func}
+        // attrs: {disabled: !func}
       }, model.func ? 'Update' : 'Apply'),
 
       h('button', {
@@ -92,7 +88,7 @@ const view = R.curry(function(aggregators, dataset, action$, model) {
         const clean = R.compose(Action.SetColumns, R.map(parseInt), R.filter(x => x !== ''));
 
         return ColumnSelector.multi(
-          S.map(optionPair, potentialPicks),
+          S.map(optionPair, aggregatorPool),
           forwardTo(action$, clean),
           columns
         );
@@ -101,7 +97,7 @@ const view = R.curry(function(aggregators, dataset, action$, model) {
 
     // aggrgator operations
     const existingAggs = R.map(operation =>
-      OperationComponent.view(AGGREGATORS, dataset,
+      OperationComponent.view(aggregatorPool, dataset,
         forwardTo(action$, a => {
           return OperationAction.case({
             Delete: () => Action.DeleteAggregator(operation),
@@ -110,7 +106,7 @@ const view = R.curry(function(aggregators, dataset, action$, model) {
         }),
         operation
       ),
-      model.operations);
+      model.aggregators);
 
     const aggregatorVdom = h('div', {class: {aggregators: true}}, [
       existingAggs,

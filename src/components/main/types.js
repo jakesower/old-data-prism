@@ -22,7 +22,7 @@ const GroupAction = Type({
 
   SetColumns: [Array],
 
-  CreateAggregator: [Object],
+  CreateAggregator: [],
   SetAggregator: [Number, Object],
   DeleteAggregator: [Number]
 })

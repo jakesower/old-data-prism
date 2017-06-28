@@ -101,28 +101,15 @@ describe('operation actions', function() {
   });
 
 
-  it('adds columns', function() {
+  it('sets columns', function() {
     const action$ = stream();
     const model$ = Model$(action$, {
       editState: {columns: [], aggregators: []}
     });
 
-    action$(Action.AddColumn(1));
+    action$(Action.SetColumns([1,2]));
 
-    assert.deepEqual(model$().editState.columns, [1]);
-    assert.doesNotThrow(viewCheck(action$, model$()));
-  });
-
-
-  it('removes columns', function() {
-    const action$ = stream();
-    const model$ = Model$(action$, {});
-
-    action$(Action.AddMultiColumn(2));
-    action$(Action.AddMultiColumn(3));
-    action$(Action.RemoveMultiColumn(2));
-
-    assert.deepEqual(model$().editState.columns.addends, [3]);
+    assert.deepEqual(model$().editState.columns, [1,2]);
     assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
@@ -133,9 +120,9 @@ describe('operation actions', function() {
       editState: {columns: [], aggregators: []}
     });
 
-    action$(Action.CreateAggregator({func: 'Count', columnInputs: [], userInputs: []}));
+    action$(Action.CreateAggregator);
 
-    assert.deepEquals(model$().editState.aggregators, {func: 'Count', columnInputs: [], userInputs: []});
+    assert.equal(model$().editState.aggregators.length, 1);
     assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
@@ -143,31 +130,26 @@ describe('operation actions', function() {
   it('updates aggregators', function() {
     const action$ = stream();
     const model$ = Model$(action$, {
-      editState: {columns: [], aggregators: []}
+      editState: {columns: [], aggregators: [{some: "agg"}]}
     });
 
-    action$(Action.CreateAggregator({func: 'Count', columnInputs: [], userInputs: []}));
+    action$(Action.SetAggregator(0, {just: "checking"}));
 
-    assert.deepEquals(model$().editState.aggregators, {func: 'Count', columnInputs: [], userInputs: []});
+    assert.deepEqual(model$().editState.aggregators, [{just: "checking"}]);
     assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
 
-  it('adds aggregators', function() {
+  it('removes aggregators', function() {
     const action$ = stream();
     const model$ = Model$(action$, {
       editState: {columns: [], aggregators: []}
     });
 
-    action$(Action.CreateAggregator({
-      func: 'Maximum',
-      columnInputs: {val: 2},
-      userInputs: []
-    }));
+    action$(Action.CreateAggregator);
+    action$(Action.DeleteAggregator(0))
 
-    action$(Action.SetAggregator({}))
-
-    assert.deepEquals(model$().editState.aggregators, {func: 'Count', columnInputs: [], userInputs: []});
+    assert.deepEqual(model$().editState.aggregators, []);
     assert.doesNotThrow(viewCheck(action$, model$()));
   });
 });
