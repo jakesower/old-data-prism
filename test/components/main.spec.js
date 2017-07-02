@@ -50,7 +50,7 @@ describe('main component actions', function() {
       operations: [sampleFilter]
     });
 
-    action$(Action.DeleteOperation(sampleFilter));
+    action$(Action.DeleteOperation(0));
     assert.deepEqual(model$().operations, []);
     assert.doesNotThrow(viewCheck(model$()));
   });

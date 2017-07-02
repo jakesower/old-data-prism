@@ -5,6 +5,7 @@ const parseCsv = require('csv-parse');
 const view = require('./main/view');
 const {Action, Operation} = require('./main/types');
 const OperationComponent = require('./operation');
+const GroupingComponent = require('./group-operation');
 const GridComponent = require('./grid');
 
 const update = Action.caseOn({
@@ -22,11 +23,15 @@ const update = Action.caseOn({
 
   SetPage: R.assoc('page'),
 
-  SetOperationState: (operation, action, model) => {
-    const idx = R.indexOf(operation, model.operations);
-
+  ModifyOperation: (idx, updateFn, action, model) => {
     return R.evolve({
-      operations: R.adjust(OperationComponent.update(action), idx)
+      operations: R.adjust(updateFn(action), idx)
+    }, model);
+  },
+
+  DeleteOperation: (idx, model) => {
+    return R.evolve({
+      operations: R.remove(idx, 1)
     }, model);
   },
 
@@ -50,14 +55,8 @@ const update = Action.caseOn({
   CreateGrouping: model => {
     return R.evolve({
       uid: S.inc,
-      operations: S.append(OperationComponent.init('Grouping', model.uid))
-    })
-  },
-
-  DeleteOperation: (operation, model) => {
-    return R.assoc('operations',
-      S.filter(op => op.id !== operation.id, model.operations),
-      model);
+      operations: S.append(GroupingComponent.init(model.uid))
+    }, model)
   },
 
   _: function(){ console.error(arguments)}

@@ -24,29 +24,38 @@ const update = Action.caseOn({
 
   SetColumns: R.assocPath(['editState', 'columns']),
 
-  CreateAggregator: model =>
-    R.pipe(
-      R.set(R.lensPath(['editState', 'aggregators']),
+  CreateAggregator: model => {
+    return R.pipe(
+      R.over(
+        R.lensPath(['editState', 'aggregators']),
         S.append(OperationComponent.init('Aggregator', model.uid))),
       R.evolve({uid: S.inc})
-    )(model),
+    )(model)
+  },
 
-  SetAggregator: (agg, action, model) => {
-    const idx = R.indexOf(agg, model.aggregators);
-    return R.evolve({
-      aggregators: R.adjust(OperationComponent.update(action), idx)
-    }, model);
+  SetAggregator: (idx, action, model) => {
+    const agg = R.path(['editState', 'aggregators', idx], model);
+
+    return R.set(
+      R.lensPath(['editState', 'aggregators', idx]),
+      OperationComponent.update(action, agg),
+      model
+    )
   },
 
   DeleteAggregator: (idx, model) =>
-    R.assoc('aggregators',
-      S.filter(a => a.id !== idx, model.aggregators),
-      model)
+    R.over(
+      R.lensPath(['editState', 'aggregators']),
+      R.remove(idx, 1),
+      model
+    )
+
 });
 
 
 const init = id => ({
   id: id,
+  type: 'Grouping',
   enabled: false,
   editing: true,
   uid: 0,
@@ -82,18 +91,16 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
     ]);
 
     // column groupings
-    const columnsVdom = h('div', {class: {columns: true}},
-      S.map(col => {
-        const optionPair = col => ({val: col.index, display: col.header});
-        const clean = R.compose(Action.SetColumns, R.map(parseInt), R.filter(x => x !== ''));
+    const columnsVdom = h('div', {class: {columns: true}}, (() => {
+      const optionPair = col => ({val: col.index, display: col.header});
+      const clean = R.compose(Action.SetColumns, R.map(parseInt), R.filter(x => x !== ''));
 
-        return ColumnSelector.multi(
-          S.map(optionPair, aggregatorPool),
-          forwardTo(action$, clean),
-          columns
-        );
-      }, DSF.columns(dataset))
-    );
+      return ColumnSelector.multi(
+        S.map(optionPair, DSF.columns(dataset)),
+        forwardTo(action$, clean),
+        columns
+      );
+    })());
 
     // aggrgator operations
     const existingAggs = R.map(operation =>
@@ -108,15 +115,15 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
       ),
       model.aggregators);
 
-    const aggregatorVdom = h('div', {class: {aggregators: true}}, [
+    const aggregatorVdom = h('div', {class: {aggregators: true}}, R.flatten([
       existingAggs,
       h('button', {
         on: {click: [action$, Action.CreateAggregator]}
       }, "Add Aggregator")
-    ]);
+    ]));
 
     return h('div', {class: {"operation-form": true}}, R.flatten([
-      controlsVdom, columnsVdom, aggregatorVdom
+      columnsVdom, aggregatorVdom
     ]));
   }
 

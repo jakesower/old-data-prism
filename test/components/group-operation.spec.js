@@ -1,4 +1,5 @@
 const assert = require('chai').assert;
+const OperationComponent = require('../../src/components/operation');
 const GroupOperationComponent = require('../../src/components/group-operation');
 
 const flyd = require('flyd');
@@ -129,13 +130,13 @@ describe('operation actions', function() {
 
   it('updates aggregators', function() {
     const action$ = stream();
-    const model$ = Model$(action$, {
-      editState: {columns: [], aggregators: [{some: "agg"}]}
-    });
+    const model$ = Model$(action$, {});
+    const act = OperationComponent.Action.SetFunc(AGGREGATORS, 'Count');
 
-    action$(Action.SetAggregator(0, {just: "checking"}));
+    action$(Action.CreateAggregator);
+    action$(Action.SetAggregator(0)(act));
 
-    assert.deepEqual(model$().editState.aggregators, [{just: "checking"}]);
+    assert.equal(model$().editState.aggregators[0].editState.func, 'Count');
     assert.doesNotThrow(viewCheck(action$, model$()));
   });
 

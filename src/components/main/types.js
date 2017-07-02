@@ -8,8 +8,8 @@ const Action = Type({
   CreateFilter: [],
   CreateDeriver: [],
   CreateGrouping: [],
-  DeleteOperation: [() => true],
-  SetOperationState: [() => true, OperationTypes.Action],
+  DeleteOperation: [Number],
+  ModifyOperation: [Number, Function, () => true],
   SetGridState: [String, Object],
 });
 

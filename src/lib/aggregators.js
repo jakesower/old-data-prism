@@ -12,6 +12,7 @@ const Count = {
 
   fn: (group, us, cs) => group.length,
   // display: (us, cs, dataset) => `<span class="column-name">${dataset.headers[cs.date]}</span> with format ${us.format}`
+  display: () => 'hi'
 };
 
 module.exports = {
