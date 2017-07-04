@@ -48,11 +48,36 @@ const $Deriver = $.RecordType({
 });
 
 
+const $Aggregator = $.RecordType({
+  name: $.String,
+  columnSlots: $.Array($.RecordType({
+    key: $.NonEmpty($.String),
+    display: $.NonEmpty($.String),
+    type: $.EnumType('', '', ['single', 'list']),
+    test: $.Function([$.String, $.Boolean])
+  })),
+  userInputs: $.Array($.RecordType({
+    key: $.NonEmpty($.String),
+    display: $.NonEmpty($.String)
+  })),
+  fn: $.Function([$.Object, $.Object, $.Boolean]),
+  display: $.Function([$.Object, $.Object, $Dataset, $.Any])
+});
+
+
+const $Grouping = $.RecordType({
+  columns: $.NonEmpty($.Array($.Number)),
+  aggregators: $.Array($Aggregator)
+});
+
+
 const myTypes = {
   $Column,
   $Dataset,
   $Deriver,
   $Filter,
+  $Aggregator,
+  $Grouping,
 };
 
 const env = $.env.concat(R.values(myTypes));

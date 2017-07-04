@@ -10,9 +10,9 @@ const Count = {
   columnSlots: [],
   userInputs: [],
 
-  fn: (group, us, cs) => group.length,
+  fn: (group, args) => group.length,
   // display: (us, cs, dataset) => `<span class="column-name">${dataset.headers[cs.date]}</span> with format ${us.format}`
-  display: () => 'hi'
+  display: () => 'Count'
 };
 
 module.exports = {

@@ -54,7 +54,7 @@ module.exports = R.curry((action$, model) => {
   const dataset = applyOperations(model.dataset, model.operations);
 
   return h('div', {class: {"main-container": true}}, R.flatten([
-    h('aside', {class: "prepare-controls"}, R.flatten([
+    h('aside', {class: {"prepare-controls": true}}, R.flatten([
       mapWithIndex(operationView(action$, dataset), model.operations),
 
       h('button', {on: {click: [action$, Action.CreateDeriver]}}, "Derive Field"),

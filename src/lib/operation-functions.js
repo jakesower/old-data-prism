@@ -3,10 +3,12 @@ const S = require('sanctuary');
 
 const DF = require('./deriver-functions');
 const FF = require('./filter-functions');
+const GF = require('./grouping-functions');
 
 const opHandlers = {
   Filter: FF.applyOperation,
-  Deriver: DF.applyOperation
+  Deriver: DF.applyOperation,
+  Grouping: GF.applyOperation
 }
 
 const applyOperation = (dataset, operation) => {
