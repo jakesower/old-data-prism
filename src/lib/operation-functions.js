@@ -28,5 +28,6 @@ const applyOperations = R.reduce(applyOperation);
 
 
 module.exports = {
+  applyOperation,
   applyOperations
 };

@@ -68,7 +68,7 @@ describe('operation actions', function() {
   it('stops editing on cancel', function() {
     const action$ = stream();
     const model$ = Model$(action$, {
-      columns: {column: 2},
+      columns: [2],
       aggregators: []
     });
 

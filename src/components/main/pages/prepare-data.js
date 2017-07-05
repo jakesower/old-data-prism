@@ -4,7 +4,7 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 
 const {Action, Operation, GroupAction} = require('../types');
-const {applyOperations} = require('../../../lib/operation-functions');
+const {applyOperation, applyOperations} = require('../../../lib/operation-functions');
 
 const OperationAction = require('../../operation/types').Action;
 const OperationComponent = require('../../operation');
@@ -29,8 +29,6 @@ const componentsByType = {
   Grouping: GroupingComponent
 }
 
-const mapWithIndex = R.addIndex(R.map);
-
 
 const operationView = R.curry((action$, dataset, operation, idx) => {
   const component = componentsByType[operation.type];
@@ -48,14 +46,23 @@ const operationView = R.curry((action$, dataset, operation, idx) => {
 });
 
 
+const renderOperations = R.curry((action$, dataset, operations, idx) => {
+  const [head, tail] = [R.head(operations), R.tail(operations)];
+  if (!head) return [];
+
+  return R.prepend(
+    operationView(action$, dataset, head, idx),
+    renderOperations(action$, applyOperation(dataset, head), tail, idx+1)
+  );
+});
+
+
 module.exports = R.curry((action$, model) => {
   if (!model.dataset) return h('div', {}, '');
 
-  const dataset = applyOperations(model.dataset, model.operations);
-
   return h('div', {class: {"main-container": true}}, R.flatten([
     h('aside', {class: {"prepare-controls": true}}, R.flatten([
-      mapWithIndex(operationView(action$, dataset), model.operations),
+      renderOperations(action$, model.dataset, model.operations, 0),
 
       h('button', {on: {click: [action$, Action.CreateDeriver]}}, "Derive Field"),
       h('button', {on: {click: [action$, Action.CreateFilter]}}, "Add Filter"),
@@ -64,7 +71,7 @@ module.exports = R.curry((action$, model) => {
 
     h('main', {}, [
       GridComponent.view(
-        dataset,
+        applyOperations(model.dataset, model.operations),
         forwardTo(action$, Action.SetGridState('prepareData')),
         model.grids.prepareData
       )

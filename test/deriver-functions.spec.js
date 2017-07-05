@@ -25,7 +25,7 @@ const SAMPLE_DERIVERS = {
       key: "date",
       display: "date",
       type: "single",
-      test: x => !isNan(Date.parse(x))
+      test: x => !isNaN(Date.parse(x))
     }],
     userInputs: [{
       display: "format",

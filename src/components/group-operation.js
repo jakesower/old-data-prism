@@ -133,8 +133,27 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
 
 
   function show(action$, model) {
-    return h('div', {class: {operation: true, grouping: true}}, [
-      'Moo'
+    return h('div', {class: {operation: true}}, [
+      h('div',
+        {class: {definition: true, "operation-grouping": true}},
+        R.prepend(
+          h('div', {}, S.map(c => dataset.headers[c], model.columns).join(', ')),
+          S.map(a => h('div', {}, aggregatorPool[a.func].display({}, dataset)), model.aggregators)
+        )
+      ),
+
+      h('div', {class: {controls: true}}, [
+        h('span', {
+          class: {edit: true},
+          on: {click: [action$, Action.StartEdit]}
+        }, 'Edit'),
+
+        h('span', {
+          class: {remove: true},
+          on: {click: [action$, Action.Delete]}
+        }, 'Delete')
+
+      ])
     ]);
   }
 });
