@@ -22,7 +22,7 @@ const apply = def('apply', {},
 
 
 const applyOperation = R.curry((dataset, filter) => {
-  return apply(FILTERS[filter.func], filter.columns, filter.userInputs, dataset);
+  return apply(FILTERS[filter.func], filter.inputs, dataset);
 });
 
 

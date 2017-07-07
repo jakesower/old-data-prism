@@ -16,7 +16,7 @@ const update = Action.caseOn({
   SetFunc: (operations, func, model) => {
     const slots = operations[func].slots;
     const cols = R.pipe(
-      R.map(s => ({[s.key]: s.type === 'multicolumn' ? [] : null})),
+      R.map(s => ({[s.key]: s.type === 'multicolumn' ? [] : ''})),
       R.reduce(R.merge, {})
     )(slots);
 

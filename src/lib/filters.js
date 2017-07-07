@@ -86,10 +86,10 @@ const LTE = rowFilter({
     LT.slots[0],
     R.merge(LT.slots[1], {display: "is less than or equal to"})
   ],
-  display: (us, cs, dataset) =>
+  display: (inputs, dataset) =>
     h('div', {}, [
       h('span', {class: {"column-name": true}}, dataset.headers[inputs.base]),
-      ` ≤ ${us.val}`
+      ` ≤ ${inputs.target}`
     ])
 });
 
@@ -101,10 +101,10 @@ const GT = rowFilter({
     LT.slots[0],
     R.merge(LT.slots[1], {display: "is greater than"})
   ],
-  display: (us, cs, dataset) =>
+  display: (inputs, dataset) =>
     h('div', {}, [
       h('span', {class: {"column-name": true}}, dataset.headers[inputs.base]),
-      ` > ${us.val}`
+      ` > ${inputs.target}`
     ])
 });
 
@@ -116,10 +116,10 @@ const GTE = rowFilter({
     LT.slots[0],
     R.merge(LT.slots[1], {display: "is greater than or equal to"})
   ],
-  display: (us, cs, dataset) =>
+  display: (inputs, dataset) =>
     h('div', {}, [
       h('span', {class: {"column-name": true}}, dataset.headers[inputs.base]),
-      ` ≥ ${us.val}`
+      ` ≥ ${inputs.target}`
     ])
 });
 

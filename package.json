@@ -23,6 +23,8 @@
   },
   "dependencies": {
     "csv-parse": "^1.2.0",
+    "csv-stringify": "^1.0.4",
+    "file-saver": "^1.3.3",
     "flyd": "^0.2.4",
     "flyd-forwardto": "^0.0.2",
     "mathjs": "^3.13.3",

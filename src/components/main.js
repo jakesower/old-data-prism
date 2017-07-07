@@ -36,7 +36,7 @@ const update = Action.caseOn({
   },
 
   SetGridState: (gridId, action, model) =>
-    R.set(R.lensPath(['grids', gridId]), GridComponent.update(action, model), model),
+    R.over(R.lensPath(['grids', gridId]), GridComponent.update(action), model),
 
   CreateFilter: model => {
     return R.evolve({
