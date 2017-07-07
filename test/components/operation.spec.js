@@ -19,42 +19,44 @@ const careBears = {
 const OPERATIONS = {
   Equality: {
     key: "Equality",
-    columnSlots: [{
-      key: "val",
-      test: R.T,
-      type: 'single'
-    }],
-    userInputs: [{
-      key: "val"
-    }],
-    fn: (us, cs) => us.val === cs.val,
+    slots: [
+      { key: "val",
+        test: R.T,
+        type: 'column'
+      },
+      { key: "val2",
+        type: 'user'
+      }
+    ],
+    fn: inputs => inputs.val === inputs.val2,
     display: () => "hi"
   },
 
   LT: {
     key: "Less Than",
-    columnSlots: [{
-      key: "val",
-      type: 'single',
-      test: n => !isNaN(n),
-    }],
-    userInputs: [{
-      key: "val",
-      test: n => !isNaN(n),
-    }],
-    fn: (us, cs) => parseFloat(cs.val) < parseFloat(us.val),
+    slots: [
+      { key: "val",
+        type: 'column',
+        test: n => !isNaN(n),
+      },
+      {
+        key: "val",
+        type: 'user',
+        test: n => !isNaN(n),
+      }
+    ],
+    fn: inputs => parseFloat(inputs.val) < parseFloat(inputs.val2),
     display: () => "hi"
   },
 
   Sum: {
     key: "Sum",
-    columnSlots: [{
+    slots: [{
       key: "addends",
       test: R.T,
-      type: 'list'
+      type: 'multicolumn'
     }],
-    userInputs: [],
-    fn: (us, cs) => R.sum(cs.addends),
+    fn: inputs => R.sum(inputs.addends),
     display: () => "oh hai"
   }
 }
@@ -90,7 +92,7 @@ describe('operation actions', function() {
 
     action$(Action.SetFunc(OPERATIONS, OPERATIONS.Equality.key));
     assert(S.equals(model$().editState.func, "Equality"));
-    assert.deepEqual(model$().editState.columns, {val: null})
+    assert.deepEqual(model$().editState.inputs, {val: null, val2: null})
     assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
@@ -100,31 +102,29 @@ describe('operation actions', function() {
     const model$ = Model$(action$, {
       editState: {
         func: "Equality",
-        columns: {column: 0},
-        userInputs: {val: "Tenderheart Bear"}
+        inputs: {val: 0, val2: "Tenderheart Bear"}
       }
     });
 
     action$(Action.Save);
 
     assert.equal(model$().func, "Equality");
-    assert.deepEqual(model$().columns, {column: 0});
-    assert.deepEqual(model$().userInputs, {val: "Tenderheart Bear"});
+    assert.deepEqual(model$().inputs, {val: 0, val2: "Tenderheart Bear"});
     assert.equal(model$().enabled, true);
     assert.equal(model$().editing, false);
     assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
 
-  it('updates single columns', function() {
+  it('updates single column inputs', function() {
     const action$ = stream();
     const model$ = Model$(action$, {
-      editState: {func: "Equality", columns: {val: null}, userInputs: {}}
+      editState: {func: "Equality", inputs: {val: null}}
     });
 
-    action$(Action.SetColumn("val", 1));
+    action$(Action.SetInput("val", 1));
 
-    assert.equal(model$().editState.columns.val, 1);
+    assert.equal(model$().editState.inputs.val, 1);
     assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
@@ -134,22 +134,22 @@ describe('operation actions', function() {
     const model$ = Model$(action$, {});
 
     action$(Action.SetFunc(OPERATIONS, OPERATIONS.Sum.key));
-    action$(Action.SetColumn('addends', [0, 3]));
+    action$(Action.SetInput('addends', [0, 3]));
 
-    assert.deepEqual(model$().editState.columns.addends, [0, 3]);
+    assert.deepEqual(model$().editState.inputs.addends, [0, 3]);
     assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
 
-  it('updates user input', function() {
+  it('updates text input', function() {
     const action$ = stream();
     const model$ = Model$(action$, {
-      editState: {func: "Equality", columns: {val: null}, userInputs: {}}
+      editState: {func: "Equality", inputs: {val: null}}
     });
 
-    action$(Action.SetUserInput("val", "moo"));
+    action$(Action.SetInput("val", "moo"));
 
-    assert.equal(model$().editState.userInputs.val, "moo");
+    assert.equal(model$().editState.inputs.val, "moo");
     assert.doesNotThrow(viewCheck(action$, model$()));
   });
 
@@ -158,8 +158,7 @@ describe('operation actions', function() {
     const action$ = stream();
     const model$ = Model$(action$, {
       func: OPERATIONS.Equality.key,
-      columns: {column: 0},
-      userSlots: {val: "Messy Bear"}
+      slots: {column: 0, val: "Messy Bear"}
     });
 
     action$(Action.Cancel);

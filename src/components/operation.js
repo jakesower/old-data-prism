@@ -14,29 +14,25 @@ const {Action} = require('./operation/types');
 const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
   SetFunc: (operations, func, model) => {
-    const colSlots = operations[func].columnSlots;
+    const slots = operations[func].slots;
     const cols = R.pipe(
-      R.map(s => ({[s.key]: s.type === 'single' ? null : []})),
+      R.map(s => ({[s.key]: s.type === 'multicolumn' ? [] : null})),
       R.reduce(R.merge, {})
-    )(colSlots);
+    )(slots);
 
     return R.pipe(
       R.set(R.lensPath(['editState', 'func']), func),
-      R.set(R.lensPath(['editState', 'columns']), cols)
+      R.set(R.lensPath(['editState', 'inputs']), cols)
     )(model);
   },
-  SetColumn: (key, val, model) => R.mergeDeepRight(model, {
-    editState: {columns: {[key]: val}}
-  }),
-  SetUserInput: (key, val, model) => R.mergeDeepRight(model, {
-    editState: {userInputs: {[key]: val}}
+  SetInput: (key, val, model) => R.mergeDeepRight(model, {
+    editState: {inputs: {[key]: val}}
   }),
   Cancel: R.assoc('editing', false),
   Save: model =>
     R.merge(model, {
       func: model.editState.func,
-      columns: model.editState.columns,
-      userInputs: model.editState.userInputs,
+      inputs: model.editState.inputs,
       editing: false,
       enabled: true
     }),
@@ -51,13 +47,11 @@ const init = (type, id) => ({
   editing: true,
 
   func: null,
-  columns: {},
-  userInputs: {},
+  inputs: {},
 
   editState: {
     func: null,
-    columns: {},
-    userInputs: {}
+    inputs: {}
   }
 });
 
@@ -66,7 +60,7 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
   return model.editing ? edit(action$, model) : show(action$, model);
 
   function edit(action$, model) {
-    const {func, columns, userInputs} = model.editState;
+    const {func, inputs} = model.editState;
     const itemDef = func ? S.Just(itemPool[func]) : S.Nothing;
 
     const functions = S.map(itemName =>
@@ -103,42 +97,71 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
     ]
 
 
-    // Item is the Filter/Deriver definition
-    const columnVdom = item => {
-      return h('div', {class: {columns: true}},
-        S.map(colSlot => {
-          const potentialPicks = relevantColumns(dataset, colSlot.test);
-          const optionPair = col => ({val: col.index, display: col.header});
-          const fn = colSlot.type === 'single' ? 'single' : 'multi';
-          const clean = colSlot.type === 'single' ?
-            R.compose(Action.SetColumn(colSlot.key), parseInt) :
-            R.compose(Action.SetColumn(colSlot.key), R.map(parseInt), R.filter(x => x !== ''));
+    // // Item is the Filter/Deriver definition
+    // const columnVdom = item => {
+    //   return h('div', {class: {columns: true}},
+    //     S.map(colSlot => {
+    //       const potentialPicks = relevantColumns(dataset, colSlot.test);
+    //       const optionPair = col => ({val: col.index, display: col.header});
+    //       const fn = colSlot.type === 'single' ? 'single' : 'multi';
+    //       const clean = colSlot.type === 'single' ?
+    //         R.compose(Action.SetColumn(colSlot.key), parseInt) :
+    //         R.compose(Action.SetColumn(colSlot.key), R.map(parseInt), R.filter(x => x !== ''));
+    //
+    //       return ColumnSelector[fn](
+    //         S.map(optionPair, potentialPicks),
+    //         forwardTo(action$, clean),
+    //         columns[colSlot.key]
+    //       );
+    //     }, item.columnSlots)
+    //   );
+    // }
+    //
+    // const inputVdom = item =>
+    //   h('div', {class: {userInput: true}},
+    //     S.map(inputSlot =>
+    //       h('div', {}, [
+    //         h('span', {}, inputSlot.display),
+    //         h('input', {
+    //           attrs: {value: userInputs[inputSlot.key]},
+    //           on: {keyup: R.compose(action$, Action.SetUserInput(inputSlot.key), targetValue)}
+    //         }, [])
+    //       ])
+    //     , item.userInputs)
+    //   );
 
-          return ColumnSelector[fn](
-            S.map(optionPair, potentialPicks),
-            forwardTo(action$, clean),
-            columns[colSlot.key]
-          );
-        }, item.columnSlots)
+    const userSlot = slot =>
+      h('div', {}, [
+        h('span', {}, slot.display),
+        h('input', {
+          attrs: {value: inputs[slot.key]},
+          on: {keyup: R.compose(action$, Action.SetInput(slot.key), targetValue)}
+        }, [])
+      ])
+
+    const columnSlot = slot => {
+      const potentialPicks = relevantColumns(dataset, slot.test);
+      const optionPair = col => ({val: col.index, display: col.header});
+      const fn = slot.type === 'column' ? 'single' : 'multi';
+      const clean = slot.type === 'column' ?
+        R.compose(Action.SetInput(slot.key), parseInt) :
+        R.compose(Action.SetInput(slot.key), R.map(parseInt), R.filter(x => x !== ''));
+
+      return ColumnSelector[fn](
+        S.map(optionPair, potentialPicks),
+        forwardTo(action$, clean),
+        inputs[slot.key]
       );
     }
 
     const inputVdom = item =>
-      h('div', {class: {userInput: true}},
-        S.map(inputSlot =>
-          h('div', {}, [
-            h('span', {}, inputSlot.display),
-            h('input', {
-              attrs: {value: userInputs[inputSlot.key]},
-              on: {keyup: R.compose(action$, Action.SetUserInput(inputSlot.key), targetValue)}
-            }, [])
-          ])
-        , item.userInputs)
-      );
+      h('div', {}, S.map(
+        slot => slot.type === 'user' ? userSlot(slot) : columnSlot(slot),
+        item.slots))
 
     return h('div', {class: {"operation-form": true}},
       S.maybe(R.flatten([selectorVdom, controlsVdom]),
-        d => R.flatten([selectorVdom, columnVdom(d), inputVdom(d), controlsVdom]),
+        d => R.flatten([selectorVdom, inputVdom(d), controlsVdom]),
         itemDef)
     )
   }
@@ -148,7 +171,7 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
     return h('div', {class: {operation: true}}, [
       h('div', {
         class: {definition: true, ["operation-"+model.type.toLowerCase()]: true},
-      }, itemPool[model.func].display(model.userInputs, model.columns, dataset)),
+      }, itemPool[model.func].display(model.inputs, dataset)),
 
       h('div', {class: {controls: true}}, [
         h('span', {

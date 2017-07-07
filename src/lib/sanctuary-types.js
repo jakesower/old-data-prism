@@ -17,34 +17,27 @@ const $Dataset = $.RecordType({
 
 const $Filter = $.RecordType({
   name: $.String,
-  columnSlots: $.Array($.RecordType({
+  slots: $.Array($.RecordType({
     key: $.NonEmpty($.String),
+    type: $.EnumType('', '', ['column', 'user', 'multicolumn']),
     display: $.NonEmpty($.String),
     test: $.Function([$.String, $.Boolean])
   })),
-  userInputs: $.Array($.RecordType({
-    key: $.NonEmpty($.String),
-    display: $.NonEmpty($.String)
-  })),
   fn: $.Function([$.Object, $.Object, $.Boolean]),
-  display: $.Function([$.Object, $.Object, $Dataset, $.Any])
+  display: $.Function([$.Object, $Dataset, $.Any])
 });
 
 
 const $Deriver = $.RecordType({
   name: $.String,
-  columnSlots: $.Array($.RecordType({
+  slots: $.Array($.RecordType({
     key: $.NonEmpty($.String),
     display: $.NonEmpty($.String),
-    type: $.EnumType('', '', ['single', 'list']),
+    type: $.EnumType('', '', ['column', 'user', 'multicolumn']),
     test: $.Function([$.String, $.Boolean])
   })),
-  userInputs: $.Array($.RecordType({
-    key: $.NonEmpty($.String),
-    display: $.NonEmpty($.String)
-  })),
   fn: $.Function([$.Object, $.Object, $.Boolean]),
-  display: $.Function([$.Object, $.Object, $Dataset, $.Any])
+  display: $.Function([$.Object, $Dataset, $.Any])
 });
 
 

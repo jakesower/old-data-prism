@@ -4,114 +4,130 @@ const h = require('snabbdom/h').default;
 const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName]));
 
+// Helper function for filters that filter on a simple row-by-row basis
+// (StrMap Inputs -> Boolean) -> (Dataset -> Dataset)
+const rowFilter = def => {
+  // Create a function that takes in slot arguments and returns a function that
+  // in turn takes a record and returns a value for consumption by the filter
+  // function.
+  const argFns = R.pipe(
+    R.map(s => ({[s.key]: s})),
+    R.reduce(R.merge, {}),
+    R.map(({key, type}) =>
+      type === "user" ? args => R.always(args[key])
+                      : args => R.nth(args[key]))
+  )(def.slots);
+
+  return R.merge(def, {
+    fn: (args, records) => {
+      const extractors = R.map(af => af(args), argFns);
+      const row = rec => R.map(x => x(rec), extractors);
+
+      return R.filter(rec => def.fn(row(rec)), records);
+    }
+  });
+}
 
 
-const Equality = {
+// BEGIN ACTUAL FILTERS
+
+const Equality = rowFilter({
   name: "Equality",
 
-  columnSlots: [{
-    key: "val",
-    display: "Column",
-    test: R.T
-  }],
+  slots: [
+    { type: "column",
+      key: "a",
+      display: "Column",
+      test: R.T
+    },
+    { type: "user",
+      key: "b",
+      display: "is equal to",
+      test: R.T
+    }
+  ],
 
-  userInputs: [{
-    key: "val",
-    display: "is equal to",
-  }],
-
-  fn: (us, cs) => us.val === cs.val,
-  display: (us, cs, dataset) =>
+  fn: inputs => inputs.a === inputs.b,
+  display: (inputs, dataset) =>
     h('div', {}, [
-      h('span', {class: {"column-name": true}}, dataset.headers[cs.val]),
-      ` = ${us.val}`
+      h('span', {class: {"column-name": true}}, dataset.headers[inputs.a]),
+      ` = ${inputs.b}`
     ])
-};
+});
 
 
-const LT = {
+const LT = rowFilter({
   name: "Less Than",
-  columnSlots: [{
-    key: "val",
-    display: "Column",
-    test: n => !isNaN(n),
-  }],
-  userInputs: [{
-    key: "val",
-    display: "is less than",
-    test: n => !isNaN(n),
-  }],
-  fn: (us, cs) => parseFloat(cs.val) < parseFloat(us.val),
-  display: (us, cs, dataset) =>
+  slots: [
+    { type: "column",
+      key: "base",
+      display: "Column",
+      test: n => !isNaN(n),
+    },
+    { type: "user",
+      key: "target",
+      display: "is less than",
+      test: n => !isNaN(n),
+    }
+  ],
+  fn: inputs => parseFloat(inputs.base) < parseFloat(inputs.target),
+  display: (inputs, dataset) =>
     h('div', {}, [
-      h('span', {class: {"column-name": true}}, dataset.headers[cs.val]),
-      ` < ${us.val}`
+      h('span', {class: {"column-name": true}}, dataset.headers[inputs.base]),
+      ` < ${inputs.target}`
     ])
-};
+});
 
 
-const LTE = R.merge(LT, {
+const LTE = rowFilter({
   name: "Less Than or Equal",
-  fn: (us, cs) => parseFloat(cs.val) <= parseFloat(us.val),
-  userInputs: [{
-    key: "val",
-    display: "is less or equal to",
-    test: n => !isNaN(n),
-  }],
+  fn: inputs => parseFloat(inputs.base) <= parseFloat(inputs.target),
+  slots: [
+    LT.slots[0],
+    R.merge(LT.slots[1], {display: "is less than or equal to"})
+  ],
   display: (us, cs, dataset) =>
     h('div', {}, [
-      h('span', {class: {"column-name": true}}, dataset.headers[cs.val]),
+      h('span', {class: {"column-name": true}}, dataset.headers[inputs.base]),
       ` ≤ ${us.val}`
     ])
 });
 
 
-const GT = R.merge(LT, {
+const GT = rowFilter({
   name: "Greater Than",
-  fn: (us, cs) => parseFloat(cs.val) > parseFloat(us.val),
-  userInputs: [{
-    key: "val",
-    display: "is greater than",
-    test: n => !isNaN(n),
-  }],
+  fn: inputs => parseFloat(inputs.base) > parseFloat(inputs.target),
+  slots: [
+    LT.slots[0],
+    R.merge(LT.slots[1], {display: "is greater than"})
+  ],
   display: (us, cs, dataset) =>
     h('div', {}, [
-      h('span', {class: {"column-name": true}}, dataset.headers[cs.val]),
+      h('span', {class: {"column-name": true}}, dataset.headers[inputs.base]),
       ` > ${us.val}`
     ])
 });
 
 
-const GTE = R.mergeDeepRight(LT, {
+const GTE = rowFilter({
   name: "Greater Than or Equal",
-  fn: (us, cs) => parseFloat(cs.val) >= parseFloat(us.val),
-  userInputs: [{
-    key: "val",
-    display: "is greater or equal to",
-    test: n => !isNaN(n),
-  }],
+  fn: inputs => parseFloat(inputs.base) >= parseFloat(inputs.target),
+  slots: [
+    LT.slots[0],
+    R.merge(LT.slots[1], {display: "is greater than or equal to"})
+  ],
   display: (us, cs, dataset) =>
     h('div', {}, [
-      h('span', {class: {"column-name": true}}, dataset.headers[cs.val]),
+      h('span', {class: {"column-name": true}}, dataset.headers[inputs.base]),
       ` ≥ ${us.val}`
     ])
 });
 
 
-
-const defaultProp = R.curry((default_, prop, obj) =>
-  R.assoc(prop, R.propOr(default_, prop, obj), obj));
-
-const mergeDefaults = def => {
-  return R.evolve({
-    columnSlots: R.map(defaultProp('single', 'type'))
-  }, def)
-}
-
-module.exports = R.map(mergeDefaults, {
+module.exports = {
   Equality,
   LT,
   LTE,
   GT,
   GTE,
-})
+}

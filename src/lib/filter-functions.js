@@ -11,14 +11,11 @@ const FILTERS = require('./filters');
  * column in the records. Operands are provided by the user.
  */
 const apply = def('apply', {},
-  [$Filter, $.StrMap($.FiniteNumber), $.StrMap($.String), $Dataset, $Dataset],
-  (filter, columns, operands, dataset) => {
-    // StrMap Int -> Record -> StrMap String
-    const xCols = rec => R.map(i => R.nth(i, rec), columns);
-
+  [$Filter, $.StrMap($.Any), $Dataset, $Dataset],
+  (filter, inputs, dataset) => {
     return {
       headers: dataset.headers,
-      records: R.filter(r => filter.fn(operands, xCols(r)), dataset.records)
+      records: filter.fn(inputs, dataset.records)
     }
   }
 );

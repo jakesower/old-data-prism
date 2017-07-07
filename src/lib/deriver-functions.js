@@ -3,7 +3,7 @@ const R = require('ramda');
 const {$, def, $Deriver, $Dataset} = require('./sanctuary-types');
 const DSF = require('./dataset-functions');
 const DERIVERS = require('./derivers');
-
+const {populateSlots} = require('./operation-utils');
 
 /**
  * Apply a deriver across the dataset. Each deriver receives arguments of two
@@ -11,33 +11,21 @@ const DERIVERS = require('./derivers');
  * column in the records. Operands are provided by the user. A new dataset with
  * the derived column will be returned.
  *
- * Filter -> StrMap Int -> StrMap String -> Dataset -> Dataset
+ * Filter -> StrMap Integer/String -> Dataset -> Dataset
  */
 const apply = def('apply', {},
-  [$Deriver, $.StrMap($.Any), $.StrMap($.String), $Dataset, $Dataset],
-  (deriver, columns, operands, dataset) => {
-    const dsCols = DSF.columns(dataset);
-    const nthCol = n => dsCols[n];
-    const colVal = R.pipe(
-      nthCol,
-      R.prop('values')
-    );
-
-    const colVals = v =>
-      Array.isArray(v) ?
-        R.transpose(R.map(colVal, v)) :
-        colVal(v);
-
+  [$Deriver, $.StrMap($.Any), $Dataset, $Dataset],
+  (deriver, inputs, dataset) => {
     return DSF.appendColumn(dataset, {
-      header: `${deriver.name} ()`,
-      values: deriver.fn(operands, R.map(colVals, columns))
+      header: `${inputs.colName}`,
+      values: deriver.fn(populateSlots(deriver, inputs, dataset))
     })
   }
 );
 
 
 const applyOperation = R.curry((dataset, deriver) => {
-  return apply(DERIVERS[deriver.func], deriver.columns, deriver.userInputs, dataset);
+  return apply(DERIVERS[deriver.func], deriver.inputs, dataset);
 });
 
 

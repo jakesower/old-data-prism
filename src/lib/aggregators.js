@@ -7,8 +7,7 @@ const col = R.curry((dataset, cName) =>
 const Count = {
   name: "Count",
 
-  columnSlots: [],
-  userInputs: [],
+  slots: [],
 
   fn: (group, args) => group.length,
   // display: (us, cs, dataset) => `<span class="column-name">${dataset.headers[cs.date]}</span> with format ${us.format}`

@@ -21,18 +21,21 @@ const SAMPLE_DERIVERS = {
   FormattedDate: {
     name: "Formatted Date",
 
-    columnSlots: [{
-      key: "date",
-      display: "date",
-      type: "single",
-      test: x => !isNaN(Date.parse(x))
-    }],
-    userInputs: [{
-      display: "format",
-      key: "format"
-    }],
+    slots: [
+      { key: "date",
+        display: "date",
+        type: "column",
+        test: x => !isNaN(Date.parse(x))
+      },
+      {
+        display: "format",
+        key: "format",
+        test: R.complement(R.empty),
+        type: "user"
+      }
+    ],
 
-    fn: (us, cs) => R.map(d => moment(d).format(us.format), cs.date),
+    fn: inputs => R.map(d => moment(d).format(inputs.format), inputs.date),
     display: () => "derived"
   }
 }
@@ -47,7 +50,7 @@ const derivedValues = R.pipe(
 describe('derivers', function() {
   it('applies contrived derivers properly', function() {
     const expectations = [
-      { in: DF.apply(SAMPLE_DERIVERS.FormattedDate, {date: 2}, {format: "YYYY"})
+      { in: DF.apply(SAMPLE_DERIVERS.FormattedDate, {date: 2, format: "YYYY"})
       , out: ["1982", "1982", "2005", "2007"] },
     ];
 
@@ -65,24 +68,20 @@ describe('derivers', function() {
   describe('real derivers', function() {
     const testCases = {
       FormattedDate: [
-        { inCols: {date: 2}
-        , inUser: {format: "ddd"}
+        { input: {date: 2, format: "ddd"}
         , out: ["Fri", "Fri", "Tue", "Sat"] }
       ],
 
       Quantile: [
-        { inCols: {n: 3}
-        , inUser: {order: "2"}
+        { input: {n: 3, order: "2"}
         , out: ["1", "1", "2", "2"]},
 
-        { inCols: {n: 3}
-        , inUser: {order: "3"}
+        { input: {n: 3, order: "3"}
         , out: ["1", "1", "2", "3"]}
       ],
 
       Sum: [
-        { inCols: {addends: [1, 3]}
-        , inUser: {}
+        { input: {addends: [1, 3]}
         , out: ["3", "4", "8", "11"]
         }
       ]
@@ -96,8 +95,8 @@ describe('derivers', function() {
       const deriver = DERIVERS[deriverName];
 
       it('has working tests for the ' + deriver.name + ' deriver', function() {
-        R.forEach(function({inCols, inUser, out}) {
-          const result = DF.apply(deriver, inCols, inUser, careBears);
+        R.forEach(function({input, out}) {
+          const result = DF.apply(deriver, input, careBears);
 
           assert.deepEqual(derivedValues(result), out);
         }, expectations);

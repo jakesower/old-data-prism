@@ -23,8 +23,7 @@ const careBears = {
 const AGGREGATORS = {
   Count: {
     key: "Count",
-    columnSlots: [],
-    userInputs: [],
+    slots: [],
 
     fn: (group, us, cs) => group.length.toString()
   },

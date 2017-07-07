@@ -11,6 +11,7 @@ const opHandlers = {
   Grouping: GF.applyOperation
 }
 
+
 const applyOperation = (dataset, operation) => {
   return operation.enabled ?
     opHandlers[operation.type](dataset, operation) :
