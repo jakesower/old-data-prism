@@ -22,15 +22,17 @@ const Action = Type({
 const update = Action.caseOn({
   SetPage: R.assoc('page'),
   SetSorting: (col, dir, model) => {
-    console.log({col, dir, model})
     return R.assoc('sorting', {col, dir}, model)
   }
 });
 
 
 const view = (dataset, action$, model) => {
-  const {headers, records} = dataset;
+  const {headers} = dataset;
   const {page, sorting} = model;
+
+  const sorter = sorting.dir === 'asc' ? R.ascend : R.descend;
+  const records = R.sort(sorter(R.nth(sorting.col)), dataset.records);
 
   if(records.length === 0) return h('div', {}, '');
 
