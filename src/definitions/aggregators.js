@@ -1,4 +1,5 @@
 const R = require('ramda');
+const DataTypes = require('./data');
 
 const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName]));

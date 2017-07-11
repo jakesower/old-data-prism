@@ -13,9 +13,9 @@ const GroupingComponent = require('../../group-operation');
 
 const GridComponent = require('../../grid');
 
-const AGGREGATORS = require('../../../lib/aggregators');
-const DERIVERS = require('../../../lib/derivers');
-const FILTERS = require('../../../lib/filters');
+const AGGREGATORS = require('../../../definitions/aggregators');
+const DERIVERS = require('../../../definitions/derivers');
+const FILTERS = require('../../../definitions/filters');
 
 const itemPools = {
   Filter: FILTERS,

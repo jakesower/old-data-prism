@@ -92,7 +92,7 @@ describe('operation actions', function() {
 
     action$(Action.SetFunc(OPERATIONS, OPERATIONS.Equality.key));
     assert(S.equals(model$().editState.func, "Equality"));
-    assert.deepEqual(model$().editState.inputs, {val: null, val2: null})
+    assert.deepEqual(model$().editState.inputs, {val: '', val2: ''})
     assert.doesNotThrow(viewCheck(action$, model$()));
   });
 

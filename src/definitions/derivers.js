@@ -1,6 +1,5 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
-const Type = require('union-type');
 const moment = require('moment');
 
 const notEmpty = R.complement(R.empty);

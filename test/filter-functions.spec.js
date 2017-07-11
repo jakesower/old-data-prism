@@ -4,9 +4,7 @@ const R = require('ramda');
 
 const FF = require('../src/lib/filter-functions');
 const DSF = require('../src/lib/dataset-functions');
-const FILTERS = require('../src/lib/filters');
-
-// console.log(R.map(R.prop('columnSlots'), FILTERS))
+const FILTERS = require('../src/definitions/filters');
 
 
 const careBears = {

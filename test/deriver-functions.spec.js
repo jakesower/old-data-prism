@@ -5,7 +5,7 @@ const moment = require('moment');
 
 const DF = require('../src/lib/deriver-functions');
 const DSF = require('../src/lib/dataset-functions');
-const DERIVERS = require('../src/lib/derivers');
+const DERIVERS = require('../src/definitions/derivers');
 
 const careBears = {
   headers: ['Name', 'Lucky Number', 'Debut', 'Generation'],

@@ -2,7 +2,7 @@ const R = require('ramda');
 
 const {$, def, $Filter, $Dataset} = require('./sanctuary-types');
 const DF = require('./dataset-functions');
-const FILTERS = require('./filters');
+const FILTERS = require('../definitions/filters');
 
 
 /**

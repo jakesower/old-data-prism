@@ -2,7 +2,7 @@ const R = require('ramda');
 
 const {$, def, $Deriver, $Dataset} = require('./sanctuary-types');
 const DSF = require('./dataset-functions');
-const DERIVERS = require('./derivers');
+const DERIVERS = require('../definitions/derivers');
 const {populateSlots} = require('./operation-utils');
 
 /**

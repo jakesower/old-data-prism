@@ -5,7 +5,7 @@ const moment = require('moment');
 
 const GF = require('../src/lib/grouping-functions');
 const DSF = require('../src/lib/dataset-functions');
-const AGGREGATORS = require('../src/lib/aggregators');
+const AGGREGATORS = require('../src/definitions/aggregators');
 
 const careBears = {
   headers: ['Name', 'Belly Badge', 'Debut Year', 'Gender', 'Favorite Number'],

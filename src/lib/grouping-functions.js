@@ -2,7 +2,7 @@ const R = require('ramda');
 
 const {$, def, $Dataset, $Grouping} = require('./sanctuary-types');
 const DSF = require('./dataset-functions');
-const AGGREGATORS = require('./aggregators');
+const AGGREGATORS = require('../definitions/aggregators');
 
 
 const applyAggregator = R.curry((group, aggregator) => {
