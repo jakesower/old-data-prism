@@ -1,0 +1,39 @@
+{
+  "name": "data-prism",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {},
+  "author": "Jake Sower",
+  "license": "CC-BY-NC-4.0",
+  "scripts": {
+    "build": "browserify ./src/index.js -o dist/data-prism.js -t brfs -v",
+    "build-sass": "mkdirp dist/styles && node-sass -r assets/styles/main.scss --output-style=compressed -o dist/styles",
+    "watch-sass": "mkdirp dist/styles && node-sass -wr assets/styles/main.scss --output-style=compressed -o dist/styles",
+    "watch": "mkdirp dist && watchify ./src/index.js -o dist/data-prism.js -t brfs -v",
+    "test": "find ./test -name '*.spec.js' | CHECK_TYPES=true xargs mocha -R spec --reporter nyan"
+  },
+  "devDependencies": {
+    "brfs": "^1.4.3",
+    "browserify": "^13.1.1",
+    "chai": "^4.0.0",
+    "mkdirp": "^0.5.1",
+    "mocha": "^3.4.2",
+    "node-sass": "^4.5.0",
+    "watchify": "^3.7.0"
+  },
+  "dependencies": {
+    "csv-parse": "^1.2.0",
+    "csv-stringify": "^1.0.4",
+    "file-saver": "^1.3.3",
+    "flyd": "^0.2.4",
+    "flyd-forwardto": "^0.0.2",
+    "mathjs": "^3.13.3",
+    "moment": "^2.18.1",
+    "ramda": "^0.24.0",
+    "sanctuary": "^0.12.2",
+    "sanctuary-def": "^0.12.1",
+    "snabbdom": "^0.6.8",
+    "sum-type": "^0.11.1",
+    "union-type": "^0.4.0"
+  }
+}
