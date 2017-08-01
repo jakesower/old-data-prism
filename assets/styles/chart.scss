@@ -1,0 +1,38 @@
+.chart {
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+
+  rect {
+    &:nth-child(7n) {
+      fill: rgb(230, 159, 0);
+    }
+
+    &:nth-child(7n+1) {
+      fill: rgb(86, 180, 233);
+    }
+
+    &:nth-child(7n+2) {
+      fill: rgb(0, 158, 115);
+    }
+
+    &:nth-child(7n+3) {
+      fill: rgb(240, 228, 66);
+    }
+
+    &:nth-child(7n+4) {
+      fill: rgb(0, 114, 178);
+    }
+
+    &:nth-child(7n+5) {
+      fill: rgb(213, 94, 0);
+    }
+
+    &:nth-child(7n+6) {
+      fill: rgb(204, 121, 167);
+    }
+  }
+
+  text {
+    font-family: "Monaco";
+    text-anchor: middle;
+  }
+}

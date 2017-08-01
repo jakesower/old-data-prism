@@ -5,6 +5,8 @@ const Action = Type({
   StartUpload: [() => true],
   SetData: [Object],
   SetPage: [String],
+  SetChart: [Object],
+  SetMainDimensions: [Object],
   CreateFilter: [],
   CreateDeriver: [],
   CreateGrouping: [],

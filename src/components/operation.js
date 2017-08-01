@@ -96,40 +96,6 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
       ])
     ]
 
-
-    // // Item is the Filter/Deriver definition
-    // const columnVdom = item => {
-    //   return h('div', {class: {columns: true}},
-    //     S.map(colSlot => {
-    //       const potentialPicks = relevantColumns(dataset, colSlot.test);
-    //       const optionPair = col => ({val: col.index, display: col.header});
-    //       const fn = colSlot.type === 'single' ? 'single' : 'multi';
-    //       const clean = colSlot.type === 'single' ?
-    //         R.compose(Action.SetColumn(colSlot.key), parseInt) :
-    //         R.compose(Action.SetColumn(colSlot.key), R.map(parseInt), R.filter(x => x !== ''));
-    //
-    //       return ColumnSelector[fn](
-    //         S.map(optionPair, potentialPicks),
-    //         forwardTo(action$, clean),
-    //         columns[colSlot.key]
-    //       );
-    //     }, item.columnSlots)
-    //   );
-    // }
-    //
-    // const inputVdom = item =>
-    //   h('div', {class: {userInput: true}},
-    //     S.map(inputSlot =>
-    //       h('div', {}, [
-    //         h('span', {}, inputSlot.display),
-    //         h('input', {
-    //           attrs: {value: userInputs[inputSlot.key]},
-    //           on: {keyup: R.compose(action$, Action.SetUserInput(inputSlot.key), targetValue)}
-    //         }, [])
-    //       ])
-    //     , item.userInputs)
-    //   );
-
     const userSlot = slot =>
       h('div', {}, [
         h('span', {}, slot.display),

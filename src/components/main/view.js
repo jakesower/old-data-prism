@@ -5,7 +5,8 @@ const {Action} = require('./types');
 
 const pages = {
   UploadData: require('./pages/upload-data'),
-  PrepareData: require('./pages/prepare-data')
+  PrepareData: require('./pages/prepare-data'),
+  Chart: require('./pages/chart')
 };
 
 module.exports = R.curry(function(action$, model) {
@@ -19,11 +20,15 @@ module.exports = R.curry(function(action$, model) {
       h('a', {
         class: {selected: model.page === 'UploadData'},
         on: {click: [action$, Action.SetPage('UploadData')]}
-      }, 'Upload Data'),
+      }, 'Import'),
       h('a', {
         class: {selected: model.page === 'PrepareData'},
         on: {click: [action$, Action.SetPage('PrepareData')]}
-      }, 'Prepare Data')
+      }, 'Prepare'),
+      h('a', {
+        class: {selected: model.page === 'Chart'},
+        on: {click: [action$, Action.SetPage('Chart')]}
+      }, 'Chart')
     ]),
     pages[model.page](action$, model)
   ]);
