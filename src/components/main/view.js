@@ -28,7 +28,7 @@ module.exports = R.curry(function(action$, model) {
       h('a', {
         class: {selected: model.page === 'Chart'},
         on: {click: [action$, Action.SetPage('Chart')]}
-      }, 'Chart')
+      }, 'Chart'),
     ]),
     pages[model.page](action$, model)
   ]);

@@ -125,7 +125,7 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
         slot => slot.type === 'user' ? userSlot(slot) : columnSlot(slot),
         item.slots))
 
-    return h('div', {class: {"operation-form": true}},
+    return h('div', {class: {"operation-form": true, form: true}},
       S.maybe(R.flatten([selectorVdom, controlsVdom]),
         d => R.flatten([selectorVdom, inputVdom(d), controlsVdom]),
         itemDef)

@@ -104,6 +104,33 @@ const Sum = {
 }
 
 
+const Difference = {
+  name: "Difference",
+
+  slots: [
+    { key: "minuend",
+      display: "minuend",
+      test: n => !isNaN(n),
+      type: "column"
+    },
+    { key: "subtrahend",
+      display: "subtrahend",
+      test: n => !isNaN(n),
+      type: "column"
+    }
+  ],
+
+  fn: args => R.zipWith(R.subtract, args.minuend, args.subtrahend),
+  display: (args, dataset) =>
+    h('div', {}, [
+      col(dataset, args.minuend),
+      ' - ',
+      col(dataset, args.subtrahend),
+    ])
+
+}
+
+
 const colNameSlot = {
   type: "user",
   key: "colName",
@@ -120,5 +147,6 @@ const mergeDefaults = def => {
 module.exports = R.map(mergeDefaults, {
   FormattedDate,
   Quantile,
-  Sum
+  Sum,
+  Difference
 });
