@@ -106,7 +106,7 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
       ])
 
     const columnSlot = slot => {
-      const potentialPicks = relevantColumns(dataset, slot.test);
+      const potentialPicks = relevantColumns(dataset, slot.dataType);
       const optionPair = col => ({val: col.index, display: col.header});
       const fn = slot.type === 'column' ? 'single' : 'multi';
       const clean = slot.type === 'column' ?

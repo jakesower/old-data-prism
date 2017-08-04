@@ -3,6 +3,7 @@ const h = require('snabbdom/h').default;
 const moment = require('moment');
 
 const notEmpty = R.complement(R.empty);
+const dataTypes = require('./data');
 
 const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName]));
@@ -12,19 +13,19 @@ const FormattedDate = {
   name: "Formatted Date",
 
   slots: [
-    { type: "column",
+    { sourceType: "column",
+      dataType: dataTypes.Date,
       key: "date",
       display: "date",
-      test: x => !isNaN(Date.parse(x))
     },
-    { type: "user",
+    { sourceType: "user",
+      dataType: dataTypes.NonEmptyString,
       key: "format",
       display: "format",
-      test: notEmpty
     }
   ],
 
-  fn: (args) => R.map(d => moment(d).format(args.format), args.date),
+  fn: (args) => R.map(d => d.format(args.format), args.date),
   display: (args, dataset) => `<span class="column-name">${dataset.headers[args.date]}</span> with format ${args.format}`
 };
 
@@ -33,15 +34,15 @@ const Quantile = {
   name: "Quantile",
 
   slots: [
-    { type: "column",
+    { sourceType: "column",
+      dataType: dataTypes.FiniteNumber,
       key: "n",
       display: "n",
-      test: x => !isNaN(x)
     },
-    { type: "user",
+    { sourceType: "user",
+      dataType: dataTypes.FiniteNumber,
       key: "order",
       display: "order",
-      test: x => !isNaN(x)
     }
   ],
 
@@ -56,7 +57,7 @@ const Quantile = {
       R.range(0, parseInt(args.order)));
 
     return R.map(n =>
-      (R.findLastIndex(m => parseFloat(n) >= m, cutoffs) + 1).toString()
+      R.findLastIndex(m => parseFloat(n) >= m, cutoffs) + 1
       , args.n);
   },
   display: (args, dataset) => {
@@ -92,11 +93,11 @@ const Sum = {
   slots: [{
     key: "addends",
     display: "addends",
-    test: n => !isNaN(n),
-    type: "multicolumn"
+    dataType: dataTypes.FiniteNumber,
+    sourceType: "multicolumn"
   }],
 
-  fn: args => R.map(x => R.sum(x).toString(), args.addends),
+  fn: args => R.map(R.sum, args.addends),
   display: (args, dataset) => {
     const colSpans = R.map(col(dataset), args.addends);
     return h('div', {}, R.flatten([
@@ -113,13 +114,13 @@ const Difference = {
   slots: [
     { key: "minuend",
       display: "minuend",
-      test: n => !isNaN(n),
-      type: "column"
+      sourceType: "column",
+      dataType: dataTypes.FiniteNumber,
     },
     { key: "subtrahend",
       display: "subtrahend",
-      test: n => !isNaN(n),
-      type: "column"
+      dataType: dataTypes.FiniteNumber,
+      sourceType: "column"
     }
   ],
 
@@ -135,10 +136,10 @@ const Difference = {
 
 
 const colNameSlot = {
-  type: "user",
+  sourceType: "user",
   key: "colName",
   display: "Column Name",
-  test: notEmpty
+  dataType: dataTypes.NonEmptyString,
 };
 
 const mergeDefaults = def => {

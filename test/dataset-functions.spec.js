@@ -7,6 +7,7 @@ const DF = require('../src/lib/deriver-functions');
 const FF = require('../src/lib/filter-functions');
 const FILTERS = require('../src/definitions/filters');
 const DERIVERS = require('../src/definitions/derivers');
+const dataTypes = require('../src/definitions/data');
 
 const careBears = {
   headers: ['Name', 'Belly Badge', 'Debut', 'Debut Year'],
@@ -46,10 +47,10 @@ describe('dataset functions', function() {
 
   it('finds relevant columns based on column tests', function() {
     const expectations = [
-      { test: R.T
+      { test: dataTypes.String
       , expected: DSF.columns(careBears) },
 
-      { test: n => !isNaN(n)
+      { test: dataTypes.FiniteNumber
       , expected: DSF.columns(careBears).filter(c => c.header === 'Debut Year') }
     ];
 

@@ -1,6 +1,8 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 
+const dataTypes = require('./data');
+
 const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName]));
 
@@ -13,9 +15,9 @@ const rowFilter = def => {
   const argFns = R.pipe(
     R.map(s => ({[s.key]: s})),
     R.reduce(R.merge, {}),
-    R.map(({key, type}) =>
-      type === "user" ? args => R.always(args[key])
-                      : args => R.nth(args[key]))
+    R.map(({key, sourceType}) =>
+      sourceType === "user" ? args => R.always(args[key])
+                            : args => R.nth(args[key]))
   )(def.slots);
 
   return R.merge(def, {
@@ -35,15 +37,15 @@ const Equality = rowFilter({
   name: "Equality",
 
   slots: [
-    { type: "column",
+    { sourceType: "column",
+      dataType: dataTypes.String,
       key: "a",
-      display: "Column",
-      test: R.T
+      display: "Column"
     },
-    { type: "user",
+    { sourceType: "user",
+      dataType: dataTypes.String,
       key: "b",
-      display: "is equal to",
-      test: R.T
+      display: "is equal to"
     }
   ],
 
@@ -59,15 +61,15 @@ const Equality = rowFilter({
 const LT = rowFilter({
   name: "Less Than",
   slots: [
-    { type: "column",
+    { sourceType: "column",
+      dataType: dataTypes.FiniteNumber,
       key: "base",
       display: "Column",
-      test: n => !isNaN(n),
     },
-    { type: "user",
+    { sourceType: "user",
+      dataType: dataTypes.FiniteNumber,
       key: "target",
       display: "is less than",
-      test: n => !isNaN(n),
     }
   ],
   fn: inputs => parseFloat(inputs.base) < parseFloat(inputs.target),

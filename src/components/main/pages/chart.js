@@ -6,6 +6,7 @@ const {Action} = require('../types');
 const ColumnSelector = require('../../column-selector');
 const {applyOperations} = require('../../../lib/operation-functions');
 const {relevantColumns} = require('../../../lib/dataset-functions');
+const dataTypes = require('../../../definitions/data');
 
 module.exports = R.curry((action$, model) => {
   const { mainDimensions } = model;
@@ -35,7 +36,7 @@ module.exports = R.curry((action$, model) => {
           ColumnSelector.single(
             R.map(
               ({header, index}) => ({val: index, display: header}),
-              relevantColumns(dataset, n => !isNaN(n))
+              relevantColumns(dataset, dataTypes.FiniteNumber)
             ),
             forwardTo(action$, y => Action.SetChart(R.merge(model.chart, {yAxis: parseInt(y)}))),
             model.chart.yAxis

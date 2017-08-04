@@ -6,6 +6,7 @@ const moment = require('moment');
 const DF = require('../src/lib/deriver-functions');
 const DSF = require('../src/lib/dataset-functions');
 const DERIVERS = require('../src/definitions/derivers');
+const dataTypes = require('../src/definitions/data');
 
 const careBears = {
   headers: ['Name', 'Lucky Number', 'Debut', 'Generation'],
@@ -24,14 +25,13 @@ const SAMPLE_DERIVERS = {
     slots: [
       { key: "date",
         display: "date",
-        type: "column",
-        test: x => !isNaN(Date.parse(x))
+        sourceType: "column",
+        dataType: dataTypes.Date
       },
-      {
-        display: "format",
+      { display: "format",
         key: "format",
-        test: R.complement(R.empty),
-        type: "user"
+        dataType: dataTypes.NonEmptyString,
+        sourceType: "user"
       }
     ],
 
@@ -83,6 +83,12 @@ describe('derivers', function() {
       Sum: [
         { input: {addends: [1, 3]}
         , out: ["3", "4", "8", "11"]
+        }
+      ],
+
+      Difference: [
+        { input: {minuend: 1, subtrahend: 3}
+        , out: ["1", "2", "2", "3"]
         }
       ]
     };

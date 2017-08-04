@@ -5,6 +5,7 @@ const R = require('ramda');
 const FF = require('../src/lib/filter-functions');
 const DSF = require('../src/lib/dataset-functions');
 const FILTERS = require('../src/definitions/filters');
+const dataTypes = require('../src/definitions/data');
 
 
 const careBears = {
@@ -22,13 +23,13 @@ const SAMPLE_FILTERS = {
     name: "Equality",
     slots: [
       { key: "val",
-        test: R.T,
-        type: "column",
+        dataType: dataTypes.String,
+        sourceType: "user",
         display: "val"
       },
       { key: "val2",
-        test: R.T,
-        type: "user",
+        dataType: dataTypes.String,
+        sourceType: "user",
         display: "val"
       }
     ],
@@ -42,13 +43,13 @@ const SAMPLE_FILTERS = {
     slots: [
       { key: "val",
         display: "val",
-        test: n => !isNaN(n),
-        type: "column"
+        dataType: dataTypes.FiniteNumber,
+        sourceType: "column",
       },
-      { type: "user",
-        key: "val2",
+      { key: "val2",
         display: "val",
-        test: R.T
+        dataType: dataTypes.FiniteNumber,
+        sourceType: "user",
       }
     ],
     fn: (args, records) => R.filter(r => R.nth(args.val, r) < args.val2, records),
@@ -114,13 +115,13 @@ describe('filters', function() {
     };
 
     it('has a test for every existing filter ^_^', function() {
-      // assert.deepEqual(R.keys(testCases), R.keys(FILTERS));
+      assert.deepEqual(R.keys(testCases), R.keys(FILTERS));
     });
 
     R.forEachObjIndexed(function(expectations, filterName) {
       const filter = FILTERS[filterName];
 
-      it('has working tests for the ' + filter + ' filter', function() {
+      it('has working tests for the ' + filter.name + ' filter', function() {
         R.forEach(function({input, out}) {
           assert.deepEqual(FF.apply(filter, input, careBears).records, out);
         }, expectations);

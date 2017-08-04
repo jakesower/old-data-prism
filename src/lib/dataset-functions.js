@@ -1,6 +1,6 @@
 const R = require('ramda');
 const S = require('sanctuary');
-const {$, def, $Dataset, $Column} = require('./sanctuary-types');
+const {$, def, $Dataset, $Column, $DataType} = require('./sanctuary-types');
 
 const columns = def('columns', {},
   [$Dataset, $.Array($Column)],
@@ -28,8 +28,8 @@ const appendColumn = def('appendColumn', {},
  * out the names of columns that qualify
  */
 const relevantColumns = def('relevantColumns', {},
-  [$Dataset, $.Function([$.String, $.Boolean]), $.Array($Column)],
-  (dataset, test) => {
+  [$Dataset, $DataType, $.Array($Column)],
+  (dataset, {test}) => {
     return R.filter(x => R.all(test, x.values))(columns(dataset));
   }
 );
