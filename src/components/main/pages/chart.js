@@ -21,22 +21,26 @@ module.exports = R.curry((action$, model) => {
           model.chart.type
         ),
 
-        h('label', {attrs: {for: 'x-axis'}}, "Label"),
-        ColumnSelector.single(
-          R.addIndex(R.map)((h, idx) => ({val: idx, display: h}), dataset.headers),
-          forwardTo(action$, x => Action.SetChart(R.merge(model.chart, {xAxis: parseInt(x)}))),
-          model.chart.xAxis
-        ),
-
-        h('label', {attrs: {for: 'y-axis'}}, "Y-Axis"),
-        ColumnSelector.single(
-          R.map(
-            ({header, index}) => ({val: index, display: header}),
-            relevantColumns(dataset, n => !isNaN(n))
+        h('div', {}, [
+          h('label', {attrs: {for: 'x-axis'}}, "Label"),
+          ColumnSelector.single(
+            R.addIndex(R.map)((h, idx) => ({val: idx, display: h}), dataset.headers),
+            forwardTo(action$, x => Action.SetChart(R.merge(model.chart, {xAxis: parseInt(x)}))),
+            model.chart.xAxis
           ),
-          forwardTo(action$, y => Action.SetChart(R.merge(model.chart, {yAxis: parseInt(y)}))),
-          model.chart.yAxis
-        ),
+        ]),
+
+        h('div', {}, [
+          h('label', {attrs: {for: 'y-axis'}}, "Bar"),
+          ColumnSelector.single(
+            R.map(
+              ({header, index}) => ({val: index, display: header}),
+              relevantColumns(dataset, n => !isNaN(n))
+            ),
+            forwardTo(action$, y => Action.SetChart(R.merge(model.chart, {yAxis: parseInt(y)}))),
+            model.chart.yAxis
+          ),
+        ])
       ])
     ]),
 
@@ -68,22 +72,34 @@ function barChart(dataset, xAxis, yAxis, mainDimensions) {
 
   const numEntries = R.length(dataset.records);
   const padding = 10;
+  const textHeight = 20;
   const totalPadding = (padding * (numEntries + 2));
   const width = Math.floor((mainDimensions.width - totalPadding) / numEntries);
-  const barHeight = Math.floor(mainDimensions.height * 0.8);
+  const barHeight = Math.floor(mainDimensions.height - padding - textHeight*2);
   const scale = barHeight / yRange;
   const zero = Math.abs(barHeight - Math.round(scale * minValue * -1));
-  console.log({ maxValue, minValue, scale, zero, yRange })
 
-  // rules for zero rendering:
-  // 1. a bar must be represented wholly in either the positive or negative plane
-  // 2. a zero line of some sort must be rendered
-
-  const label = (val, idx) => {
+  const columnLabel = (val, idx) => {
     const attrs = {
-      x: Math.floor(((idx + 0.5) * (width + padding)) + padding),
-      y: barHeight + 20
+      x: Math.floor(((idx + 0.5) * (width + padding)) + padding*0.5),
+      y: barHeight + textHeight*2
     };
+
+    return h('text', {attrs}, val);
+  }
+
+  const dataLabel = (val, idx) => {
+    const height = Math.abs(Math.floor(val * scale));
+    const tinyOffset = (textHeight * 1.5) < height ? 0 : textHeight * 1.5;
+    const yPoint =
+      val < 0 ?
+        zero + height - textHeight*1.5 + tinyOffset :
+        zero - height - tinyOffset;
+
+    const attrs = {
+      x: Math.floor(((idx + 0.5) * (width + padding)) + padding*0.5),
+      y: yPoint + textHeight
+    }
 
     return h('text', {attrs}, val);
   }
@@ -98,7 +114,6 @@ function barChart(dataset, xAxis, yAxis, mainDimensions) {
       height,
       y: yPoint
     };
-    console.log(attrs)
 
     return h('rect', {attrs}, []);
   }
@@ -108,9 +123,14 @@ function barChart(dataset, xAxis, yAxis, mainDimensions) {
     R.map(R.pipe(R.nth(yAxis), parseFloat), dataset.records)
   );
 
-  const labels = R.addIndex(R.map)(
-    label,
+  const columnLabels = R.addIndex(R.map)(
+    columnLabel,
     R.map(R.nth(xAxis), dataset.records)
+  );
+
+  const dataLabels = R.addIndex(R.map)(
+    dataLabel,
+    R.map(R.nth(yAxis), dataset.records)
   );
 
   const zeroLine = h('line', {attrs: {x1: 0, x2: mainDimensions.width, y1: zero, y2: zero, class: "zero"}});
@@ -125,7 +145,8 @@ function barChart(dataset, xAxis, yAxis, mainDimensions) {
   }, R.flatten([
     [zeroLine],
     bars,
-    labels
+    columnLabels,
+    dataLabels
   ]))
 
 }
