@@ -27,6 +27,7 @@ const update = Action.caseOn({
 });
 
 
+// TODO: sort by type (numbers and not just strings)
 const view = (dataset, action$, model) => {
   const {headers} = dataset;
   const {page, sorting} = model;
@@ -51,12 +52,22 @@ const view = (dataset, action$, model) => {
   }
 
   const gridHeader = h('tr', {}, R.addIndex(R.map)((c, idx) => {
-    // TODO: Make the sorting actually apply to the data
-    const dir = (sorting.col === idx && sorting.dir === 'asc') ? 'desc' : 'asc';
+    const activeSort = sorting.col === idx ? sorting.dir : null;
+    const dir = activeSort === 'asc' ? 'desc' : 'asc';
 
     return h('th',
-      { on: {click: [action$, Action.SetSorting(idx, dir)]} },
-      c);
+      { on: {click: [action$, Action.SetSorting(idx, dir)]},
+        class: {
+          asc: activeSort === 'asc',
+          desc: activeSort === 'desc',
+          sortable: true
+        }
+      },
+      [ h('span', {attrs: {class: "header"}}, c),
+        h('span', {attrs: {class: "asc arrow"}}, '▲'),
+        h('span', {attrs: {class: "desc arrow"}}, '▼')
+      ]
+    );
   }, headers));
 
 

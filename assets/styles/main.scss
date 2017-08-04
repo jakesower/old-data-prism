@@ -169,7 +169,29 @@ div.main-container {
     font-weight: bold;
     text-align: left;
     padding: 0.4em;
-    text-size: 115%;
+
+    .header {
+      margin-right: 0.7em;
+    }
+
+    &.sortable {
+      cursor: pointer;
+    }
+
+    .arrow {
+      opacity: 0.3;
+      font-size: 80%;
+      padding-top: 3px;
+      float: right;
+    }
+
+    &.asc .asc {
+      opacity: 1;
+    }
+
+    &.desc .desc {
+      opacity: 1;
+    }
   }
 
   td {
