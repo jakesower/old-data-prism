@@ -46,7 +46,10 @@ const Quantile = {
   ],
 
   fn: (args) => {
-    const sorted = args.n.map(x => parseFloat(x)).sort();
+    const sorted = R.pipe(
+      R.map(parseFloat),
+      R.sort((a, b) => a - b)
+    )(args.n);
     const frac = parseFloat(sorted.length) / parseFloat(args.order);
     const cutoffs = R.map(
       n => R.nth(Math.ceil(n*frac), sorted),

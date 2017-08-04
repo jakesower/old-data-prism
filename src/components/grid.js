@@ -64,8 +64,8 @@ const view = (dataset, action$, model) => {
         }
       },
       [ h('span', {attrs: {class: "header"}}, c),
+        h('span', {attrs: {class: "desc arrow"}}, '▼'),
         h('span', {attrs: {class: "asc arrow"}}, '▲'),
-        h('span', {attrs: {class: "desc arrow"}}, '▼')
       ]
     );
   }, headers));
