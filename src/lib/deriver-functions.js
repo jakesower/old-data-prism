@@ -1,9 +1,9 @@
-const R = require('ramda');
+import R from 'ramda';
 
-const {$, def, $Deriver, $Dataset} = require('./sanctuary-types');
-const DSF = require('./dataset-functions');
-const DERIVERS = require('../definitions/derivers');
-const {populateSlots} = require('./operation-utils');
+import {$, def, $Deriver, $Dataset} from './sanctuary-types'
+import * as DSF from './dataset-functions';
+import * as DERIVERS from '../definitions/derivers';
+import { populateSlots } from './operation-utils';
 
 /**
  * Apply a deriver across the dataset. Each deriver receives arguments of two
@@ -31,7 +31,7 @@ const applyOperation = R.curry((dataset, deriver) => {
 });
 
 
-module.exports = {
+export {
   apply,
   applyOperation
 };

@@ -1,7 +1,7 @@
-const Type = require('union-type');
+import Type from 'union-type';
 
-const DF = require('./deriver-functions');
-const FF = require('./filter-functions');
+import * as DF from './deriver-functions';
+import * as FF from './filter-functions';
 
 const Operation = Type({
   Filter(Object),

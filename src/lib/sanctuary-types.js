@@ -1,6 +1,5 @@
-const $ = require('sanctuary-def');
-const R = require('ramda');
-
+import $ from 'sanctuary-def';
+import R from 'ramda';
 
 const $Column = $.RecordType({
   index: $.FiniteNumber,
@@ -81,8 +80,16 @@ const myTypes = {
 };
 
 const env = $.env.concat(R.values(myTypes));
+const def = $.create({checkTypes: !!process.env.CHECK_TYPES, env: env});
 
-module.exports = R.merge(myTypes, {
-  def: $.create({checkTypes: !!process.env.CHECK_TYPES, env: env}),
-  '$': $
-})
+export {
+  $Column,
+  $Dataset,
+  $Deriver,
+  $Filter,
+  $Aggregator,
+  $Grouping,
+  $DataType,
+  def,
+  $
+};

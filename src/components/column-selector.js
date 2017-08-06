@@ -1,8 +1,8 @@
-const R = require('ramda');
-const S = require('sanctuary');
-const h = require('snabbdom/h').default;
-const forwardTo = require('flyd-forwardto');
-const {targetValue} = require('../lib/utils');
+import R from 'ramda';
+import S from 'sanctuary';
+import { default as h  } from 'snabbdom/h';
+import forwardTo from 'flyd-forwardto';
+import { targetValue } from '../lib/utils';
 
 const withBlank = R.prepend(h('option', {}, ''));
 
@@ -38,4 +38,4 @@ const multi = R.curry(function(items, action$, selected) {
 });
 
 
-module.exports = { single, multi };
+export { single, multi };

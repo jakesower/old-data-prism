@@ -20,4 +20,4 @@ const debounce = function(func, wait) {
 }
 
 
-module.exports = {targetValue, debounce};
+export {targetValue, debounce};

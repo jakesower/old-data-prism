@@ -1,14 +1,14 @@
-const R = require('ramda');
-const h = require('snabbdom/h').default;
-const forwardTo = require('flyd-forwardto');
+import R from 'ramda';
+import { default as h  } from 'snabbdom/h';
+import forwardTo from 'flyd-forwardto';
 
-const {Action} = require('../types');
-const ColumnSelector = require('../../column-selector');
-const {applyOperations} = require('../../../lib/operation-functions');
-const {validColumns} = require('../../../lib/dataset-functions');
-const dataTypes = require('../../../definitions/data');
+import { Action } from '../types';
+import * as ColumnSelector from '../../column-selector';
+import { applyOperations } from '../../../lib/operation-functions';
+import { validColumns } from '../../../lib/dataset-functions';
+import dataTypes from '../../../definitions/data';
 
-module.exports = R.curry((action$, model) => {
+export default R.curry((action$, model) => {
   const { mainDimensions } = model;
   const dataset = applyOperations(model.dataset, model.operations);
 

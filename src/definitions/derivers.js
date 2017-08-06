@@ -1,9 +1,9 @@
-const R = require('ramda');
-const h = require('snabbdom/h').default;
-const moment = require('moment');
+import R from 'ramda';
+import { default as h  } from 'snabbdom/h';
+import moment from 'moment';
 
 const notEmpty = R.complement(R.empty);
-const dataTypes = require('./data');
+import dataTypes from './data';
 
 const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName]));
@@ -148,7 +148,7 @@ const mergeDefaults = def => {
   }, def)
 }
 
-module.exports = R.map(mergeDefaults, {
+export default R.map(mergeDefaults, {
   FormattedDate,
   Quantile,
   Sum,

@@ -1,5 +1,5 @@
-const R = require('ramda');
-const DataTypes = require('./data');
+import R from 'ramda';
+import DataTypes from './data';
 
 const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName]));
@@ -15,6 +15,6 @@ const Count = {
   display: () => 'Count'
 };
 
-module.exports = {
+export {
   Count,
 };

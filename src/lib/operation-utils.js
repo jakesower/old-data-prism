@@ -1,6 +1,6 @@
-const R = require('ramda');
+import R from 'ramda';
 
-const DSF = require('./dataset-functions');
+import * as DSF from './dataset-functions';
 
 // Operation -> Dataset -> StrMap (slotKey: value) -> StrMap (slotKey: value)
 // Populates the operation's slots with appropriate inputs. This includes type
@@ -33,6 +33,6 @@ const populateSlots = (operation, inputs, dataset) => {
   )(operation.slots)
 }
 
-module.exports = {
+export {
   populateSlots
 }

@@ -1,9 +1,9 @@
-const R = require('ramda');
-const h = require('snabbdom/h').default;
+import R from 'ramda';
+import { default as h  } from 'snabbdom/h';
 
-const Action = require('../types').Action;
+import { Action as Action  } from '../types';
 
-module.exports = R.curry((action$, model) => {
+export default R.curry((action$, model) => {
   return h('div', {class: {"main-container": true}}, [
     h('aside', {}, [
       h('p', {}, "Select a file to upload"),

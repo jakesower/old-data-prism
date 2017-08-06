@@ -1,16 +1,23 @@
-const S = require('sanctuary');
-const flyd = require('flyd');
-const stream = flyd.stream;
-const patch = require('snabbdom').init([
-  require('snabbdom/modules/class').default,
-  require('snabbdom/modules/eventlisteners').default,
-  require('snabbdom/modules/attributes').default,
-  require('snabbdom/modules/props').default,
-]);
-const { debounce } = require('./lib/utils');
+import S from 'sanctuary';
+import flyd from 'flyd';
+import snabCl from 'snabbdom/modules/class';
+import snabEv from 'snabbdom/modules/eventlisteners';
+import snabAt from 'snabbdom/modules/attributes';
+import snabPr from 'snabbdom/modules/props';
+import { init as snabPatch  } from 'snabbdom';
+import { debounce  } from './lib/utils';
 
-const Main = require('./components/main.js');
-const MainAction = require('./components/main/types').Action;
+import * as Main from './components/main.js';
+import { Action as MainAction  } from './components/main/types';
+
+const stream = flyd.stream;
+
+const patch = snabPatch([
+  snabCl,
+  snabEv,
+  snabAt,
+  snabPr,
+]);
 
 // State Functions
 const saveState = (model) => {

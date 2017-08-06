@@ -1,9 +1,9 @@
-const R = require('ramda');
-const S = require('sanctuary');
+import R from 'ramda';
+import S from 'sanctuary';
 
-const DF = require('./deriver-functions');
-const FF = require('./filter-functions');
-const GF = require('./grouping-functions');
+import * as DF from './deriver-functions';
+import * as FF from './filter-functions';
+import * as GF from './grouping-functions';
 
 const opHandlers = {
   Filter: FF.applyOperation,
@@ -28,7 +28,7 @@ const applyOperation = (dataset, operation) => {
 const applyOperations = R.reduce(applyOperation);
 
 
-module.exports = {
+export {
   applyOperation,
   applyOperations
 };

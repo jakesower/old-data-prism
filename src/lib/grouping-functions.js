@@ -1,8 +1,8 @@
-const R = require('ramda');
+import R from 'ramda';
 
-const {$, def, $Dataset, $Grouping} = require('./sanctuary-types');
-const DSF = require('./dataset-functions');
-const AGGREGATORS = require('../definitions/aggregators');
+import {$, def, $Dataset, $Grouping} from './sanctuary-types'
+import * as DSF from './dataset-functions';
+import * as AGGREGATORS from '../definitions/aggregators';
 
 
 const applyAggregator = R.curry((group, aggregator) => {
@@ -53,6 +53,6 @@ const applyOperation = R.curry((dataset, grouping) => {
 });
 
 
-module.exports = {
+export {
   applyOperation
 };

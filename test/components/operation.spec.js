@@ -1,11 +1,11 @@
-const assert = require('chai').assert;
-const OperationComponent = require('../../src/components/operation');
-const dataTypes = require('../../src/definitions/data');
+import { assert as assert  } from 'chai';
+import * as OperationComponent from '../../src/components/operation';
+import dataTypes from '../../src/definitions/data';
 
-const flyd = require('flyd');
+import flyd from 'flyd';
 const stream = flyd.stream;
-const S = require('sanctuary');
-const R = require('ramda');
+import S from 'sanctuary';
+import R from 'ramda';
 
 const careBears = {
   headers: ['Name', 'Belly Badge', 'Debut Year'],

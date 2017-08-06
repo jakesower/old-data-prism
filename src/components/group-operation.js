@@ -1,13 +1,13 @@
-const R = require('ramda');
-const S = require('sanctuary');
-const h = require('snabbdom/h').default;
-const forwardTo = require('flyd-forwardto');
-const Type = require('union-type');
-const ColumnSelector = require('./column-selector');
-const DSF = require('../lib/dataset-functions');
-const OperationAction = require('./operation/types').Action;
-const OperationComponent = require('./operation');
-const Action = require('./main/types').GroupAction;
+import R from 'ramda';
+import S from 'sanctuary';
+import { default as h  } from 'snabbdom/h';
+import forwardTo from 'flyd-forwardto';
+import Type from 'union-type';
+import * as ColumnSelector from './column-selector';
+import * as DSF from '../lib/dataset-functions';
+import { Action as OperationAction  } from './operation/types';
+import * as OperationComponent from './operation';
+import { GroupAction as Action  } from './main/types';
 
 
 const update = Action.caseOn({
@@ -158,4 +158,4 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
   }
 });
 
-module.exports = {Action, view, update, init};
+export {Action, view, update, init};

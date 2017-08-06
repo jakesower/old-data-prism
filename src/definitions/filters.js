@@ -1,7 +1,7 @@
-const R = require('ramda');
-const h = require('snabbdom/h').default;
+import R from 'ramda';
+import { default as h  } from 'snabbdom/h';
 
-const dataTypes = require('./data');
+import dataTypes from './data';
 
 const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName]));
@@ -126,7 +126,7 @@ const GTE = rowFilter({
 });
 
 
-module.exports = {
+export {
   Equality,
   LT,
   LTE,

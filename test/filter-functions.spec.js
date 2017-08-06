@@ -1,11 +1,11 @@
-const assert = require('chai').assert;
-const S = require('sanctuary');
-const R = require('ramda');
+import { assert as assert  } from 'chai';
+import S from 'sanctuary';
+import R from 'ramda';
 
-const FF = require('../src/lib/filter-functions');
-const DSF = require('../src/lib/dataset-functions');
-const FILTERS = require('../src/definitions/filters');
-const dataTypes = require('../src/definitions/data');
+import * as FF from '../src/lib/filter-functions';
+import * as DSF from '../src/lib/dataset-functions';
+import * as FILTERS from '../src/definitions/filters';
+import dataTypes from '../src/definitions/data';
 
 
 const careBears = {

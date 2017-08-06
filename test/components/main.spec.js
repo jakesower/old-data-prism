@@ -1,10 +1,10 @@
-const assert = require('chai').assert;
-const MainComponent = require('../../src/components/main');
+import { assert as assert  } from 'chai';
+import MainComponent from '../../src/components/main';
 
-const flyd = require('flyd');
+import flyd from 'flyd';
 const stream = flyd.stream;
-const S = require('sanctuary');
-const R = require('ramda');
+import S from 'sanctuary';
+import R from 'ramda';
 
 const careBears = {
   headers: ['Name', 'Belly Badge', 'Debut Year'],

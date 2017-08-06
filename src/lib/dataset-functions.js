@@ -1,6 +1,6 @@
-const R = require('ramda');
-const S = require('sanctuary');
-const {$, def, $Dataset, $Column, $DataType} = require('./sanctuary-types');
+import R from 'ramda';
+import S from 'sanctuary';
+import {$, def, $Dataset, $Column, $DataType} from './sanctuary-types'
 
 const columns = def('columns', {},
   [$Dataset, $.Array($Column)],
@@ -35,7 +35,7 @@ const validColumns = def('validColumns', {},
 );
 
 
-module.exports = {
+export {
   columns,
   validColumns,
   appendColumn

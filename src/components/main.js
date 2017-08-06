@@ -1,12 +1,12 @@
-const R = require('ramda');
-const S = require('sanctuary');
-const parseCsv = require('csv-parse');
+import R from 'ramda';
+import S from 'sanctuary';
+import parseCsv from 'csv-parse';
 
-const view = require('./main/view');
-const {Action, Operation} = require('./main/types');
-const OperationComponent = require('./operation');
-const GroupingComponent = require('./group-operation');
-const GridComponent = require('./grid');
+import view from './main/view';
+import { Action } from './main/types'
+import * as OperationComponent from './operation';
+import * as GroupingComponent from './group-operation';
+import * as GridComponent from './grid';
 
 const update = Action.caseOn({
   StartUpload: (action$, model) => { // keep action$ out of here TODO
@@ -109,4 +109,4 @@ function readCsv(action$, fileDomId) {
   r.readAsText(file);
 }
 
-module.exports = {Action, view, update, init};
+export {Action, view, update, init};

@@ -1,14 +1,14 @@
-const R = require('ramda');
-const S = require('sanctuary');
-const h = require('snabbdom/h').default;
-const Type = require('union-type');
-const forwardTo = require('flyd-forwardto');
+import R from 'ramda';
+import S from 'sanctuary';
+import { default as h  } from 'snabbdom/h';
+import Type from 'union-type';
+import forwardTo from 'flyd-forwardto';
 
-const {targetValue} = require('../lib/utils');
-const {validColumns} = require('../lib/dataset-functions');
-const ColumnSelector = require('./column-selector');
+import { targetValue } from '../lib/utils';
+import { validColumns } from '../lib/dataset-functions';
+import * as ColumnSelector from './column-selector';
 
-const {Action} = require('./operation/types');
+import { Action } from './operation/types';
 
 
 const update = Action.caseOn({
@@ -155,4 +155,4 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
   }
 });
 
-module.exports = {Action, view, update, init};
+export {Action, view, update, init};

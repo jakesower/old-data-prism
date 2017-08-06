@@ -1,21 +1,21 @@
-const R = require('ramda');
-const S = require('sanctuary');
-const h = require('snabbdom/h').default;
-const forwardTo = require('flyd-forwardto');
+import R from 'ramda';
+import S from 'sanctuary';
+import { default as h  } from 'snabbdom/h';
+import forwardTo from 'flyd-forwardto';
 
-const {Action, Operation, GroupAction} = require('../types');
-const {applyOperation, applyOperations} = require('../../../lib/operation-functions');
+import { Action, GroupAction } from '../types'
+import { applyOperation, applyOperations } from '../../../lib/operation-functions'
 
-const OperationAction = require('../../operation/types').Action;
-const OperationComponent = require('../../operation');
+import { Action as OperationAction  } from '../../operation/types';
+import * as OperationComponent from '../../operation';
 
-const GroupingComponent = require('../../group-operation');
+import * as GroupingComponent from '../../group-operation';
 
-const GridComponent = require('../../grid');
+import * as GridComponent from '../../grid';
 
-const AGGREGATORS = require('../../../definitions/aggregators');
-const DERIVERS = require('../../../definitions/derivers');
-const FILTERS = require('../../../definitions/filters');
+import * as AGGREGATORS from '../../../definitions/aggregators';
+import * as DERIVERS from '../../../definitions/derivers';
+import * as FILTERS from '../../../definitions/filters';
 
 const itemPools = {
   Filter: FILTERS,
@@ -57,7 +57,7 @@ const renderOperations = R.curry((action$, dataset, operations, idx) => {
 });
 
 
-module.exports = R.curry((action$, model) => {
+export default R.curry((action$, model) => {
   if (!model.dataset) return h('div', {}, '');
 
   return h('div', {class: {"main-container": true}}, R.flatten([

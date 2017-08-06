@@ -1,5 +1,5 @@
-const Type = require('union-type');
-const OperationTypes = require('../operation/types');
+import Type from 'union-type';
+import * as OperationTypes from '../operation/types';
 
 const Action = Type({
   StartUpload: [() => true],
@@ -30,4 +30,4 @@ const GroupAction = Type({
 })
 
 
-module.exports = {Action, GroupAction};
+export {Action, GroupAction};

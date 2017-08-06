@@ -1,9 +1,9 @@
-const R = require('ramda');
-const S = require('sanctuary');
-const h = require('snabbdom/h').default;
-const Type = require('union-type');
-const FileSaver = require('file-saver');
-const stringify = require('csv-stringify');
+import R from 'ramda';
+import S from 'sanctuary';
+import { default as h  } from 'snabbdom/h';
+import Type from 'union-type';
+import FileSaver from 'file-saver';
+import stringify from 'csv-stringify';
 
 const perPage = 25;
 
@@ -101,4 +101,4 @@ function exportCsv(dataset) {
 }
 
 
-module.exports = { Action, init, update, view };
+export { Action, init, update, view };

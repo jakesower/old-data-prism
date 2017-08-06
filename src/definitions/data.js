@@ -1,4 +1,4 @@
-const moment = require('moment');
+import moment from 'moment';
 
 // Mutable for ease of construction. It can be treated as immutable upon
 // export. See Rich Hickey quote. :)
@@ -30,4 +30,4 @@ Types.Date = {
 }
 
 
-module.exports = Object.freeze(Types);
+export default Object.freeze(Types);

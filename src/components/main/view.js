@@ -1,15 +1,18 @@
-const R = require('ramda');
-const h = require('snabbdom/h').default;
+import R from 'ramda';
+import { default as h  } from 'snabbdom/h';
 
-const {Action} = require('./types');
+import { Action  } from './types';
+import UploadData from './pages/upload-data';
+import PrepareData from './pages/prepare-data';
+import Chart from './pages/chart';
 
 const pages = {
-  UploadData: require('./pages/upload-data'),
-  PrepareData: require('./pages/prepare-data'),
-  Chart: require('./pages/chart')
+  UploadData,
+  PrepareData,
+  Chart,
 };
 
-module.exports = R.curry(function(action$, model) {
+export default R.curry(function(action$, model) {
   const pageClass = model.page.toLowerCase();
 
   return h('div', {

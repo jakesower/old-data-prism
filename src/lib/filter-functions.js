@@ -1,8 +1,8 @@
-const R = require('ramda');
+import R from 'ramda';
 
-const {$, def, $Filter, $Dataset} = require('./sanctuary-types');
-const DF = require('./dataset-functions');
-const FILTERS = require('../definitions/filters');
+import {$, def, $Filter, $Dataset} from './sanctuary-types'
+import * as DF from './dataset-functions';
+import * as FILTERS from '../definitions/filters';
 
 
 /**
@@ -26,7 +26,7 @@ const applyOperation = R.curry((dataset, filter) => {
 });
 
 
-module.exports = {
+export {
   apply,
   applyOperation
 };

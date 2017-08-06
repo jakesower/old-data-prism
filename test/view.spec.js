@@ -1,4 +1,4 @@
-const assert = require('chai').assert;
+import { assert as assert  } from 'chai';
 
 const careBears = {
   headers: ['Name', 'Belly Badge', 'Debut', 'Debut Year'],

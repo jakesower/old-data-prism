@@ -1,13 +1,13 @@
-const assert = require('chai').assert;
-const S = require('sanctuary');
-const R = require('ramda');
+import { assert as assert  } from 'chai';
+import S from 'sanctuary';
+import R from 'ramda';
 
-const DSF = require('../src/lib/dataset-functions');
-const DF = require('../src/lib/deriver-functions');
-const FF = require('../src/lib/filter-functions');
-const FILTERS = require('../src/definitions/filters');
-const DERIVERS = require('../src/definitions/derivers');
-const dataTypes = require('../src/definitions/data');
+import * as DSF from '../src/lib/dataset-functions';
+import * as DF from '../src/lib/deriver-functions';
+import * as FF from '../src/lib/filter-functions';
+import * as FILTERS from '../src/definitions/filters';
+import * as DERIVERS from '../src/definitions/derivers';
+import dataTypes from '../src/definitions/data';
 
 const careBears = {
   headers: ['Name', 'Belly Badge', 'Debut', 'Debut Year'],

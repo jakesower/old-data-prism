@@ -1,11 +1,11 @@
-const assert = require('chai').assert;
-const S = require('sanctuary');
-const R = require('ramda');
-const moment = require('moment');
+import { assert as assert  } from 'chai';
+import S from 'sanctuary';
+import R from 'ramda';
+import moment from 'moment';
 
-const GF = require('../src/lib/grouping-functions');
-const DSF = require('../src/lib/dataset-functions');
-const AGGREGATORS = require('../src/definitions/aggregators');
+import * as GF from '../src/lib/grouping-functions';
+import * as DSF from '../src/lib/dataset-functions';
+import * as AGGREGATORS from '../src/definitions/aggregators';
 
 const careBears = {
   headers: ['Name', 'Belly Badge', 'Debut Year', 'Gender', 'Favorite Number'],

@@ -1,4 +1,4 @@
-const Type = require('union-type');
+import Type from 'union-type';
 
 const Action = Type({
   StartEdit: [],
@@ -9,4 +9,4 @@ const Action = Type({
   Delete: []
 });
 
-module.exports = {Action}
+export {Action}
