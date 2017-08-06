@@ -9,7 +9,7 @@
     "build": "rollup -c",
     "build-sass": "mkdirp dist/styles && node-sass -r assets/styles/main.scss --output-style=compressed -o dist/styles",
     "watch-sass": "mkdirp dist/styles && node-sass -wr assets/styles/main.scss --output-style=compressed -o dist/styles",
-    "watch": "mkdirp dist && watchify ./src/index.js -o dist/data-prism.js -t brfs -v",
+    "watch": "rollup -c -w",
     "test": "find ./test -name '*.spec.js' | CHECK_TYPES=true xargs mocha -R spec --reporter nyan"
   },
   "devDependencies": {
@@ -31,10 +31,12 @@
     "moment": "^2.18.1",
     "ramda": "^0.24.0",
     "rollup": "^0.45.2",
+    "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-commonjs": "^8.1.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.1.0",
     "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-watch": "^4.3.1",
     "sanctuary": "^0.12.2",
     "sanctuary-def": "^0.12.1",
     "snabbdom": "^0.6.8",
