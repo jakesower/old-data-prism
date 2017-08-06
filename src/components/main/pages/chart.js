@@ -5,7 +5,7 @@ const forwardTo = require('flyd-forwardto');
 const {Action} = require('../types');
 const ColumnSelector = require('../../column-selector');
 const {applyOperations} = require('../../../lib/operation-functions');
-const {relevantColumns} = require('../../../lib/dataset-functions');
+const {validColumns} = require('../../../lib/dataset-functions');
 const dataTypes = require('../../../definitions/data');
 
 module.exports = R.curry((action$, model) => {
@@ -36,7 +36,7 @@ module.exports = R.curry((action$, model) => {
           ColumnSelector.single(
             R.map(
               ({header, index}) => ({val: index, display: header}),
-              relevantColumns(dataset, dataTypes.FiniteNumber)
+              validColumns(dataset, dataTypes.FiniteNumber)
             ),
             forwardTo(action$, y => Action.SetChart(R.merge(model.chart, {yAxis: parseInt(y)}))),
             model.chart.yAxis

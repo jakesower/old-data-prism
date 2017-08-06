@@ -56,7 +56,7 @@ describe('dataset functions', function() {
 
     R.forEach(
       function({test, expected}) {
-        assert.deepEqual(DSF.relevantColumns(careBears, test), expected);
+        assert.deepEqual(DSF.validColumns(careBears, test), expected);
       },
       expectations
     );
