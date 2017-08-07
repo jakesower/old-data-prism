@@ -130,12 +130,13 @@ describe('operation actions', function() {
   it('updates aggregators', function() {
     const action$ = stream();
     const model$ = Model$(action$, {});
-    const act = OperationComponent.Action.SetFunc(AGGREGATORS, 'Count');
+    const act = OperationComponent.Action.SetDefinition(AGGREGATORS.Count);
 
     action$(Action.CreateAggregator);
     action$(Action.SetAggregator(0)(act));
+    // console.log(model$().editState.aggregators)
 
-    assert.equal(model$().editState.aggregators[0].editState.func, 'Count');
+    assert.equal(model$().editState.aggregators[0].editState.definition.name, 'Count');
     assert.doesNotThrow(viewCheck(action$, model$()));
   });
 

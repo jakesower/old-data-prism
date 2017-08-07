@@ -89,12 +89,14 @@ describe('operation actions', function() {
   });
 
 
-  it('can set a function', function() {
+  it('can set a definition', function() {
     const action$ = stream();
     const model$ = Model$(action$, {});
 
-    action$(Action.SetFunc(OPERATIONS, OPERATIONS.Equality.key));
-    assert(S.equals(model$().editState.func, "Equality"));
+    action$(Action.SetDefinition(OPERATIONS.Equality));
+    console.log(model$())
+
+    assert.equal(model$().editState.definition.name, 'Equality');
     assert.deepEqual(model$().editState.inputs, {val: '', val2: ''})
     assert.doesNotThrow(viewCheck(action$, model$()));
   });
@@ -104,14 +106,15 @@ describe('operation actions', function() {
     const action$ = stream();
     const model$ = Model$(action$, {
       editState: {
-        func: "Equality",
+        definition: OPERATIONS.Equality,
         inputs: {val: 0, val2: "Tenderheart Bear"}
       }
     });
 
     action$(Action.Save);
 
-    assert.equal(model$().func, "Equality");
+    console.log('The issue is likely that `key` should be changed to `name`')
+    assert.equal(model$().definition.name, "Equality");
     assert.deepEqual(model$().inputs, {val: 0, val2: "Tenderheart Bear"});
     assert.equal(model$().enabled, true);
     assert.equal(model$().editing, false);
@@ -122,7 +125,7 @@ describe('operation actions', function() {
   it('updates single column inputs', function() {
     const action$ = stream();
     const model$ = Model$(action$, {
-      editState: {func: "Equality", inputs: {val: null}}
+      editState: {definition: OPERATIONS.Equality, inputs: {val: null}}
     });
 
     action$(Action.SetInput("val", 1));
@@ -136,7 +139,7 @@ describe('operation actions', function() {
     const action$ = stream();
     const model$ = Model$(action$, {});
 
-    action$(Action.SetFunc(OPERATIONS, OPERATIONS.Sum.key));
+    action$(Action.SetDefinition(OPERATIONS.Sum));
     action$(Action.SetInput('addends', [0, 3]));
 
     assert.deepEqual(model$().editState.inputs.addends, [0, 3]);
@@ -147,7 +150,7 @@ describe('operation actions', function() {
   it('updates text input', function() {
     const action$ = stream();
     const model$ = Model$(action$, {
-      editState: {func: "Equality", inputs: {val: null}}
+      editState: {definition: OPERATIONS.Equality, inputs: {val: null}}
     });
 
     action$(Action.SetInput("val", "moo"));
@@ -160,7 +163,7 @@ describe('operation actions', function() {
   it('stops editing on cancel', function() {
     const action$ = stream();
     const model$ = Model$(action$, {
-      func: OPERATIONS.Equality.key,
+      definition: OPERATIONS.Equality,
       slots: {column: 0, val: "Messy Bear"}
     });
 

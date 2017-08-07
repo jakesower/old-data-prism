@@ -23,20 +23,25 @@ const appendColumn = def('appendColumn', {},
   })
 );
 
+
+const validColumn = def('validColumn', {},
+  [$DataType, $Column, $.Boolean],
+  ({test}, {values}) => R.all(test, values)
+);
+
 /**
  * Runs the columnSlot's predicates over the columns in the dataset, picking
  * out the names of columns that qualify
  */
 const validColumns = def('validColumns', {},
   [$Dataset, $DataType, $.Array($Column)],
-  (dataset, {test}) => {
-    return R.filter(x => R.all(test, x.values))(columns(dataset));
-  }
+  (dataset, dataType) => R.filter(validColumn(dataType), columns(dataset))
 );
 
 
 module.exports = {
   columns,
+  validColumn,
   validColumns,
   appendColumn
 };

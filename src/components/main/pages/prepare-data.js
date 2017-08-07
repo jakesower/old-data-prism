@@ -4,7 +4,7 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 
 const {Action, Operation, GroupAction} = require('../types');
-const {applyOperation, applyOperations} = require('../../../lib/operation-functions');
+const {applyOperation, applyOperations, operationsValid} = require('../../../lib/operation-functions');
 
 const OperationAction = require('../../operation/types').Action;
 const OperationComponent = require('../../operation');
@@ -70,11 +70,13 @@ module.exports = R.curry((action$, model) => {
     ])),
 
     h('main', {}, [
-      GridComponent.view(
-        applyOperations(model.dataset, model.operations),
-        forwardTo(action$, Action.SetGridState('prepareData')),
-        model.grids.prepareData
-      )
+      operationsValid(model.dataset, model.operations) ?
+        GridComponent.view(
+          applyOperations(model.dataset, model.operations),
+          forwardTo(action$, Action.SetGridState('prepareData')),
+          model.grids.prepareData
+        ) :
+        h('div', {}, 'Moo')
     ])
   ]))
 });

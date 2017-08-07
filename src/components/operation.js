@@ -13,16 +13,16 @@ const {Action} = require('./operation/types');
 
 const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
-  SetFunc: (operations, func, model) => {
-    const slots = operations[func].slots;
+  SetDefinition: (definition, model) => {
+    const slots = definition.slots;
     const cols = R.pipe(
       R.map(s => ({[s.key]: s.sourceType === 'multicolumn' ? [] : ''})),
       R.reduce(R.merge, {})
     )(slots);
 
     return R.pipe(
-      R.set(R.lensPath(['editState', 'func']), func),
-      R.set(R.lensPath(['editState', 'inputs']), cols)
+      R.set(R.lensPath(['editState', 'inputs']), cols),
+      R.set(R.lensPath(['editState', 'definition']), definition)
     )(model);
   },
   SetInput: (key, val, model) => R.mergeDeepRight(model, {
@@ -31,8 +31,8 @@ const update = Action.caseOn({
   Cancel: R.assoc('editing', false),
   Save: model =>
     R.merge(model, {
-      func: model.editState.func,
       inputs: model.editState.inputs,
+      definition: model.editState.definition,
       editing: false,
       enabled: true
     }),
@@ -46,11 +46,11 @@ const init = (type, id) => ({
   enabled: false,
   editing: true,
 
-  func: null,
+  definition: null,
   inputs: {},
 
   editState: {
-    func: null,
+    definition: null,
     inputs: {}
   }
 });
@@ -60,12 +60,12 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
   return model.editing ? edit(action$, model) : show(action$, model);
 
   function edit(action$, model) {
-    const {func, inputs} = model.editState;
-    const itemDef = func ? S.Just(itemPool[func]) : S.Nothing;
+    const {definition, inputs} = model.editState;
+    const itemDef = definition ? S.Just(definition) : S.Nothing;
 
     const functions = S.map(itemName =>
       h('option',
-        {attrs: {selected: (itemName === func), value: itemName}},
+        {attrs: {selected: (itemName === itemDef.name), value: itemName}},
         itemName),
       S.keys(itemPool).sort());
 
@@ -77,7 +77,11 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
       h('div', {}, [
         h('span', {}, "Function"),
         h('select', {
-            on: {change: R.compose(action$, Action.SetFunc(itemPool), targetValue)}
+            on: {change: R.compose(
+              action$,
+              Action.SetDefinition,
+              R.prop(itemPool),
+              targetValue)}
           },
           R.prepend(h('option', {}, ''), functions)),
       ])
@@ -87,8 +91,8 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
       h('div', {class: {controls: true}}, [
         h('button', {
           on: {click: [action$, Action.Save]},
-          attrs: {disabled: !func}
-        }, model.func ? 'Update' : 'Apply'),
+          attrs: {disabled: !itemDef.name}
+        }, model.definition ? 'Update' : 'Apply'),
 
         h('button', {
           on: {click: [action$, model.enabled ? Action.Cancel : Action.Delete]}

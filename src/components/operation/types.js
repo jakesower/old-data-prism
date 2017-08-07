@@ -2,7 +2,7 @@ const Type = require('union-type');
 
 const Action = Type({
   StartEdit: [],
-  SetFunc: [Object, String],
+  SetDefinition: [Object],
   SetInput: [String, () => true],
   Cancel: [],
   Save: [],

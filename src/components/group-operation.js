@@ -82,8 +82,7 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
     const controlsVdom = h('div', {class: {controls: true}}, [
       h('button', {
         on: {click: [action$, Action.Save]},
-        // attrs: {disabled: !func}
-      }, model.func ? 'Update' : 'Apply'),
+      }, 'Apply'),
 
       h('button', {
         on: {click: [action$, model.enabled ? Action.Cancel : Action.Delete]}
@@ -138,7 +137,7 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
         {class: {definition: true, "operation-grouping": true}},
         R.prepend(
           h('div', {}, S.map(c => dataset.headers[c], model.columns).join(', ')),
-          S.map(a => h('div', {}, aggregatorPool[a.func].display({}, dataset)), model.aggregators)
+          S.map(a => h('div', {}, a.definition.display({}, dataset)), model.aggregators)
         )
       ),
 
