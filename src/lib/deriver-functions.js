@@ -18,7 +18,9 @@ const apply = def('apply', {},
   (deriver, inputs, dataset) => {
     return DSF.appendColumn(dataset, {
       header: `${inputs.colName}`,
-      values: deriver.fn(populateSlots(deriver, inputs, dataset))
+      values: deriver
+        .fn(populateSlots(deriver, inputs, dataset))
+        .map(x => x.toString())
     })
   }
 );

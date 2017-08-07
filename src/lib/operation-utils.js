@@ -3,20 +3,28 @@ const R = require('ramda');
 const DSF = require('./dataset-functions');
 
 // Operation -> Dataset -> StrMap (slotKey: value) -> StrMap (slotKey: value)
-// Populates the operation's slots with appropriate inputs
+// Populates the operation's slots with appropriate inputs. This includes type
+// casting.
 const populateSlots = (operation, inputs, dataset) => {
   const dsCols = DSF.columns(dataset);
   const nthCol = n => dsCols[n];
-  const colVal = R.pipe(nthCol, R.prop('values'));
-  const colVals = v => R.transpose(R.map(colVal, v));
+  const colVal = R.curry((dataType, colIdx) =>
+    R.pipe(
+      nthCol,
+      R.prop('values'),
+      R.map(dataType.cast)
+    )(colIdx)
+  );
 
-  const extractSlot = ({type, key}) =>
-    type === 'user'   ? inputs[key] :
-    type === 'column' ? colVal(inputs[key])
-                      : colVals(inputs[key]);
+  const colVals = (dataType, v) => R.transpose(R.map(colVal(dataType), v));
+
+  const extractSlot = ({sourceType, dataType, key}) =>
+    sourceType === 'user'   ? inputs[key] :
+    sourceType === 'column' ? colVal(dataType, inputs[key])
+        /* 'multicolumn' */ : colVals(dataType, inputs[key]);
 
   return R.pipe(
-    // List Slot -> List StrMap Slot (keyed by key)
+    // List Slot -> List StrMap Slot (keyed by slot key)
     R.map(s => ({[s.key]: s})),
     // List StrMap Slot -> StrMap Slot
     R.reduce(R.merge, {}),

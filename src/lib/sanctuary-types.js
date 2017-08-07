@@ -15,13 +15,19 @@ const $Dataset = $.RecordType({
 });
 
 
+const $DataType = $.RecordType({
+  test: $.Function([$.String, $.Boolean]),
+  cast: $.Function([$.String, $.Any])
+});
+
+
 const $Filter = $.RecordType({
   name: $.String,
   slots: $.Array($.RecordType({
     key: $.NonEmpty($.String),
-    type: $.EnumType('', '', ['column', 'user', 'multicolumn']),
-    display: $.NonEmpty($.String),
-    test: $.Function([$.String, $.Boolean])
+    sourceType: $.EnumType('', '', ['column', 'user', 'multicolumn']),
+    dataType: $DataType,
+    display: $.NonEmpty($.String)
   })),
   fn: $.Function([$.Object, $.Object, $.Boolean]),
   display: $.Function([$.Object, $Dataset, $.Any])
@@ -32,9 +38,9 @@ const $Deriver = $.RecordType({
   name: $.String,
   slots: $.Array($.RecordType({
     key: $.NonEmpty($.String),
+    sourceType: $.EnumType('', '', ['column', 'user', 'multicolumn']),
+    dataType: $DataType,
     display: $.NonEmpty($.String),
-    type: $.EnumType('', '', ['column', 'user', 'multicolumn']),
-    test: $.Function([$.String, $.Boolean])
   })),
   fn: $.Function([$.Object, $.Object, $.Boolean]),
   display: $.Function([$.Object, $Dataset, $.Any])
@@ -46,8 +52,8 @@ const $Aggregator = $.RecordType({
   columnSlots: $.Array($.RecordType({
     key: $.NonEmpty($.String),
     display: $.NonEmpty($.String),
-    type: $.EnumType('', '', ['single', 'list']),
-    test: $.Function([$.String, $.Boolean])
+    sourceType: $.EnumType('', '', ['single', 'list']),
+    dataType: $DataType
   })),
   userInputs: $.Array($.RecordType({
     key: $.NonEmpty($.String),
@@ -71,6 +77,7 @@ const myTypes = {
   $Filter,
   $Aggregator,
   $Grouping,
+  $DataType,
 };
 
 const env = $.env.concat(R.values(myTypes));

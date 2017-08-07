@@ -1,5 +1,6 @@
 const assert = require('chai').assert;
 const OperationComponent = require('../../src/components/operation');
+const dataTypes = require('../../src/definitions/data');
 
 const flyd = require('flyd');
 const stream = flyd.stream;
@@ -21,11 +22,14 @@ const OPERATIONS = {
     key: "Equality",
     slots: [
       { key: "val",
-        test: R.T,
-        type: 'column'
+        display: 'val',
+        dataType: dataTypes.String,
+        sourceType: 'column'
       },
       { key: "val2",
-        type: 'user'
+        display: 'val',
+        dataType: dataTypes.String,
+        sourceType: 'user'
       }
     ],
     fn: inputs => inputs.val === inputs.val2,
@@ -36,13 +40,12 @@ const OPERATIONS = {
     key: "Less Than",
     slots: [
       { key: "val",
-        type: 'column',
-        test: n => !isNaN(n),
+        sourceType: 'column',
+        dataType: dataTypes.FiniteNumber,
       },
-      {
-        key: "val",
-        type: 'user',
-        test: n => !isNaN(n),
+      { key: "val",
+        sourceType: 'user',
+        dataType: dataTypes.FiniteNumber,
       }
     ],
     fn: inputs => parseFloat(inputs.val) < parseFloat(inputs.val2),
@@ -53,8 +56,8 @@ const OPERATIONS = {
     key: "Sum",
     slots: [{
       key: "addends",
-      test: R.T,
-      type: 'multicolumn'
+      sourceType: 'multicolumn',
+      dataType: dataTypes.FiniteNumber,
     }],
     fn: inputs => R.sum(inputs.addends),
     display: () => "oh hai"

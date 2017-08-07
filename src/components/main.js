@@ -38,6 +38,9 @@ const update = Action.caseOn({
   SetGridState: (gridId, action, model) =>
     R.over(R.lensPath(['grids', gridId]), GridComponent.update(action), model),
 
+  SetMainDimensions: R.assoc('mainDimensions'),
+  SetChart: R.assoc('chart'),
+
   CreateFilter: model => {
     return R.evolve({
       uid: S.inc,
@@ -73,6 +76,12 @@ const firstInit = {
   grids: {
     prepareData: GridComponent.init(),
   },
+  mainDimensions: {}, // used for chart sizing, should depend on DOM externally
+  chart: {
+    type: 'bar',
+    xAxis: null,
+    yAxis: null
+  }
 };
 
 const init = state => state || firstInit;
