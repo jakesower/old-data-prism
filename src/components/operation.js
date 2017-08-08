@@ -141,7 +141,7 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
     return h('div', {class: {operation: true}}, [
       h('div', {
         class: {definition: true, ["operation-"+model.type.toLowerCase()]: true},
-      }, itemPool[model.func].display(model.inputs, dataset)),
+      }, model.definition.display(model.inputs, dataset)),
 
       h('div', {class: {controls: true}}, [
         h('span', {

@@ -22,14 +22,14 @@ const careBears = {
 
 const AGGREGATORS = {
   Count: {
-    key: "Count",
+    name: "Count",
     slots: [],
 
     fn: (group, us, cs) => group.length.toString()
   },
 
   Maximum: {
-    key: "Maximum",
+    name: "Maximum",
     columnsSlots: [{
       key: "val",
       display: "Column",
@@ -134,7 +134,6 @@ describe('operation actions', function() {
 
     action$(Action.CreateAggregator);
     action$(Action.SetAggregator(0)(act));
-    // console.log(model$().editState.aggregators)
 
     assert.equal(model$().editState.aggregators[0].editState.definition.name, 'Count');
     assert.doesNotThrow(viewCheck(action$, model$()));

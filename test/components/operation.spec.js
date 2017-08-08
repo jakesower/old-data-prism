@@ -19,7 +19,7 @@ const careBears = {
 
 const OPERATIONS = {
   Equality: {
-    key: "Equality",
+    name: "Equality",
     slots: [
       { key: "val",
         display: 'val',
@@ -37,7 +37,7 @@ const OPERATIONS = {
   },
 
   LT: {
-    key: "Less Than",
+    name: "Less Than",
     slots: [
       { key: "val",
         sourceType: 'column',
@@ -53,7 +53,7 @@ const OPERATIONS = {
   },
 
   Sum: {
-    key: "Sum",
+    name: "Sum",
     slots: [{
       key: "addends",
       sourceType: 'multicolumn',
@@ -94,7 +94,6 @@ describe('operation actions', function() {
     const model$ = Model$(action$, {});
 
     action$(Action.SetDefinition(OPERATIONS.Equality));
-    console.log(model$())
 
     assert.equal(model$().editState.definition.name, 'Equality');
     assert.deepEqual(model$().editState.inputs, {val: '', val2: ''})
@@ -113,7 +112,6 @@ describe('operation actions', function() {
 
     action$(Action.Save);
 
-    console.log('The issue is likely that `key` should be changed to `name`')
     assert.equal(model$().definition.name, "Equality");
     assert.deepEqual(model$().inputs, {val: 0, val2: "Tenderheart Bear"});
     assert.equal(model$().enabled, true);
