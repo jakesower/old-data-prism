@@ -4,9 +4,19 @@ const moment = require('moment');
 
 const notEmpty = R.complement(R.empty);
 const dataTypes = require('./data');
+const {appendColumn} = require('../lib/dataset-functions');
 
+const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
 const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName]));
+
+const makeDeriver = fn =>
+  (dataset, inputs) => {
+    return appendColumn(dataset, {
+      header: inputs.colName,
+      values: fn(inputs)
+    })
+  }
 
 
 const FormattedDate = {
@@ -148,9 +158,9 @@ const mergeDefaults = def => {
   }, def)
 }
 
-module.exports = R.map(mergeDefaults, {
+module.exports = withKeys(R.map(mergeDefaults, {
   FormattedDate,
   Quantile,
   Sum,
   Difference
-});
+}));

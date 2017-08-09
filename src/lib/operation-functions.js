@@ -5,6 +5,8 @@ const DF = require('./deriver-functions');
 const FF = require('./filter-functions');
 const GF = require('./grouping-functions');
 
+const {populateSlots} = require('../lib/operation-utils');
+
 const typeFunctions = {
   Filter: FF,
   Deriver: DF,
@@ -20,9 +22,10 @@ const definitionFor = operation =>
 
 
 const applyOperation = (dataset, operation) => {
-  return operation.enabled ?
-    typeFunctions[operation.type].applyOperation(dataset, operation) :
-    dataset;
+  if (!operation.enabled) return dataset;
+  
+  const inputs = populateSlots(operation.definition, operation.inputs, dataset);
+  return operation.definition.fn(dataset, inputs);
 }
 
 /**
@@ -47,15 +50,18 @@ const slotValid = R.curry((dataset, input, slot) => {
 
 
 const operationValid = R.curry((dataset, operation) => {
-  const opDef = definitionFor(operation);
+  return true;
+  const opDef = operation.definition;
 
   return R.all(slotValid(dataset, input), opDef.slots)
 });
 
 
 const operationsValid = (dataset, operations) =>
-  R.all(operationValid(dataset), operations);
-
+  R.pipe(
+    R.filter(R.prop('enabled')),
+    R.all(operationValid(dataset))
+  )(operations);
 
 module.exports = {
   applyOperation,

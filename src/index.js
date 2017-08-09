@@ -1,3 +1,4 @@
+const R = require('ramda');
 const S = require('sanctuary');
 const flyd = require('flyd');
 const stream = flyd.stream;
@@ -12,15 +13,32 @@ const { debounce } = require('./lib/utils');
 const Main = require('./components/main.js');
 const MainAction = require('./components/main/types').Action;
 
+const Operations = require('./definitions/operations');
+
 // State Functions
 const saveState = (model) => {
   localStorage.setItem('state', JSON.stringify(model));
 };
 
+const rehydrateOperations = (model) => {
+  const operations = R.map(item => {
+    const pool = Operations[item.type];
+    const key = R.path(['definition', 'key'], item);
+    const eKey = R.path(['editState', 'definition', 'key'], item);
+
+    return R.reduce(R.mergeDeepRight, item, [
+      key ? {definition: pool[key]} : {},
+      eKey ? {editState: {definition: pool[eKey]}} : {}
+    ]);
+  }, model.operations);
+
+  return R.merge(model, {operations});
+}
+
 const restoreState = () => {
   // return Main.init(null);
   const restored = JSON.parse(localStorage.getItem('state'));
-  return restored === null ? Main.init : restored;
+  return restored === null ? Main.init : rehydrateOperations(restored);
 };
 
 // Streams

@@ -1,6 +1,7 @@
 const R = require('ramda');
 const DataTypes = require('./data');
 
+const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
 const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName]));
 
@@ -15,6 +16,6 @@ const Count = {
   display: () => 'Count'
 };
 
-module.exports = {
+module.exports = withKeys({
   Count,
-};
+});

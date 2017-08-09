@@ -63,11 +63,15 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
     const {definition, inputs} = model.editState;
     const itemDef = definition ? S.Just(definition) : S.Nothing;
 
-    const functions = S.map(itemName =>
-      h('option',
-        {attrs: {selected: (itemName === itemDef.name), value: itemName}},
-        itemName),
-      S.keys(itemPool).sort());
+    const functions = R.map(pair => {
+      const [key, val] = pair;
+
+      return h('option',
+        {attrs: {selected: (definition && key === definition.key), value: key}},
+        val.name)
+      },
+      R.sortBy(R.prop('name'), R.toPairs(itemPool))
+    );
 
     const toOption = opt => h('option', {value: opt.index}, opt.header);
     const withBlank = R.prepend(h('option', {}, ''));
@@ -80,7 +84,7 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
             on: {change: R.compose(
               action$,
               Action.SetDefinition,
-              R.prop(itemPool),
+              R.prop(R.__, itemPool),
               targetValue)}
           },
           R.prepend(h('option', {}, ''), functions)),
@@ -91,7 +95,7 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
       h('div', {class: {controls: true}}, [
         h('button', {
           on: {click: [action$, Action.Save]},
-          attrs: {disabled: !itemDef.name}
+          attrs: {disabled: !(definition && definition.name)}
         }, model.definition ? 'Update' : 'Apply'),
 
         h('button', {

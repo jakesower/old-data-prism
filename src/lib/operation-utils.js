@@ -6,6 +6,7 @@ const DSF = require('./dataset-functions');
 // Populates the operation's slots with appropriate inputs. This includes type
 // casting.
 const populateSlots = (operation, inputs, dataset) => {
+  console.log({ operation, inputs, dataset })
   const dsCols = DSF.columns(dataset);
   const nthCol = n => dsCols[n];
   const colVal = R.curry((dataType, colIdx) =>

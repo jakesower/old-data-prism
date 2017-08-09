@@ -3,6 +3,7 @@ const h = require('snabbdom/h').default;
 
 const dataTypes = require('./data');
 
+const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
 const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName]));
 
@@ -21,11 +22,15 @@ const rowFilter = def => {
   )(def.slots);
 
   return R.merge(def, {
-    fn: (args, records) => {
-      const extractors = R.map(af => af(args), argFns);
+    fn: (dataset, inputs) => {
+      const {records, headers} = dataset;
+      const extractors = R.map(af => af(inputs), argFns);
       const row = rec => R.map(x => x(rec), extractors);
 
-      return R.filter(rec => def.fn(row(rec)), records);
+      return {
+        headers,
+        records: R.filter(rec => def.fn(row(rec)), records)
+      };
     }
   });
 }
@@ -126,10 +131,10 @@ const GTE = rowFilter({
 });
 
 
-module.exports = {
+module.exports = withKeys({
   Equality,
   LT,
   LTE,
   GT,
   GTE,
-}
+});
