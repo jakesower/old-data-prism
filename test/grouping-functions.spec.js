@@ -3,7 +3,7 @@ const S = require('sanctuary');
 const R = require('ramda');
 const moment = require('moment');
 
-const GF = require('../src/lib/grouping-functions');
+// const GF = require('../src/lib/grouping-functions');
 const DSF = require('../src/lib/dataset-functions');
 const AGGREGATORS = require('../src/definitions/aggregators');
 

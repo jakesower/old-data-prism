@@ -10,13 +10,15 @@ const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
 const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName]));
 
-const makeDeriver = fn =>
-  (dataset, inputs) => {
-    return appendColumn(dataset, {
-      header: inputs.colName,
-      values: fn(inputs)
-    })
-  }
+const makeDeriver = def =>
+  R.merge(def, {
+    fn: (dataset, inputs) => {
+      return appendColumn(dataset, {
+        header: inputs.colName,
+        values: def.fn(inputs)
+      })
+    }
+  })
 
 
 const FormattedDate = {
@@ -158,9 +160,15 @@ const mergeDefaults = def => {
   }, def)
 }
 
-module.exports = withKeys(R.map(mergeDefaults, {
+const transforms = R.pipe(
+  R.map(mergeDefaults),
+  R.map(makeDeriver),
+  withKeys
+);
+
+module.exports = transforms({
   FormattedDate,
   Quantile,
   Sum,
   Difference
-}));
+});

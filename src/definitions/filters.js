@@ -10,26 +10,17 @@ const col = R.curry((dataset, cName) =>
 // Helper function for filters that filter on a simple row-by-row basis
 // (StrMap Inputs -> Boolean) -> (Dataset -> Dataset)
 const rowFilter = def => {
-  // Create a function that takes in slot arguments and returns a function that
-  // in turn takes a record and returns a value for consumption by the filter
-  // function.
-  const argFns = R.pipe(
-    R.map(s => ({[s.key]: s})),
-    R.reduce(R.merge, {}),
-    R.map(({key, sourceType}) =>
-      sourceType === "user" ? args => R.always(args[key])
-                            : args => R.nth(args[key]))
-  )(def.slots);
-
   return R.merge(def, {
     fn: (dataset, inputs) => {
       const {records, headers} = dataset;
-      const extractors = R.map(af => af(inputs), argFns);
-      const row = rec => R.map(x => x(rec), extractors);
+      const rowN = n => R.map(i => Array.isArray(i) ? i[n] : i, inputs);
 
       return {
         headers,
-        records: R.filter(rec => def.fn(row(rec)), records)
+        records: R.addIndex(R.filter)(
+          (rec, idx) => def.fn(rowN(idx)),
+          records
+        )
       };
     }
   });
@@ -103,7 +94,7 @@ const LTE = rowFilter({
 
 const GT = rowFilter({
   name: "Greater Than",
-  fn: inputs => parseFloat(inputs.base) > parseFloat(inputs.target),
+  fn: inputs => inputs.base > inputs.target,
   slots: [
     LT.slots[0],
     R.merge(LT.slots[1], {display: "is greater than"})

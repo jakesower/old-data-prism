@@ -5,5 +5,5 @@ const aggregators = require('./aggregators');
 module.exports = {
   Filter: filters,
   Deriver: derivers,
-  Aggregators: aggregators
+  Aggregator: aggregators,
 };

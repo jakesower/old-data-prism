@@ -11,7 +11,7 @@ const Count = {
 
   slots: [],
 
-  fn: (group, args) => group.length,
+  fn: (group, args) => group.records.length,
   // display: (us, cs, dataset) => `<span class="column-name">${dataset.headers[cs.date]}</span> with format ${us.format}`
   display: () => 'Count'
 };

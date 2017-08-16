@@ -21,7 +21,7 @@ const saveState = (model) => {
 };
 
 const rehydrateOperations = (model) => {
-  const operations = R.map(item => {
+  const rehydrateOperation = item => {
     const pool = Operations[item.type];
     const key = R.path(['definition', 'key'], item);
     const eKey = R.path(['editState', 'definition', 'key'], item);
@@ -30,7 +30,17 @@ const rehydrateOperations = (model) => {
       key ? {definition: pool[key]} : {},
       eKey ? {editState: {definition: pool[eKey]}} : {}
     ]);
-  }, model.operations);
+  };
+
+  const rehydrateGrouping = (grouping) =>
+    R.merge(grouping, {
+      aggregators: R.map(rehydrateOperation, grouping.aggregators)
+    })
+
+  const operations = R.map(item =>
+    (item.type === 'Grouping' ? rehydrateGrouping : rehydrateOperation)(item),
+    model.operations
+  )
 
   return R.merge(model, {operations});
 }

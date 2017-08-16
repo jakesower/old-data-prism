@@ -94,7 +94,7 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
       const optionPair = col => ({val: col.index, display: col.header});
       const clean = R.compose(Action.SetColumns, R.map(parseInt), R.filter(x => x !== ''));
 
-      return h('div', {}, [
+      return h('div', {class: {form: true}}, [
         h('h3', {}, "Select Column(s) to Group On"),
         ColumnSelector.multi(
           S.map(optionPair, DSF.columns(dataset)),

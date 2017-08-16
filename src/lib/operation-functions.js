@@ -1,32 +1,56 @@
 const R = require('ramda');
 const S = require('sanctuary');
 
-const DF = require('./deriver-functions');
-const FF = require('./filter-functions');
-const GF = require('./grouping-functions');
-
 const {populateSlots} = require('../lib/operation-utils');
-
-const typeFunctions = {
-  Filter: FF,
-  Deriver: DF,
-  Grouping: GF
-};
-
-
 const {validColumn, columns} = require('./dataset-functions');
 
 
-const definitionFor = operation =>
-  typeFunctions[operation.type][operation.key];
+const applyGroupingOperation = (dataset, operation) => {
+  const applyAggregators = groups => {
+    const applyAggregator = R.curry((dataset, aggregator) => {
+      const inputs = populateSlots(aggregator.definition, aggregator.inputs, dataset);
+      return aggregator.definition.fn(dataset, inputs);
+    });
 
+    const headers = R.concat(
+      R.map(n => columns(dataset)[n].header, operation.columns),
+      R.map(a => 'Hi', operation.aggregators)
+    );
 
-const applyOperation = (dataset, operation) => {
-  if (!operation.enabled) return dataset;
-  
-  const inputs = populateSlots(operation.definition, operation.inputs, dataset);
-  return operation.definition.fn(dataset, inputs);
+    const records = R.map(group => {
+      return R.concat(
+        JSON.parse(group[0]),
+        R.map(applyAggregator({
+          headers: dataset.headers,
+          records: group[1]
+        }), operation.aggregators)
+      )
+    }, groups);
+
+    return { headers, records };
+  }
+
+  return R.pipe(
+    R.prop('records'),
+    R.groupBy(row => JSON.stringify(R.map(c => row[c], operation.columns))),
+    R.toPairs,
+    applyAggregators
+  )(dataset);
 }
+
+
+const applyOperation = R.curry((dataset, operation) => {
+  if (!operation.enabled) {
+    return dataset;
+  }
+  else if (operation.type === 'Grouping') {
+    return applyGroupingOperation(dataset, operation);
+  }
+  else {
+    const inputs = populateSlots(operation.definition, operation.inputs, dataset);
+    return operation.definition.fn(dataset, inputs);
+  }
+})
 
 /**
  * Apply a sequence of operations to the dataset. In many ways, this is the
