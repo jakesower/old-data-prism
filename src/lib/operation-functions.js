@@ -14,7 +14,7 @@ const applyGroupingOperation = (dataset, operation) => {
 
     const headers = R.concat(
       R.map(n => columns(dataset)[n].header, operation.columns),
-      R.map(a => 'Hi', operation.aggregators)
+      R.map(a => a.inputs.colName, operation.aggregators)
     );
 
     const records = R.map(group => {

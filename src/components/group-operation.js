@@ -94,13 +94,15 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
       const optionPair = col => ({val: col.index, display: col.header});
       const clean = R.compose(Action.SetColumns, R.map(parseInt), R.filter(x => x !== ''));
 
-      return h('div', {class: {form: true}}, [
-        h('h3', {}, "Select Column(s) to Group On"),
-        ColumnSelector.multi(
-          S.map(optionPair, DSF.columns(dataset)),
-          forwardTo(action$, clean),
-          columns
-        )
+      return h('div', {}, [
+        h('div', {class: {"grouping-columns": true}}, [
+          h('h3', {}, "Grouping Columns"),
+          ColumnSelector.multi(
+            S.map(optionPair, DSF.columns(dataset)),
+            forwardTo(action$, clean),
+            columns
+          )
+        ])
       ])
     })());
 
@@ -119,13 +121,15 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
     );
 
     const aggregatorVdom = h('div', {class: {aggregators: true}}, R.flatten([
-      existingAggs,
+      h('h3', {}, "Aggregators"),
+      R.map(a => h('div', {class: {aggregator: true}}, a), existingAggs),
       h('button', {
         on: {click: [action$, Action.CreateAggregator]}
       }, "Add Aggregator")
     ]));
 
-    return h('div', {class: {"operation-form": true}}, R.flatten([
+    return h('div', {class: {"operation-form": true, form: true}}, R.flatten([
+      h('h2', {}, "Grouping"),
       columnsVdom, aggregatorVdom, controlsVdom
     ]));
   }

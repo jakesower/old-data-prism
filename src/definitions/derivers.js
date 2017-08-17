@@ -143,7 +143,93 @@ const Difference = {
       ' - ',
       col(dataset, args.subtrahend),
     ])
+};
 
+
+const Round = {
+  name: "Round",
+
+  slots: [
+    { key: "num",
+      display: "Column",
+      sourceType: "column",
+      dataType: dataTypes.FiniteNumber,
+    },
+    { key: "precision",
+      display: "Precision",
+      dataType: dataTypes.FiniteNumber,
+      sourceType: "user"
+    }
+  ],
+
+  fn: ({num, precision}) => {
+    const m = 10**(precision * -1);
+
+    return R.map(n => Math.round(m*n) / m, num);
+  },
+  display: (args, dataset) =>
+    h('div', {}, [
+      'Round ',
+      col(dataset, args.num)
+    ])
+}
+
+
+const Floor = {
+  name: "Floor",
+
+  slots: [
+    { key: "num",
+      display: "Column",
+      sourceType: "column",
+      dataType: dataTypes.FiniteNumber,
+    },
+    { key: "precision",
+      display: "Precision",
+      dataType: dataTypes.FiniteNumber,
+      sourceType: "user"
+    }
+  ],
+
+  fn: ({num, precision}) => {
+    const m = 10**(precision * -1);
+
+    return R.map(n => Math.floor(m*n) / m, num);
+  },
+  display: (args, dataset) =>
+    h('div', {}, [
+      'Floor ',
+      col(dataset, args.num)
+    ])
+}
+
+
+const Ceiling = {
+  name: "Ceiling",
+
+  slots: [
+    { key: "num",
+      display: "Column",
+      sourceType: "column",
+      dataType: dataTypes.FiniteNumber,
+    },
+    { key: "precision",
+      display: "Precision",
+      dataType: dataTypes.FiniteNumber,
+      sourceType: "user"
+    }
+  ],
+
+  fn: ({num, precision}) => {
+    const m = 10**(precision * -1);
+
+    return R.map(n => Math.ceil(m*n) / m, num);
+  },
+  display: (args, dataset) =>
+    h('div', {}, [
+      'Ceiling ',
+      col(dataset, args.num)
+    ])
 }
 
 
@@ -170,5 +256,8 @@ module.exports = transforms({
   FormattedDate,
   Quantile,
   Sum,
-  Difference
+  Difference,
+  Round,
+  Floor,
+  Ceiling
 });

@@ -1,5 +1,5 @@
 const R = require('ramda');
-const DataTypes = require('./data');
+const dataTypes = require('./data');
 
 const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
 const col = R.curry((dataset, cName) =>
@@ -21,7 +21,7 @@ const Mean = {
   name: "Mean",
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.Number,
+      dataType: dataTypes.FiniteNumber,
       key: "a",
       display: "Column"
     },
@@ -35,13 +35,14 @@ const Median = {
   name: "Median",
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.Number,
+      dataType: dataTypes.FiniteNumber,
       key: "a",
       display: "Column"
     },
   ],
   fn: (group, inputs) => R.median(inputs.a),
-  display: () => 'Median'
+  display: (inputs, group) => 'Median'
+  // display: (inputs, group) => JSON.stringify({inputs, group})
 };
 
 
@@ -49,7 +50,7 @@ const Maximum = {
   name: "Maximum",
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.Number,
+      dataType: dataTypes.FiniteNumber,
       key: "a",
       display: "Column"
     },
@@ -63,7 +64,7 @@ const Minimum = {
   name: "Minimum",
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.Number,
+      dataType: dataTypes.FiniteNumber,
       key: "a",
       display: "Column"
     },
@@ -77,7 +78,7 @@ const Sum = {
   name: "Sum",
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.Number,
+      dataType: dataTypes.FiniteNumber,
       key: "a",
       display: "Column"
     },
@@ -91,7 +92,7 @@ const Product = {
   name: "Product",
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.Number,
+      dataType: dataTypes.FiniteNumber,
       key: "a",
       display: "Product"
     },
@@ -102,7 +103,25 @@ const Product = {
 
 
 
-module.exports = withKeys({
+const colNameSlot = {
+  sourceType: "user",
+  key: "colName",
+  display: "Column Name",
+  dataType: dataTypes.NonEmptyString,
+};
+
+const mergeDefaults = def => {
+  return R.evolve({
+    slots: R.append(colNameSlot)
+  }, def)
+};
+
+const transforms = R.pipe(
+  R.map(mergeDefaults),
+  withKeys
+);
+
+module.exports = transforms({
   Count,
   Mean,
   Median,

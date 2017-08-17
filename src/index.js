@@ -32,10 +32,12 @@ const rehydrateOperations = (model) => {
     ]);
   };
 
-  const rehydrateGrouping = (grouping) =>
-    R.merge(grouping, {
-      aggregators: R.map(rehydrateOperation, grouping.aggregators)
-    })
+  const rehydrateGrouping = (grouping) => {
+    return R.reduce(R.mergeDeepRight, grouping, [
+      {aggregators: R.map(rehydrateOperation, grouping.aggregators)},
+      {editState: {aggregators: R.map(rehydrateOperation, grouping.editState.aggregators)}}
+    ]);
+  }
 
   const operations = R.map(item =>
     (item.type === 'Grouping' ? rehydrateGrouping : rehydrateOperation)(item),

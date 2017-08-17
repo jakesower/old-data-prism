@@ -30,7 +30,7 @@ const update = Action.caseOn({
 // TODO: sort by type (numbers and not just strings)
 const view = (dataset, action$, model) => {
   const {headers} = dataset;
-  const {page, sorting} = model;
+  const {sorting} = model;
 
   const sorter = sorting.dir === 'asc' ? R.ascend : R.descend;
   const records = R.sort(sorter(R.nth(sorting.col)), dataset.records);
@@ -40,6 +40,7 @@ const view = (dataset, action$, model) => {
   const toCells = R.map(datum => h('td', {}, datum));
   const toRows = R.map(record => h('tr', {}, toCells(record)));
   const numPages = Math.ceil(records.length / perPage);
+  const page = R.clamp(1, numPages, model.page);
   const recordsOnPage = R.slice((page - 1) * perPage, page*perPage, records);
 
   const pageButton = (str, pageNum) => {
