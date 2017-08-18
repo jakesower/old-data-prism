@@ -1,5 +1,4 @@
 const R = require('ramda');
-const barChart = require('./charts/bar');
 const ColumnSelector = require('./column-selector');
 const Type = require('union-type');
 const h = require('snabbdom/h').default;
@@ -7,9 +6,13 @@ const h = require('snabbdom/h').default;
 const {validColumns} = require('../lib/dataset-functions');
 const forwardTo = require('flyd-forwardto');
 
+const barChart = require('./charts/bar');
+const lineChart = require('./charts/line');
+
 
 const CHARTS = {
-  bar: barChart
+  bar: barChart,
+  line: lineChart,
 };
 
 
