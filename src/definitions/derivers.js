@@ -163,8 +163,7 @@ const Round = {
   ],
 
   fn: ({num, precision}) => {
-    const m = 10**(precision * -1);
-
+    const m = Math.pow(10, precision * -1);
     return R.map(n => Math.round(m*n) / m, num);
   },
   display: (args, dataset) =>
@@ -192,8 +191,7 @@ const Floor = {
   ],
 
   fn: ({num, precision}) => {
-    const m = 10**(precision * -1);
-
+    const m = Math.pow(10, precision * -1);
     return R.map(n => Math.floor(m*n) / m, num);
   },
   display: (args, dataset) =>
@@ -221,8 +219,7 @@ const Ceiling = {
   ],
 
   fn: ({num, precision}) => {
-    const m = 10**(precision * -1);
-
+    const m = Math.pow(10, precision * -1);
     return R.map(n => Math.ceil(m*n) / m, num);
   },
   display: (args, dataset) =>

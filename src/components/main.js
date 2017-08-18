@@ -7,6 +7,7 @@ const {Action, Operation} = require('./main/types');
 const OperationComponent = require('./operation');
 const GroupingComponent = require('./group-operation');
 const GridComponent = require('./grid');
+const ChartComponent = require('./chart');
 
 const update = Action.caseOn({
   StartUpload: (action$, model) => { // keep action$ out of here TODO
@@ -77,11 +78,7 @@ const firstInit = {
     prepareData: GridComponent.init(),
   },
   mainDimensions: {}, // used for chart sizing, should depend on DOM externally
-  chart: {
-    type: 'bar',
-    xAxis: null,
-    yAxis: null
-  }
+  chart: ChartComponent.init()
 };
 
 const init = state => state || firstInit;
