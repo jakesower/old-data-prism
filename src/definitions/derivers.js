@@ -230,6 +230,34 @@ const Ceiling = {
 }
 
 
+const Logarithm = {
+  name: "Logarithm",
+
+  slots: [
+    { key: "num",
+      display: "Column",
+      sourceType: "column",
+      dataType: dataTypes.PositiveFiniteNumber,
+    },
+    { key: "base",
+      display: "Base",
+      dataType: dataTypes.PositiveFiniteNumber,
+      sourceType: "user"
+    }
+  ],
+
+  fn: ({num, base}) => {
+    const den = Math.log(base);
+    return R.map(n => Math.log(n) / den, num);
+  },
+  display: (args, dataset) =>
+    h('div', {}, [
+      `Log base ${base} of `,
+      col(dataset, args.num)
+    ])
+}
+
+
 const colNameSlot = {
   sourceType: "user",
   key: "colName",
@@ -256,5 +284,6 @@ module.exports = transforms({
   Difference,
   Round,
   Floor,
-  Ceiling
+  Ceiling,
+  Logarithm,
 });
