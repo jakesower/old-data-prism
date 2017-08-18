@@ -40,7 +40,8 @@ const update = Action.caseOn({
     R.over(R.lensPath(['grids', gridId]), GridComponent.update(action), model),
 
   SetMainDimensions: R.assoc('mainDimensions'),
-  SetChart: R.assoc('chart'),
+  SetChart: (action, model) =>
+    R.over(R.lensProp('chart'), ChartComponent.update(action), model),
 
   CreateFilter: model => {
     return R.evolve({

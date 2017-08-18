@@ -1,3 +1,5 @@
+const R = require('ramda');
+const h = require('snabbdom/h').default;
 const dataTypes = require('../../definitions/data');
 
 
