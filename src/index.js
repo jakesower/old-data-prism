@@ -1,6 +1,7 @@
 const R = require('ramda');
 const S = require('sanctuary');
 const flyd = require('flyd');
+const forwardTo = require('flyd-forwardto');
 const stream = flyd.stream;
 const patch = require('snabbdom').init([
   require('snabbdom/modules/class').default,
@@ -14,6 +15,8 @@ const Main = require('./components/main.js');
 const MainAction = require('./components/main/types').Action;
 
 const Operations = require('./definitions/operations');
+
+const errorVdom = require('./components/error-view');
 
 // State Functions
 const saveState = (model) => {
@@ -49,14 +52,35 @@ const rehydrateOperations = (model) => {
 
 const restoreState = () => {
   // return Main.init(null);
-  const restored = JSON.parse(localStorage.getItem('state'));
-  return restored === null ? Main.init : rehydrateOperations(restored);
+  try {
+    const restored = JSON.parse(localStorage.getItem('state'));
+    const safe = S.encase(rehydrateOperations);
+    return restored === null ?
+      Main.init(null) :
+      rehydrateOperations(restored);
+      // S.fromMaybe(Main.init, safe(restored));
+  }
+  catch(e) {
+    return {};
+  }
 };
 
 // Streams
 const action$ = flyd.stream();
-const model$ = flyd.scan(S.flip(Main.update), restoreState(), action$);
-const vnode$ = flyd.map(Main.view(action$), model$);
+const model$ = flyd.scan(
+  S.flip(Main.update),
+  restoreState(),
+  action$
+);
+const vnode$ = flyd.map(
+  // m => S.fromMaybe(
+  //   errorVdom(forwardTo(model$, _ => Main.init(null))),
+  //   S.encase(Main.view(action$))(m)
+  // ),
+  Main.view(action$),
+  model$
+);
+// const vnode$ = flyd.map(() => errorVdom, model$)
 
 flyd.map(saveState, model$);
 flyd.map(console.log, model$);

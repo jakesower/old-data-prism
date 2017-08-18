@@ -52,7 +52,6 @@ module.exports = R.curry((action$, model) => {
 });
 
 
-// TODO: zeroes
 function barChart(dataset, xAxis, yAxis, mainDimensions) {
   if (R.isNil(xAxis) || R.isNil(yAxis)) return [];
 
