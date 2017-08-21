@@ -20,7 +20,8 @@ Types.FiniteNumber = {
 }
 
 Types.PositiveFiniteNumber = {
-  x => Types.FiniteNumber.test(x) && x > 0
+  test: x => Types.FiniteNumber.test(x) && x > 0,
+  cast: parseFloat
 }
 
 Types.Integer = {

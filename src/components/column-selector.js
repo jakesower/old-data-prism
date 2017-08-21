@@ -38,4 +38,14 @@ const multi = R.curry(function(items, action$, selected) {
 });
 
 
-module.exports = { single, multi };
+const multi2 = R.curry(function(items, action$, selected) {
+  return h('div', {class: {multiselect: true}}, [
+    h('div', {class: {placeholder: true}}, 'Plz Chuuz'),
+    h('div', {class: {items: true}},
+      R.map(i => h('div', {class: {item: true}}, i.display), items)
+    )
+  ])
+});
+
+
+module.exports = { single, multi: multi2 };

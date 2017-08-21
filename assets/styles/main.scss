@@ -90,6 +90,14 @@ div.body-container {
       }
     }
 
+    aside {
+      .slot {
+        .multicolumn {
+          background-color: $mid-orange;
+        }
+      }
+    }
+
     tr:nth-child(2n) {
       background-color: lighten($orange, 40%);
     }
@@ -129,17 +137,19 @@ div.main-container {
     flex: 0 0 18em;
     padding: 1em;
 
-    .grouping-columns {
+    .slot {
       border-top: 2px dashed black;
-      border-bottom: 2px dashed black;
       padding: 0.5em 0;
       margin: 0.5em 0;
-    }
+      position: relative;
+      z-index: 1;
 
-    .aggregators {
-      border-bottom: 2px dashed black;
-      padding: 0 0 0.5em 0;
-      margin: 0 0 0.5em 0;
+      .multicolumn {
+        width: 200%;
+        background-color: inherit;
+        opacity: 1;
+        z-index: 1;
+      }
     }
 
     .operation-form {
@@ -166,6 +176,10 @@ div.main-container {
         margin: 5px 0;
         display: block;
         font-size: 100%;
+      }
+
+      select {
+        width: 100%;
       }
 
       .controls button {
@@ -405,6 +419,22 @@ nav {
   &:hover {
     .controls {
       visibility: visible;
+    }
+  }
+}
+
+.multiselect {
+  .items {
+    display: none;
+  }
+
+  &:hover {
+    .placeholder {
+      display: none;
+    }
+
+    .items {
+      display: block;
     }
   }
 }

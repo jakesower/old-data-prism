@@ -9,7 +9,9 @@ const {validColumns} = require('../lib/dataset-functions');
 const ColumnSelector = require('./column-selector');
 
 const {Action} = require('./operation/types');
+const Slot = require('./slot');
 
+const optionPair = col => ({val: col.index, display: col.header});
 
 const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
@@ -63,32 +65,19 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
     const {definition, inputs} = model.editState;
     const itemDef = definition ? S.Just(definition) : S.Nothing;
 
-    const functions = R.map(pair => {
-      const [key, val] = pair;
-
-      return h('option',
-        {attrs: {selected: (definition && key === definition.key), value: key}},
-        val.name)
-      },
-      R.sortBy(R.prop('name'), R.toPairs(itemPool))
-    );
-
-    const toOption = opt => h('option', {value: opt.index}, opt.header);
-    const withBlank = R.prepend(h('option', {}, ''));
-
     const selectorVdom = [
       h('h2', {}, "Edit " + model.type),
-      h('div', {}, [
-        h('span', {}, "Function"),
-        h('select', {
-            on: {change: R.compose(
-              action$,
-              Action.SetDefinition,
-              R.prop(R.__, itemPool),
-              targetValue)}
-          },
-          R.prepend(h('option', {}, ''), functions)),
-      ])
+      Slot.column(
+        "Function",
+        R.path(['definition', 'key'], model),
+        R.map(i => ({val: i.key, display: i.name}), R.values(itemPool)),
+        {change: R.compose(
+          action$,
+          Action.SetDefinition,
+          R.prop(R.__, itemPool),
+          targetValue
+        )}
+      )
     ];
 
     const controlsVdom = [
@@ -105,32 +94,41 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
     ]
 
     const userSlot = slot =>
-      h('div', {}, [
-        h('span', {}, slot.display),
-        h('input', {
-          attrs: {value: inputs[slot.key]},
-          on: {keyup: R.compose(action$, Action.SetInput(slot.key), targetValue)}
-        }, [])
-      ])
+      Slot.user(
+        slot.display,
+        inputs[slot.key],
+        {keyup: R.compose(action$, Action.SetInput(slot.key), targetValue)}
+      )
 
     const columnSlot = slot => {
-      const potentialPicks = validColumns(dataset, slot.dataType);
-      const optionPair = col => ({val: col.index, display: col.header});
-      const fn = slot.sourceType === 'column' ? 'single' : 'multi';
-      const clean = slot.sourceType === 'column' ?
-        R.compose(Action.SetInput(slot.key), parseInt) :
-        R.compose(Action.SetInput(slot.key), R.map(parseInt), R.filter(x => x !== ''));
+      const clean = R.compose(Action.SetInput(slot.key), parseInt, targetValue);
 
-      return ColumnSelector[fn](
-        S.map(optionPair, potentialPicks),
-        forwardTo(action$, clean),
-        inputs[slot.key]
-      );
+      return Slot.column(
+        slot.display,
+        inputs[slot.key],
+        R.map(optionPair, validColumns(dataset, slot.dataType)),
+        {change: forwardTo(action$, clean)}
+      )
+    }
+
+
+    const multicolumnSlot = slot => {
+      const clean = R.compose(Action.SetInput(slot.key), R.map(parseInt), R.filter(x => x !== ''));
+
+      return Slot.multicolumn(
+        slot.display,
+        inputs[slot.key],
+        R.map(optionPair, validColumns(dataset, slot.dataType)),
+        {change: forwardTo(action$, clean)},
+        R.T
+      )
     }
 
     const inputVdom = item =>
       h('div', {}, S.map(
-        slot => slot.sourceType === 'user' ? userSlot(slot) : columnSlot(slot),
+        slot => slot.sourceType === 'user' ? userSlot(slot) :
+                slot.sourceType === 'column' ? columnSlot(slot) :
+                multicolumnSlot(slot),
         item.slots))
 
     return h('div', {class: {"operation-form": true, form: true}},
