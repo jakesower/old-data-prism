@@ -141,14 +141,20 @@ div.main-container {
       border-top: 2px dashed black;
       padding: 0.5em 0;
       margin: 0.5em 0;
-      position: relative;
       z-index: 1;
 
       .multicolumn {
-        width: 200%;
-        background-color: inherit;
+        width: 100%;
         opacity: 1;
-        z-index: 1;
+
+        .multiselect-content {
+          background-clip: padding-box;
+          background-color: $light-orange;
+
+          .option:hover {
+            background-color: $mid-orange;
+          }
+        }
       }
     }
 
@@ -423,17 +429,50 @@ nav {
   }
 }
 
+
 .multiselect {
-  .items {
-    display: none;
+  position: relative;
+  min-height: 1.6em;
+
+  .multiselect-content {
+    left: 0; right: 0; top: 0;
+    position: absolute;
+    border: 1px solid #111;
+    border-radius: 5px;
+    padding: 4px;
+
+    &::before {
+      float: right;
+      content: '▾';
+    }
   }
 
-  &:hover {
-    .placeholder {
-      display: none;
+  .options {
+    display: none;
+    z-index: 3;
+
+    .option {
+      cursor: pointer;
+
+      .check {
+        display: inline-block;
+        width: 1em;
+      }
+
+      &:hover {
+        background-color: #888;
+      }
     }
 
-    .items {
+    .option, .placeholder {
+      padding: 4px;
+    }
+  }
+
+  &:focus {
+    outline: none;
+
+    .options {
       display: block;
     }
   }

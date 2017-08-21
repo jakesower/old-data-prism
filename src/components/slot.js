@@ -3,6 +3,7 @@ const S = require('sanctuary');
 const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 const {targetValue} = require('../lib/utils');
+const multiselect = require('./multiselect');
 
 const withBlank = R.prepend(h('option', {}, ''));
 
@@ -53,7 +54,7 @@ const multicolumn = (title, currentValues, options, events) => {
   return slotWrapper(title,
     h('div',
       {class: {multicolumn: true}},
-      S.map(option, options)
+      multiselect(options, currentValues, events)
     )
   )
 }

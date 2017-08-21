@@ -7,12 +7,12 @@ const {validColumns} = require('../lib/dataset-functions');
 const forwardTo = require('flyd-forwardto');
 
 const barChart = require('./charts/bar');
-const lineChart = require('./charts/line');
+// const lineChart = require('./charts/line');
 
 
 const CHARTS = {
   bar: barChart,
-  line: lineChart,
+  // line: lineChart,
 };
 
 
