@@ -93,6 +93,7 @@ div.body-container {
     aside {
       .slot {
         .multicolumn {
+          margin-top: 6px;
           background-color: $mid-orange;
         }
       }
@@ -149,7 +150,7 @@ div.main-container {
 
         .multiselect-content {
           background-clip: padding-box;
-          background-color: $light-orange;
+          background-color: #eee;
 
           .option:hover {
             background-color: $mid-orange;
@@ -180,6 +181,7 @@ div.main-container {
 
       input, select {
         margin: 5px 0;
+        padding: 4px;
         display: block;
         font-size: 100%;
       }
@@ -437,13 +439,26 @@ nav {
   .multiselect-content {
     left: 0; right: 0; top: 0;
     position: absolute;
-    border: 1px solid #111;
+    border: 1px solid #555;
     border-radius: 5px;
     padding: 4px;
 
     &::before {
       float: right;
       content: '▾';
+      padding: 4px;
+    }
+
+
+    .placeholder {
+      overflow: hidden;
+      white-space: nowrap;
+      margin-right: 1em;
+      text-overflow: ellipsis;
+    }
+
+    .option, .placeholder {
+      padding: 4px;
     }
   }
 
@@ -459,13 +474,13 @@ nav {
         width: 1em;
       }
 
+      .value {
+        display: inline-block;
+      }
+
       &:hover {
         background-color: #888;
       }
-    }
-
-    .option, .placeholder {
-      padding: 4px;
     }
   }
 

@@ -8,6 +8,7 @@ const DSF = require('../lib/dataset-functions');
 const OperationAction = require('./operation/types').Action;
 const OperationComponent = require('./operation');
 const Action = require('./main/types').GroupAction;
+const Slot = require('./slot');
 
 
 const update = Action.caseOn({
@@ -94,16 +95,12 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
       const optionPair = col => ({val: col.index, display: col.header});
       const clean = R.compose(Action.SetColumns, R.map(parseInt), R.filter(x => x !== ''));
 
-      return h('div', {}, [
-        h('div', {class: {"grouping-columns": true}}, [
-          h('h3', {}, "Grouping Columns"),
-          ColumnSelector.multi(
-            S.map(optionPair, DSF.columns(dataset)),
-            forwardTo(action$, clean),
-            columns
-          )
-        ])
-      ])
+      return Slot.multicolumn(
+        "Grouping Columns",
+        columns,
+        R.map(optionPair, DSF.columns(dataset)),
+        {change: forwardTo(action$, clean)}
+      );
     })());
 
     // aggrgator operations

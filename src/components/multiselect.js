@@ -13,7 +13,7 @@ module.exports = (options, currentValues, events) => {
       on: {click: () => events.change(nextVal)}
     }, [
       h('div', {class: {check: true}}, on ? '✓' : ''),
-      option.display
+      h('div', {class: {value: true}}, option.display)
     ])
   }
 
@@ -24,7 +24,8 @@ module.exports = (options, currentValues, events) => {
 
 
   const placeholder = currentValues.length > 0 ?
-    R.pipe(R.map(displayVal), R.join(', '))(currentValues) :
+    (currentValues.length + ' Selected: ' +
+      R.pipe(R.map(displayVal), R.join(', '))(currentValues)) :
     'Please select';
 
 
