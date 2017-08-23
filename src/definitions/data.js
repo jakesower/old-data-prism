@@ -49,49 +49,55 @@ Types.Date = {
   cast: moment
 }
 
-Types.Enumerated = {
-  test: R.flip(R.contains),
-  cast: (enums, val) => val,
-  args: ['enums']
-}
+Types.Enumerated = values => ({
+  test: R.contains(R.__, values),
+  cast: R.identity,
+  values
+});
+
+// Types.Enumerated = {
+//   test: R.flip(R.contains),
+//   cast: (enums, val) => val,
+//   args: ['enums']
+// }
+
+
+const fleshOut = R.pipe(
+  R.map(R.merge(typeDefaults)),
+  R.mapObjIndexed((v, key) => R.merge({key}, v))
+)
+
+
+module.exports = fleshOut(Types);
+
 
 const FullTypes = R.map(R.merge(typeDefaults), Types);
+const DataType = daggy.taggedSum('DataType', R.map(R.prop('args'), FullTypes));
 
-module.exports = FullTypes
-//
-//
-// console.log(FullTypes)
-// const DataType = daggy.taggedSum('DataType', R.map(R.prop('args'), FullTypes));
-//
-// const tests = R.map(R.prop('test'), Types);
-// const casts = R.map(R.prop('cast'), Types);
-// console.log(tests)
-//
-// DataType.prototype.test = function (val) {
-//   return this.cata(R.map(t =>
-//     function () {
-//       const args = Array.from(arguments);
-//       console.log(R.append(val, args))
-//       return t.apply(null, R.append(val, args));
-//     }, tests)
-//   );
-// }
-//
-// DataType.prototype.cast = function (val) {
-//   return this.cata(R.map(t => () => t.call(null, val), casts));
-// }
-//
-// const traps = {
-//   get: (target, prop, receiver) =>
-//     R.has(prop, target) ? target.prop :
-//     R.has(prop, FullTypes) ? FullTypes
-// }
-//
-// module.exports = DataType;
-//
-// // DataType.prototype.
-//
-//
-// // module.exports = Object.freeze(
-// //   R.map(R.merge(typeDefaults), Types)
-// // );
+const tests = R.map(R.prop('test'), Types);
+const casts = R.map(R.prop('cast'), Types);
+
+DataType.prototype.test = function (val) {
+  return this.cata(R.map(t =>
+    function () {
+      const args = Array.from(arguments);
+      console.log(R.append(val, args))
+      return t.apply(null, R.append(val, args));
+    }, tests)
+  );
+}
+
+DataType.prototype.cast = function (val) {
+  return this.cata(R.map(t => () => t.call(null, val), casts));
+}
+
+DataType.prototype.getProp = function (prop) {
+  return this.cata(R.map(t => R.always(t[prop]), FullTypes));
+}
+
+const traps = {
+  get: (target, prop, receiver) =>
+    R.has(prop, target) ? target[prop] : target.getProp(prop)
+}
+
+// module.exports = new Proxy(DataType, traps);

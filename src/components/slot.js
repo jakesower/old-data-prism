@@ -3,26 +3,56 @@ const S = require('sanctuary');
 const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 const {targetValue} = require('../lib/utils');
+const {validColumns} = require('../lib/dataset-functions');
 const multiselect = require('./multiselect');
 
 const withBlank = R.prepend(h('option', {}, ''));
+const columnOptions = col => ({val: col.index, display: col.header});
+const fixedOptions = opt => ({val: opt, display: opt});
 
 
-const slotWrapper = (title, vdom) => {
+const slotWrapper = R.curry((title, vdom) => {
   return h('div', {class: {slot: true}}, [
     h('h3', {}, title),
     vdom
   ])
+})
+
+
+const build = R.curry((slot, inputs, dataset, onChange) => {
+  const sw = slotWrapper(slot.display);
+
+  switch (slot.sourceType) {
+    case 'user':
+      return sw(user(slot, inputs, onChange));
+    case 'column':
+      return sw(column(
+        inputs[slot.key],
+        R.map(columnOptions, validColumns(dataset, slot.dataType)),
+        onChange
+      ));
+    case 'multicolumn':
+      return sw(multicolumn(
+        inputs[slot.key],
+        R.map(columnOptions, validColumns(dataset, slot.dataType)),
+        onChange
+      ));
+  }
+});
+
+
+const user = (slot, inputs, onChange) => {
+  return slot.dataType.key === 'Enumerated' ?
+    column(
+      inputs[slot.key],
+      R.map(fixedOptions, slot.dataType.values),
+      onChange
+    ) :
+    textBox(slot, inputs[slot.key], onChange)
 }
 
 
-const moo = (slot, currentValue, events) => {
-  const handlers = {user, column, multicolumn};
-  return slotWrapper(slot.display, handler(slot, currentValue, events));
-}
-
-
-const user = (slot, currentValue, events) => {
+const textBox = (slot, currentValue, onChange) => {
   const attrs = {
     value: currentValue,
     type: slot.dataType.htmlInputType || "text",
@@ -34,17 +64,16 @@ const user = (slot, currentValue, events) => {
     empty: currentValue === ''
   };
 
-  return slotWrapper(slot.display,
-    h('input', {
-      attrs: R.filter(R.complement(R.isNil), attrs),
-      on: events,
-      class: classes
-    }, [])
-  );
+  return h('input', {
+    attrs: R.filter(R.complement(R.isNil), attrs),
+    on: {keyup: R.compose(onChange, targetValue)},
+    class: classes
+  }, [])
 }
 
 
-const column = (title, currentValue, options, events) => {
+const column = (currentValue, options, onChange) => {
+  const clean = R.compose(parseInt, targetValue);
   const option = item => {
     return h('option', {
       attrs: {
@@ -54,28 +83,28 @@ const column = (title, currentValue, options, events) => {
       item.display);
   };
 
-  return slotWrapper(title,
-    h(
-      'select',
-      {on: events},
-      withBlank(S.map(option, options))
-    )
+  return h(
+    'select',
+    {on: {change: R.compose(onChange, clean)}},
+    withBlank(S.map(option, options))
   );
 }
 
 
-const multicolumn = (title, currentValues, options, events) => {
+const multicolumn = (currentValues, options, onChange) => {
   const option = item => {
     return h('div', {}, item.display);
   };
 
-  return slotWrapper(title,
-    h('div',
-      {class: {multicolumn: true}},
-      multiselect(options, currentValues, events)
-    )
-  )
+  return h('div',
+    {class: {multicolumn: true}},
+    multiselect(options, currentValues, {change: onChange})
+  );
 }
 
 
-module.exports = {user, column, multicolumn};
+module.exports = {
+  build,
+  column: (t, cv, o, e) => slotWrapper(t, column(cv, o, e)),
+  user: (t, s, cv, e) => slotWrapper(t, textBox(s, cv, e))
+};

@@ -78,19 +78,17 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
       h('h2', {}, "Edit " + model.type),
     ];
 
-
     const functionSlotVdom = Slot.column(
       "Function",
       R.path(['definition', 'key'], model),
       R.map(i => ({val: i.key, display: i.name}), R.values(itemPool)),
-      {change: R.compose(
+      R.compose(
         action$,
         Action.SetDefinition,
         R.prop(R.__, itemPool),
         targetValue
-      )}
+      )
     )
-
 
     const controlsVdom = [
       h('div', {class: {controls: true}}, [
@@ -105,49 +103,20 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
       ])
     ]
 
-    const userSlot = slot =>
-      Slot.user(
-        slot,
-        inputs[slot.key],
-        {keyup: R.compose(action$, Action.SetInput(slot.key), targetValue)}
-      )
-
-    const columnSlot = slot => {
-      const clean = R.compose(Action.SetInput(slot.key), parseInt, targetValue);
-
-      return Slot.column(
-        slot.display,
-        inputs[slot.key],
-        R.map(optionPair, validColumns(dataset, slot.dataType)),
-        {change: forwardTo(action$, clean)}
-      )
-    }
-
-
-    const multicolumnSlot = slot => {
-      const clean = R.compose(Action.SetInput(slot.key), R.map(parseInt), R.filter(x => x !== ''));
-
-      return Slot.multicolumn(
-        slot.display,
-        inputs[slot.key],
-        R.map(optionPair, validColumns(dataset, slot.dataType)),
-        {change: forwardTo(action$, clean)}
-      )
-    }
-
-    const inputVdom = item =>
-      h('div', {}, S.map(
-        slot => slot.sourceType === 'user' ? userSlot(slot) :
-                slot.sourceType === 'column' ? columnSlot(slot) :
-                multicolumnSlot(slot),
-        item.slots))
+    const inputVdom = item => S.map(slot => Slot.build(
+      slot,
+      inputs,
+      dataset,
+      forwardTo(action$, Action.SetInput(slot.key))
+    ), item.slots);
 
 
     const columnNameVdom = model.createsColumn ?
       Slot.user(
+        "Column Name",
         columnNameSlot,
         model.columnName,
-        {keyup: R.compose(action$, Action.SetColumnName, targetValue)}
+        R.compose(action$, Action.SetColumnName)
       ) : [];
 
     return h('div', {class: {"operation-form": true, form: true}},
