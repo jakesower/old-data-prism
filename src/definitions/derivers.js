@@ -12,9 +12,9 @@ const col = R.curry((dataset, cName) =>
 
 const makeDeriver = def =>
   R.merge(def, {
-    fn: (dataset, inputs) => {
+    fn: (dataset, inputs, columnName) => {
       return appendColumn(dataset, {
-        header: inputs.colName,
+        header: columnName,
         values: def.fn(inputs)
       })
     }
@@ -258,21 +258,8 @@ const Logarithm = {
 }
 
 
-const colNameSlot = {
-  sourceType: "user",
-  key: "colName",
-  display: "Column Name",
-  dataType: dataTypes.NonEmptyString,
-};
-
-const mergeDefaults = def => {
-  return R.evolve({
-    slots: R.append(colNameSlot)
-  }, def)
-}
-
 const transforms = R.pipe(
-  R.map(mergeDefaults),
+  R.map(R.merge({createsColumn: true})),
   R.map(makeDeriver),
   withKeys
 );

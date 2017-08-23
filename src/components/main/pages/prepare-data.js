@@ -70,13 +70,11 @@ module.exports = R.curry((action$, model) => {
     ])),
 
     h('main', {}, [
-      operationsValid(model.dataset, model.operations) ?
-        GridComponent.view(
-          applyOperations(model.dataset, model.operations),
-          forwardTo(action$, Action.SetGridState('prepareData')),
-          model.grids.prepareData
-        ) :
-        h('div', {}, 'Moo')
+      GridComponent.view(
+        applyOperations(model.dataset, model.operations),
+        forwardTo(action$, Action.SetGridState('prepareData')),
+        model.grids.prepareData
+      )
     ])
   ]))
 });

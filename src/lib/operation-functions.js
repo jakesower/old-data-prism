@@ -40,7 +40,7 @@ const applyGroupingOperation = (dataset, operation) => {
 
 
 const applyOperation = R.curry((dataset, operation) => {
-  if (!operation.enabled) {
+  if (!operationValid(dataset, operation)) {
     return dataset;
   }
   else if (operation.type === 'Grouping') {
@@ -48,7 +48,7 @@ const applyOperation = R.curry((dataset, operation) => {
   }
   else {
     const inputs = populateSlots(operation.definition, operation.inputs, dataset);
-    return operation.definition.fn(dataset, inputs);
+    return operation.definition.fn(dataset, inputs, operation.columnName);
   }
 })
 
@@ -68,27 +68,27 @@ const slotValid = R.curry((dataset, input, slot) => {
     input[slot.key];
 
   return slot.sourceType === "column" ?
-    validColumn(slot.dataType, slotInput) :
+    slotInput && validColumn(slot.dataType, slotInput) :
     slot.dataType.test(slotInput);
 });
 
 
 const operationValid = R.curry((dataset, operation) => {
-  return true;
-  const opDef = operation.definition;
-
-  return R.all(slotValid(dataset, input), opDef.slots)
+  return R.allPass([
+    R.complement(R.isNil),
+    opDef => R.all(slotValid(dataset, operation.inputs), opDef.slots)
+  ])(operation.definition);
 });
 
 
 const operationsValid = (dataset, operations) =>
   R.pipe(
-    R.filter(R.prop('enabled')),
     R.all(operationValid(dataset))
   )(operations);
 
 module.exports = {
   applyOperation,
   applyOperations,
-  operationsValid
+  operationsValid,
+  operationValid
 };

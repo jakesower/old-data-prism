@@ -16,11 +16,29 @@ const slotWrapper = (title, vdom) => {
 }
 
 
-const user = (title, currentValue, events) => {
-  return slotWrapper(title,
+const moo = (slot, currentValue, events) => {
+  const handlers = {user, column, multicolumn};
+  return slotWrapper(slot.display, handler(slot, currentValue, events));
+}
+
+
+const user = (slot, currentValue, events) => {
+  const attrs = {
+    value: currentValue,
+    type: slot.dataType.htmlInputType || "text",
+    pattern: slot.dataType.htmlPattern
+  };
+
+  const classes = {
+    invalid: !slot.dataType.test(currentValue),
+    empty: currentValue === ''
+  };
+
+  return slotWrapper(slot.display,
     h('input', {
-      attrs: {value: currentValue},
-      on: events
+      attrs: R.filter(R.complement(R.isNil), attrs),
+      on: events,
+      class: classes
     }, [])
   );
 }

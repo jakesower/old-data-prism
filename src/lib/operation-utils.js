@@ -27,7 +27,7 @@ const populateSlots = (operation, inputs, dataset) => {
     // List Slot -> List StrMap Slot (keyed by slot key)
     R.map(s => ({[s.key]: s})),
     // List StrMap Slot -> StrMap Slot
-    R.reduce(R.merge, {}),
+    R.mergeAll,
     // StrMap Slot -> Populated Args
     R.map(extractSlot)
   )(operation.slots)

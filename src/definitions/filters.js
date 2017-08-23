@@ -11,7 +11,7 @@ const col = R.curry((dataset, cName) =>
 // (StrMap Inputs -> Boolean) -> (Dataset -> Dataset)
 const rowFilter = def => {
   return R.merge(def, {
-    fn: (dataset, inputs) => {
+    fn: R.nAry(3, (dataset, inputs) => {
       const {records, headers} = dataset;
       const rowN = n => R.map(i => Array.isArray(i) ? i[n] : i, inputs);
 
@@ -22,7 +22,7 @@ const rowFilter = def => {
           records
         )
       };
-    }
+    })
   });
 }
 
@@ -122,7 +122,12 @@ const GTE = rowFilter({
 });
 
 
-module.exports = withKeys({
+const transforms = R.pipe(
+  withKeys,
+  R.map(R.merge({createsColumn: false}))
+);
+
+module.exports = transforms({
   Equality,
   LT,
   LTE,

@@ -7,28 +7,42 @@ const forwardTo = require('flyd-forwardto');
 const {targetValue} = require('../lib/utils');
 const {validColumns} = require('../lib/dataset-functions');
 const ColumnSelector = require('./column-selector');
+const {operationValid} = require('../lib/operation-functions');
+const dataTypes = require('../definitions/data');
 
 const {Action} = require('./operation/types');
 const Slot = require('./slot');
 
 const optionPair = col => ({val: col.index, display: col.header});
 
+const columnNameSlot = {
+  sourceType: "user",
+  key: "columnName",
+  display: "Column Name",
+  dataType: dataTypes.NonEmptyString,
+};
+
+const functionSlot = fs => ({
+  sourceType: "user",
+  key: "function",
+  display: "Function",
+  dataType: dataTypes.Enumerated(fs),
+})
+
 const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
   SetDefinition: (definition, model) => {
     const slots = definition.slots;
-    const cols = R.pipe(
+    const inputs = R.pipe(
       R.map(s => ({[s.key]: s.sourceType === 'multicolumn' ? [] : ''})),
       R.reduce(R.merge, {})
     )(slots);
 
-    return R.pipe(
-      R.set(R.lensPath(['editState', 'inputs']), cols),
-      R.set(R.lensPath(['editState', 'definition']), definition)
-    )(model);
+    return R.merge(model, { inputs, definition })
   },
+  SetColumnName: R.assoc('columnName'),
   SetInput: (key, val, model) => R.mergeDeepRight(model, {
-    editState: {inputs: {[key]: val}}
+    inputs: {[key]: val}
   }),
   Cancel: R.assoc('editing', false),
   Save: model =>
@@ -42,43 +56,41 @@ const update = Action.caseOn({
 });
 
 
-const init = (type, id) => ({
-  type: type,
-  id: id,
-  enabled: false,
+const init = (type, id, createsColumn) => ({
+  type,
+  id,
+  createsColumn,
+
   editing: true,
-
   definition: null,
-  inputs: {},
-
-  editState: {
-    definition: null,
-    inputs: {}
-  }
+  columnName: '',
+  inputs: {}
 });
-
 
 const view = R.curry(function(itemPool, dataset, action$, model) {
   return model.editing ? edit(action$, model) : show(action$, model);
 
   function edit(action$, model) {
-    const {definition, inputs} = model.editState;
+    const {definition, inputs} = model;
     const itemDef = definition ? S.Just(definition) : S.Nothing;
 
-    const selectorVdom = [
+    const headerVdom = [
       h('h2', {}, "Edit " + model.type),
-      Slot.column(
-        "Function",
-        R.path(['definition', 'key'], model),
-        R.map(i => ({val: i.key, display: i.name}), R.values(itemPool)),
-        {change: R.compose(
-          action$,
-          Action.SetDefinition,
-          R.prop(R.__, itemPool),
-          targetValue
-        )}
-      )
     ];
+
+
+    const functionSlotVdom = Slot.column(
+      "Function",
+      R.path(['definition', 'key'], model),
+      R.map(i => ({val: i.key, display: i.name}), R.values(itemPool)),
+      {change: R.compose(
+        action$,
+        Action.SetDefinition,
+        R.prop(R.__, itemPool),
+        targetValue
+      )}
+    )
+
 
     const controlsVdom = [
       h('div', {class: {controls: true}}, [
@@ -95,7 +107,7 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
 
     const userSlot = slot =>
       Slot.user(
-        slot.display,
+        slot,
         inputs[slot.key],
         {keyup: R.compose(action$, Action.SetInput(slot.key), targetValue)}
       )
@@ -119,8 +131,7 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
         slot.display,
         inputs[slot.key],
         R.map(optionPair, validColumns(dataset, slot.dataType)),
-        {change: forwardTo(action$, clean)},
-        R.T
+        {change: forwardTo(action$, clean)}
       )
     }
 
@@ -131,9 +142,18 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
                 multicolumnSlot(slot),
         item.slots))
 
+
+    const columnNameVdom = model.createsColumn ?
+      Slot.user(
+        columnNameSlot,
+        model.columnName,
+        {keyup: R.compose(action$, Action.SetColumnName, targetValue)}
+      ) : [];
+
     return h('div', {class: {"operation-form": true, form: true}},
-      S.maybe(R.flatten([selectorVdom, controlsVdom]),
-        d => R.flatten([selectorVdom, inputVdom(d), controlsVdom]),
+      S.maybe(
+        R.flatten([headerVdom, columnNameVdom, functionSlotVdom, controlsVdom]),
+        d => R.flatten([headerVdom, columnNameVdom, functionSlotVdom, inputVdom(d), controlsVdom]),
         itemDef)
     )
   }

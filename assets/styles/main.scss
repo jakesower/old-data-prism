@@ -139,9 +139,9 @@ div.main-container {
     padding: 1em;
 
     .slot {
-      border-top: 2px dashed black;
-      padding: 0.5em 0;
-      margin: 0.5em 0;
+      // border-top: 2px dashed black;
+      padding: 4px 0;
+      margin: 4px 0;
       z-index: 1;
 
       .multicolumn {
@@ -180,10 +180,21 @@ div.main-container {
       }
 
       input, select {
-        margin: 5px 0;
+        margin: 4px 0;
         padding: 4px;
         display: block;
         font-size: 100%;
+        width: 100%;
+      }
+
+      input {
+        display: inline-block;
+        box-sizing: border-box;
+      }
+
+      input.invalid:not(.empty) {
+        border: 2px solid red;
+        outline: none;
       }
 
       select {

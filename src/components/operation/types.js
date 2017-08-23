@@ -4,6 +4,7 @@ const Action = Type({
   StartEdit: [],
   SetDefinition: [Object],
   SetInput: [String, () => true],
+  SetColumnName: [String],
   Cancel: [],
   Save: [],
   Delete: []
