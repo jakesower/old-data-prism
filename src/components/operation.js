@@ -5,13 +5,13 @@ const Type = require('union-type');
 const forwardTo = require('flyd-forwardto');
 
 const {targetValue} = require('../lib/utils');
-const {validColumns} = require('../lib/dataset-functions');
 const ColumnSelector = require('./column-selector');
 const {operationValid} = require('../lib/operation-functions');
 const dataTypes = require('../definitions/data');
 
 const {Action} = require('./operation/types');
 const Slot = require('./slot');
+const {select} = require('./controls');
 
 const optionPair = col => ({val: col.index, display: col.header});
 
@@ -45,13 +45,6 @@ const update = Action.caseOn({
     inputs: {[key]: val}
   }),
   Cancel: R.assoc('editing', false),
-  Save: model =>
-    R.merge(model, {
-      inputs: model.editState.inputs,
-      definition: model.editState.definition,
-      editing: false,
-      enabled: true
-    }),
   Delete: x => x  // NOOP -- this should be handled externally
 });
 
@@ -74,32 +67,33 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
     const {definition, inputs} = model;
     const itemDef = definition ? S.Just(definition) : S.Nothing;
 
-    const headerVdom = [
+    const headerVdom = h('div', {class: {"operation-header": true}}, [
+      h('span', {
+        class: {remove: true},
+        on: {click: [action$, Action.Delete]}
+      }, '\uf1f8'),
       h('h2', {}, "Edit " + model.type),
-    ];
+    ]);
 
-    const functionSlotVdom = Slot.column(
-      "Function",
-      R.path(['definition', 'key'], model),
-      R.map(i => ({val: i.key, display: i.name}), R.values(itemPool)),
-      R.compose(
-        action$,
-        Action.SetDefinition,
-        R.prop(R.__, itemPool),
-        targetValue
+    const functionSlotVdom = Slot.slotWrapper("Function",
+      select(
+        R.path(['definition', 'key'], model),
+        R.map(i => ({val: i.key, display: i.name}), R.values(itemPool)),
+        R.compose(
+          action$,
+          Action.SetDefinition,
+          R.prop(R.__, itemPool),
+          R.tap(console.log)
+        )
       )
-    )
+    );
 
     const controlsVdom = [
       h('div', {class: {controls: true}}, [
         h('button', {
-          on: {click: [action$, Action.Save]},
-          attrs: {disabled: !(definition && definition.name)}
-        }, model.definition ? 'Update' : 'Apply'),
-
-        h('button', {
-          on: {click: [action$, model.enabled ? Action.Cancel : Action.Delete]}
-        }, 'Cancel')
+          on: {click: [action$, Action.Cancel]},
+          attrs: {disabled: !operationValid(dataset, model)}
+        }, 'Done')
       ])
     ]
 
@@ -138,12 +132,12 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
         h('span', {
           class: {edit: true},
           on: {click: [action$, Action.StartEdit]}
-        }, 'Edit'),
+        }, '\uf040'),
 
         h('span', {
           class: {remove: true},
           on: {click: [action$, Action.Delete]}
-        }, 'Delete')
+        }, '\uf1f8')
 
       ])
     ]);

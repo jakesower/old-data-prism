@@ -27,18 +27,15 @@ const rehydrateOperations = (model) => {
   const rehydrateOperation = item => {
     const pool = Operations[item.type];
     const key = R.path(['definition', 'key'], item);
-    const eKey = R.path(['editState', 'definition', 'key'], item);
 
     return R.reduce(R.mergeDeepRight, item, [
       key ? {definition: pool[key]} : {},
-      eKey ? {editState: {definition: pool[eKey]}} : {}
     ]);
   };
 
   const rehydrateGrouping = (grouping) => {
     return R.reduce(R.mergeDeepRight, grouping, [
       {aggregators: R.map(rehydrateOperation, grouping.aggregators)},
-      {editState: {aggregators: R.map(rehydrateOperation, grouping.editState.aggregators)}}
     ]);
   }
 
@@ -54,7 +51,8 @@ const restoreState = () => {
   // return Main.init(null);
   try {
     const restored = JSON.parse(localStorage.getItem('state'));
-    const safe = S.encase(rehydrateOperations);
+    console.log(restored)
+    // const safe = S.encase(rehydrateOperations);
     return restored === null ?
       Main.init(null) :
       rehydrateOperations(restored);

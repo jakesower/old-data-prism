@@ -14,7 +14,7 @@ const applyGroupingOperation = (dataset, operation) => {
 
     const headers = R.concat(
       R.map(n => columns(dataset)[n].header, operation.columns),
-      R.map(a => a.inputs.colName, operation.aggregators)
+      R.map(R.prop('columnName'), operation.aggregators)
     );
 
     const records = R.map(group => {
@@ -61,25 +61,47 @@ const applyOperation = R.curry((dataset, operation) => {
  // const applyOperations = R.reduce(S.T);
 const applyOperations = R.reduce(applyOperation);
 
-
-const slotValid = R.curry((dataset, input, slot) => {
-  const slotInput = slot.sourceType === "column" ?
-    columns(dataset)[input[slot.key]] :
-    input[slot.key];
-
-  return slot.sourceType === "column" ?
-    slotInput && validColumn(slot.dataType, slotInput) :
-    slot.dataType.test(slotInput);
-});
+const userValid = (inputs, slot) =>
+  slot.dataType.test(inputs[slot.key]);
 
 
-const operationValid = R.curry((dataset, operation) => {
+const columnValid = (dataset, inputs, slot) => {
+  const slotInput = columns(dataset)[inputs[slot.key]];
+  return slotInput && validColumn(slot.dataType, slotInput);
+}
+
+
+const multicolumnValid = (dataset, inputs, slot) => {
+  const slotInputs = R.map(R.prop(R.__, columns(dataset)), inputs[slot.key]);
+  return slotInputs && R.all(validColumn(slot.dataType), slotInputs);
+}
+
+
+const slotValid = R.curry((dataset, inputs, slot) =>
+  slot.sourceType === "column"      ? columnValid(dataset, inputs, slot) :
+  slot.sourceType === "multicolumn" ? multicolumnValid(dataset, inputs, slot) :
+                      /* user */      userValid(inputs, slot)
+);
+
+
+const basicOperationValid = R.curry((dataset, operation) => {
   return R.allPass([
     R.complement(R.isNil),
     opDef => R.all(slotValid(dataset, operation.inputs), opDef.slots)
   ])(operation.definition);
 });
 
+
+const groupingOperationValid = (dataset, operation) => {
+  return operation.columns.length > 0 &&
+    R.all(operationValid(dataset), operation.aggregators);
+}
+
+const operationValid = R.curry((dataset, operation) =>
+  operation.type === 'Grouping' ?
+    groupingOperationValid(dataset, operation) :
+    basicOperationValid(dataset, operation)
+);
 
 const operationsValid = (dataset, operations) =>
   R.pipe(

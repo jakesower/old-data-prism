@@ -15,30 +15,24 @@ const update = Action.caseOn({
   StartEdit: R.assoc('editing', true),
   Cancel: R.assoc('editing', false),
   Delete: x => x,  // NOOP -- this should be handled externally
-  Save: model =>
-    R.merge(model, {
-      columns: model.editState.columns,
-      aggregators: model.editState.aggregators,
-      editing: false,
-      enabled: true
-    }),
 
-  SetColumns: R.assocPath(['editState', 'columns']),
+  SetColumns: R.assoc('columns'),
+  SetColumnName: R.assoc('columnName'),
 
   CreateAggregator: model => {
     return R.pipe(
       R.over(
-        R.lensPath(['editState', 'aggregators']),
-        S.append(OperationComponent.init('Aggregator', model.uid))),
+        R.lensPath(['aggregators']),
+        S.append(OperationComponent.init('Aggregator', model.uid, true))),
       R.evolve({uid: S.inc})
     )(model)
   },
 
   SetAggregator: (idx, action, model) => {
-    const agg = R.path(['editState', 'aggregators', idx], model);
+    const agg = R.path(['aggregators', idx], model);
 
     return R.set(
-      R.lensPath(['editState', 'aggregators', idx]),
+      R.lensPath(['aggregators', idx]),
       OperationComponent.update(action, agg),
       model
     )
@@ -46,7 +40,7 @@ const update = Action.caseOn({
 
   DeleteAggregator: (idx, model) =>
     R.over(
-      R.lensPath(['editState', 'aggregators']),
+      R.lensPath(['aggregators']),
       R.remove(idx, 1),
       model
     )
@@ -57,17 +51,11 @@ const update = Action.caseOn({
 const init = id => ({
   id: id,
   type: 'Grouping',
-  enabled: false,
   editing: true,
   uid: 0,
 
   columns: [],
   aggregators: [],
-
-  editState: {
-    columns: [],
-    aggregators: []
-  }
 });
 
 
@@ -75,19 +63,23 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
   return model.editing ? edit(action$, model) : show(action$, model);
 
   function edit(action$, model) {
-    const {columns, aggregators} = model.editState;
+    const {columns, aggregators} = model;
 
     const toOption = opt => h('option', {value: opt.index}, opt.header);
     const withBlank = R.prepend(h('option', {}, ''));
 
+    const headerVdom = h('div', {class: {"operation-header": true}}, [
+      h('span', {
+        class: {remove: true},
+        on: {click: [action$, Action.Delete]}
+      }, '\uf1f8'),
+      h('h2', {}, "Grouping"),
+    ]);
+
     const controlsVdom = h('div', {class: {controls: true}}, [
       h('button', {
-        on: {click: [action$, Action.Save]},
-      }, 'Apply'),
-
-      h('button', {
-        on: {click: [action$, model.enabled ? Action.Cancel : Action.Delete]}
-      }, 'Cancel')
+        on: {click: [action$, Action.Cancel]}
+      }, 'Done')
     ]);
 
     // column groupings
@@ -99,7 +91,7 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
         "Grouping Columns",
         columns,
         R.map(optionPair, DSF.columns(dataset)),
-        {change: forwardTo(action$, clean)}
+        forwardTo(action$, clean)
       );
     })());
 
@@ -114,7 +106,7 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
         }),
         operation
       ),
-      model.editState.aggregators
+      model.aggregators
     );
 
     const aggregatorVdom = h('div', {class: {aggregators: true}}, R.flatten([
@@ -126,8 +118,7 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
     ]));
 
     return h('div', {class: {"operation-form": true, form: true}}, R.flatten([
-      h('h2', {}, "Grouping"),
-      columnsVdom, aggregatorVdom, controlsVdom
+      headerVdom, columnsVdom, aggregatorVdom, controlsVdom
     ]));
   }
 

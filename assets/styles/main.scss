@@ -163,6 +163,15 @@ div.main-container {
       border: 1px black dotted;
       padding: 5px 5px 1px 5px;
 
+      .operation-header .remove {
+        cursor: pointer;
+        height: 1.2em;
+        width: 1.2em;
+        content: "\f1f8";
+        float: right;
+        display: inline-block;
+      }
+
       & > div {
         margin: 10px 0;
       }

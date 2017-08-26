@@ -4,6 +4,7 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 const {targetValue} = require('../lib/utils');
 const {validColumns} = require('../lib/dataset-functions');
+const {select} = require('./controls');
 const multiselect = require('./multiselect');
 
 const withBlank = R.prepend(h('option', {}, ''));
@@ -73,20 +74,10 @@ const textBox = (slot, currentValue, onChange) => {
 
 
 const column = (currentValue, options, onChange) => {
-  const clean = R.compose(parseInt, targetValue);
-  const option = item => {
-    return h('option', {
-      attrs: {
-        selected: (item.val === currentValue),
-        value: item.val
-      }},
-      item.display);
-  };
-
-  return h(
-    'select',
-    {on: {change: R.compose(onChange, clean)}},
-    withBlank(S.map(option, options))
+  return select(
+    currentValue,
+    options,
+    R.compose(onChange, parseInt)
   );
 }
 
@@ -105,6 +96,7 @@ const multicolumn = (currentValues, options, onChange) => {
 
 module.exports = {
   build,
-  column: (t, cv, o, e) => slotWrapper(t, column(cv, o, e)),
+  slotWrapper,
+  multicolumn: (t, cv, o, e) => slotWrapper(t, multicolumn(cv, o, e)),
   user: (t, s, cv, e) => slotWrapper(t, textBox(s, cv, e))
 };

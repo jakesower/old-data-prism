@@ -20,8 +20,8 @@ const GroupAction = Type({
   StartEdit: [],
   Cancel: [],
   Delete: [],
-  Save: [],
 
+  SetColumnName: [String],
   SetColumns: [Array],
 
   CreateAggregator: [],

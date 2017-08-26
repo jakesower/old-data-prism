@@ -6,7 +6,6 @@ const Action = Type({
   SetInput: [String, () => true],
   SetColumnName: [String],
   Cancel: [],
-  Save: [],
   Delete: []
 });
 
