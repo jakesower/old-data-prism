@@ -54,7 +54,7 @@ const renderOperations = R.curry((action$, dataset, operations, idx, active) => 
   if (!head) return [];
 
   return R.prepend(
-    operationView(action$, dataset, idx === active, head, idx),
+    operationView(action$, dataset, head.id === active, head, idx),
     renderOperations(action$, applyOperation(dataset, head), tail, idx+1, active)
   );
 });

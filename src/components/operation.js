@@ -56,14 +56,14 @@ const init = (type, id, createsColumn) => ({
   id,
   createsColumn,
 
-  editing: true,
   definition: null,
   columnName: '',
   inputs: {}
 });
 
 const view = R.curry(function(itemPool, dataset, editing, action$, model) {
-  return editing ? edit(action$, model) : show(action$, model);
+  return h('div', {class: {operation: true, editing: editing}},
+    editing ? edit(action$, model) : show(action$, model));
 
   function edit(action$, model) {
     const {definition, inputs} = model;
@@ -125,10 +125,14 @@ const view = R.curry(function(itemPool, dataset, editing, action$, model) {
 
 
   function show(action$, model) {
-    return h('div', {class: {operation: true}}, [
+    const text = model.definition ?
+      model.definition.display(model.inputs, dataset) :
+      "Invalid";
+
+    return [
       h('div', {
         class: {definition: true, ["operation-"+model.type.toLowerCase()]: true},
-      }, model.definition.display(model.inputs, dataset)),
+      }, text),
 
       h('div', {class: {controls: true}}, [
         h('span', {
@@ -142,7 +146,7 @@ const view = R.curry(function(itemPool, dataset, editing, action$, model) {
         }, '\uf1f8')
 
       ])
-    ]);
+    ];
   }
 });
 

@@ -47,21 +47,24 @@ const update = Action.caseOn({
   CreateFilter: model => {
     return R.evolve({
       uid: S.inc,
-      operations: S.append(OperationComponent.init('Filter', model.uid, false))
+      operations: S.append(OperationComponent.init('Filter', model.uid, false)),
+      activeOperation: R.always(model.uid),
     }, model)
   },
 
   CreateDeriver: model => {
     return R.evolve({
       uid: S.inc,
-      operations: S.append(OperationComponent.init('Deriver', model.uid, true))
+      operations: S.append(OperationComponent.init('Deriver', model.uid, true)),
+      activeOperation: R.always(model.uid),
     }, model)
   },
 
   CreateGrouping: model => {
     return R.evolve({
       uid: S.inc,
-      operations: S.append(GroupingComponent.init(model.uid))
+      operations: S.append(GroupingComponent.init(model.uid)),
+      activeOperation: R.always(model.uid),
     }, model)
   },
 
