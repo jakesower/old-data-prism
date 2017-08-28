@@ -97,6 +97,31 @@ div.body-container {
           background-color: $mid-orange;
         }
       }
+
+      .prepare-controls {
+        display: flex;
+        width: 100%;
+        margin-top: 4px;
+
+        .control {
+          flex: 1;
+          opacity: 0.6;
+          cursor: pointer;
+          border: 2px solid #222;
+          padding: 4px;
+          margin-right: 4px;
+          font-weight: bold;
+          font-size: 90%;
+
+          &:last-child {
+            margin-right: 0;
+          }
+
+          &:hover {
+            opacity: 1;
+          }
+        }
+      }
     }
 
     tr:nth-child(2n) {

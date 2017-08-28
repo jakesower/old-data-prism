@@ -30,15 +30,18 @@ const componentsByType = {
 }
 
 
-const operationView = R.curry((action$, dataset, operation, idx) => {
+const operationView = R.curry((action$, dataset, editing, operation, idx) => {
   const component = componentsByType[operation.type];
 
   return component.view(
     itemPools[operation.type],
     dataset,
+    editing,
     forwardTo(action$, act => {
       return component.Action.case({
         Delete: () => Action.DeleteOperation(idx),
+        StartEdit: () => Action.SetActiveOperation(idx),
+        StopEdit: () => Action.SetActiveOperation(null),
         _: () => Action.ModifyOperation(idx, component.update, act)
       }, act);
     }),
@@ -46,34 +49,41 @@ const operationView = R.curry((action$, dataset, operation, idx) => {
 });
 
 
-const renderOperations = R.curry((action$, dataset, operations, idx) => {
+const renderOperations = R.curry((action$, dataset, operations, idx, active) => {
   const [head, tail] = [R.head(operations), R.tail(operations)];
   if (!head) return [];
 
   return R.prepend(
-    operationView(action$, dataset, head, idx),
-    renderOperations(action$, applyOperation(dataset, head), tail, idx+1)
+    operationView(action$, dataset, idx === active, head, idx),
+    renderOperations(action$, applyOperation(dataset, head), tail, idx+1, active)
   );
 });
 
 
 module.exports = R.curry((action$, model) => {
   if (!model.dataset) return h('div', {}, '');
+  const {dataset, operations, activeOperation, grids} = model;
+  const ctrlAttrs = action => ({
+    class: {control: true},
+    on: {click: [action$, action]}
+  });
 
   return h('div', {class: {"main-container": true}}, R.flatten([
-    h('aside', {class: {"prepare-controls": true}}, R.flatten([
-      renderOperations(action$, model.dataset, model.operations, 0),
+    h('aside', {}, R.flatten([
+      renderOperations(action$, dataset, operations, 0, activeOperation),
 
-      h('button', {on: {click: [action$, Action.CreateDeriver]}}, "Derive Field"),
-      h('button', {on: {click: [action$, Action.CreateFilter]}}, "Add Filter"),
-      h('button', {on: {click: [action$, Action.CreateGrouping]}}, "Perform Grouping")
+      h('div', {class: {"prepare-controls": true}, key: 'prepare-controls'}, [
+        h('div', ctrlAttrs(Action.CreateFilter), "\uf0b0 Filter"),
+        h('div', ctrlAttrs(Action.CreateDeriver), "\uf1ec Deriver"),
+        h('div', ctrlAttrs(Action.CreateGrouping), "\uf247 Grouping")
+      ])
     ])),
 
     h('main', {}, [
       GridComponent.view(
-        applyOperations(model.dataset, model.operations),
+        applyOperations(dataset, operations),
         forwardTo(action$, Action.SetGridState('prepareData')),
-        model.grids.prepareData
+        grids.prepareData
       )
     ])
   ]))

@@ -30,7 +30,6 @@ const functionSlot = fs => ({
 })
 
 const update = Action.caseOn({
-  StartEdit: R.assoc('editing', true),
   SetDefinition: (definition, model) => {
     const slots = definition.slots;
     const inputs = R.pipe(
@@ -44,8 +43,11 @@ const update = Action.caseOn({
   SetInput: (key, val, model) => R.mergeDeepRight(model, {
     inputs: {[key]: val}
   }),
-  Cancel: R.assoc('editing', false),
-  Delete: x => x  // NOOP -- this should be handled externally
+
+  // NOOP -- these should be handled externally
+  Delete: x => x,
+  StartEdit: x => x,
+  StopEdit: x => x,
 });
 
 
@@ -60,8 +62,8 @@ const init = (type, id, createsColumn) => ({
   inputs: {}
 });
 
-const view = R.curry(function(itemPool, dataset, action$, model) {
-  return model.editing ? edit(action$, model) : show(action$, model);
+const view = R.curry(function(itemPool, dataset, editing, action$, model) {
+  return editing ? edit(action$, model) : show(action$, model);
 
   function edit(action$, model) {
     const {definition, inputs} = model;
@@ -91,7 +93,7 @@ const view = R.curry(function(itemPool, dataset, action$, model) {
     const controlsVdom = [
       h('div', {class: {controls: true}}, [
         h('button', {
-          on: {click: [action$, Action.Cancel]},
+          on: {click: [action$, Action.StopEdit]},
           attrs: {disabled: !operationValid(dataset, model)}
         }, 'Done')
       ])

@@ -51,7 +51,7 @@ const restoreState = () => {
   // return Main.init(null);
   try {
     const restored = JSON.parse(localStorage.getItem('state'));
-    console.log(restored)
+    // console.log(restored)
     // const safe = S.encase(rehydrateOperations);
     return restored === null ?
       Main.init(null) :
@@ -81,6 +81,7 @@ const vnode$ = flyd.map(
 // const vnode$ = flyd.map(() => errorVdom, model$)
 
 flyd.map(saveState, model$);
+// flyd.map(console.log, action$);
 flyd.map(console.log, model$);
 
 

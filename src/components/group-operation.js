@@ -12,10 +12,6 @@ const Slot = require('./slot');
 
 
 const update = Action.caseOn({
-  StartEdit: R.assoc('editing', true),
-  Cancel: R.assoc('editing', false),
-  Delete: x => x,  // NOOP -- this should be handled externally
-
   SetColumns: R.assoc('columns'),
   SetColumnName: R.assoc('columnName'),
 
@@ -43,7 +39,11 @@ const update = Action.caseOn({
       R.lensPath(['aggregators']),
       R.remove(idx, 1),
       model
-    )
+    ),
+
+  Delete: x => x,  // NOOP -- this should be handled externally
+  StartEdit: x => x,
+  StopEdit: x => x,
 
 });
 
@@ -51,7 +51,6 @@ const update = Action.caseOn({
 const init = id => ({
   id: id,
   type: 'Grouping',
-  editing: true,
   uid: 0,
 
   columns: [],
@@ -59,8 +58,8 @@ const init = id => ({
 });
 
 
-const view = R.curry(function(aggregatorPool, dataset, action$, model) {
-  return model.editing ? edit(action$, model) : show(action$, model);
+const view = R.curry(function(aggregatorPool, dataset, editing, action$, model) {
+  return editing ? edit(action$, model) : show(action$, model);
 
   function edit(action$, model) {
     const {columns, aggregators} = model;
@@ -78,7 +77,7 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
 
     const controlsVdom = h('div', {class: {controls: true}}, [
       h('button', {
-        on: {click: [action$, Action.Cancel]}
+        on: {click: [action$, Action.StopEdit]}
       }, 'Done')
     ]);
 
@@ -140,12 +139,12 @@ const view = R.curry(function(aggregatorPool, dataset, action$, model) {
         h('span', {
           class: {edit: true},
           on: {click: [action$, Action.StartEdit]}
-        }, 'Edit'),
+        }, '\uf040'),
 
         h('span', {
           class: {remove: true},
           on: {click: [action$, Action.Delete]}
-        }, 'Delete')
+        }, '\uf1f8')
 
       ])
     ]);

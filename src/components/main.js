@@ -23,6 +23,7 @@ const update = Action.caseOn({
     }),
 
   SetPage: R.assoc('page'),
+  SetActiveOperation: R.assoc('activeOperation'),
 
   ModifyOperation: (idx, updateFn, action, model) => {
     return R.evolve({
@@ -73,6 +74,7 @@ const firstInit = {
   page: 'UploadData',
   dataUploading: false,
   dataset: null,
+  activeOperation: null,
   uid: 1,
   operations: [],
   grids: {
