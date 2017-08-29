@@ -40,7 +40,7 @@ const operationView = R.curry((action$, dataset, editing, operation, idx) => {
     forwardTo(action$, act => {
       return component.Action.case({
         Delete: () => Action.DeleteOperation(idx),
-        StartEdit: () => Action.SetActiveOperation(idx),
+        StartEdit: () => Action.SetActiveOperation(operation.id),
         StopEdit: () => Action.SetActiveOperation(null),
         _: () => Action.ModifyOperation(idx, component.update, act)
       }, act);
