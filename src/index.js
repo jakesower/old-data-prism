@@ -102,4 +102,4 @@ window.addEventListener('DOMContentLoaded', function() {
   setDimensions();
 });
 
-window.onresize = debounce(setDimensions, 400);
+// window.onresize = debounce(setDimensions, 400);

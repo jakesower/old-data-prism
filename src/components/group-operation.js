@@ -14,14 +14,14 @@ const Slot = require('./slot');
 const update = Action.caseOn({
   SetColumns: R.assoc('columns'),
   SetColumnName: R.assoc('columnName'),
+  SetActiveAggregator: R.assoc('activeAggregator'),
 
   CreateAggregator: model => {
-    return R.pipe(
-      R.over(
-        R.lensPath(['aggregators']),
-        S.append(OperationComponent.init('Aggregator', model.uid, true))),
-      R.evolve({uid: S.inc})
-    )(model)
+    return R.evolve({
+      aggregators: S.append(OperationComponent.init('Aggregator', model.uid, true)),
+      uid: S.inc,
+      activeAggregator: R.always(model.uid),
+    }, model);
   },
 
   SetAggregator: (idx, action, model) => {
@@ -51,7 +51,8 @@ const update = Action.caseOn({
 const init = id => ({
   id: id,
   type: 'Grouping',
-  uid: 0,
+  uid: 1,
+  activeAggregator: null,
 
   columns: [],
   aggregators: [],
@@ -71,7 +72,7 @@ const view = R.curry(function(aggregatorPool, dataset, editing, action$, model) 
       h('span', {
         class: {remove: true},
         on: {click: [action$, Action.Delete]}
-      }, '\uf1f8'),
+      }),
       h('h2', {}, "Grouping"),
     ]);
 
@@ -95,25 +96,43 @@ const view = R.curry(function(aggregatorPool, dataset, editing, action$, model) 
     })());
 
     // aggrgator operations
-    const existingAggs = R.addIndex(R.map)((operation, idx) =>
-      OperationComponent.view(aggregatorPool, dataset,
-        forwardTo(action$, a => {
+    const existingAggs = R.addIndex(R.map)((aggregator, idx) => {
+      const editing = model.activeAggregator === aggregator.id;
+
+      return OperationComponent.view(aggregatorPool, dataset, editing,
+        forwardTo(action$, act => {
           return OperationAction.case({
             Delete: () => Action.DeleteAggregator(idx),
-            _: () => Action.SetAggregator(idx, a)
-          }, a);
+            StartEdit: () => Action.SetActiveAggregator(aggregator.id),
+            StopEdit: () => Action.SetActiveAggregator(null),
+            _: () => Action.SetAggregator(idx, act)
+          }, act);
         }),
-        operation
-      ),
+        aggregator
+      )},
       model.aggregators
     );
+
+    const ctrlAttrs = action => ({
+      class: {control: true},
+      on: {click: [action$, action]}
+    });
 
     const aggregatorVdom = h('div', {class: {aggregators: true}}, R.flatten([
       h('h3', {}, "Aggregators"),
       R.map(a => h('div', {class: {aggregator: true}}, a), existingAggs),
-      h('button', {
-        on: {click: [action$, Action.CreateAggregator]}
-      }, "Add Aggregator")
+      h('div', {class: {"prepare-controls": true}, key: 'prepare-controls'}, [
+        h('div',
+          { class: {control: true},
+            on: {click: [action$, Action.CreateAggregator]}
+          },
+          h('span', {class: {'operation-aggregator': true}}, ' Aggregator')
+        )
+      ])
+      // h('button', {
+      //   on: {click: [action$, Action.CreateAggregator]}
+      // }, "Add Aggregator")
+
     ]));
 
     return h('div', {class: {"operation-form": true, form: true}}, R.flatten([
@@ -126,25 +145,22 @@ const view = R.curry(function(aggregatorPool, dataset, editing, action$, model) 
     return h('div', {class: {operation: true}}, [
       h('div',
         {class: {definition: true, "operation-grouping": true}}, [
-        // R.prepend(
-          h('div', {}, R.flatten([
-            'Grouping on ',
-            S.map(c => dataset.headers[c], model.columns).join(', ')
-          ]))
-          // S.map(a => h('div', {}, a.definition.display({}, dataset)), model.aggregators)
-        // )
+        h('div', {}, R.flatten([
+          'Grouping on ',
+          S.map(c => dataset.headers[c], model.columns).join(', ')
+        ]))
       ]),
 
       h('div', {class: {controls: true}}, [
         h('span', {
           class: {edit: true},
           on: {click: [action$, Action.StartEdit]}
-        }, '\uf040'),
+        }),
 
         h('span', {
           class: {remove: true},
           on: {click: [action$, Action.Delete]}
-        }, '\uf1f8')
+        })
 
       ])
     ]);

@@ -13,8 +13,6 @@ const {Action} = require('./operation/types');
 const Slot = require('./slot');
 const {select} = require('./controls');
 
-const optionPair = col => ({val: col.index, display: col.header});
-
 const columnNameSlot = {
   sourceType: "user",
   key: "columnName",
@@ -73,7 +71,7 @@ const view = R.curry(function(itemPool, dataset, editing, action$, model) {
       h('span', {
         class: {remove: true},
         on: {click: [action$, Action.Delete]}
-      }, '\uf1f8'),
+      }),
       h('h2', {}, "Edit " + model.type),
     ]);
 
@@ -131,19 +129,23 @@ const view = R.curry(function(itemPool, dataset, editing, action$, model) {
 
     return [
       h('div', {
-        class: {definition: true, ["operation-"+model.type.toLowerCase()]: true},
+        class: {
+          definition: true,
+          fa: true,
+          ["operation-"+model.type.toLowerCase()]: true
+        },
       }, text),
 
       h('div', {class: {controls: true}}, [
         h('span', {
           class: {edit: true},
           on: {click: [action$, Action.StartEdit]}
-        }, '\uf040'),
+        }),
 
         h('span', {
           class: {remove: true},
           on: {click: [action$, Action.Delete]}
-        }, '\uf1f8')
+        })
 
       ])
     ];

@@ -68,14 +68,19 @@ module.exports = R.curry((action$, model) => {
     on: {click: [action$, action]}
   });
 
+  const iconed = name => {
+    const i = `operation-${name.toLowerCase()}`;
+    return h('span', {class: {[i]: true}}, ` ${name}`);
+  }
+
   return h('div', {class: {"main-container": true}}, R.flatten([
     h('aside', {}, R.flatten([
       renderOperations(action$, dataset, operations, 0, activeOperation),
 
       h('div', {class: {"prepare-controls": true}, key: 'prepare-controls'}, [
-        h('div', ctrlAttrs(Action.CreateFilter), "\uf0b0 Filter"),
-        h('div', ctrlAttrs(Action.CreateDeriver), "\uf1ec Deriver"),
-        h('div', ctrlAttrs(Action.CreateGrouping), "\uf247 Grouping")
+        h('div', ctrlAttrs(Action.CreateFilter), iconed('Filter')),
+        h('div', ctrlAttrs(Action.CreateDeriver), iconed('Deriver')),
+        h('div', ctrlAttrs(Action.CreateGrouping), iconed('Grouping'))
       ])
     ])),
 
