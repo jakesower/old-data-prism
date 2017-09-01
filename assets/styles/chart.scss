@@ -40,4 +40,17 @@
     stroke-width: 1;
     opacity: 0.5;
   }
+
+  .scatter-plot {
+    circle {
+      fill: white;
+      stroke: black;
+      stroke-width: 2;
+      opacity: 0.5;
+
+      &:hover {
+        // opacity: 1;
+      }
+    }
+  }
 }

@@ -4,20 +4,20 @@ const dataTypes = require('../../definitions/data');
 
 
 const slots = [
-  { key: "xAxis",
-    display: "X-Axis",
+  { key: "rowAxis",
+    display: "Row Axis",
     sourceType: "column",
-    dataType: dataTypes.FiniteNumber // really should be ordinal set
+    dataType: dataTypes.String // special cases handled in code
   },
-  { key: "yAxis",
-    display: "Y-Axis",
-    sourceType: "column",
+  { key: "colAxis",
+    display: "Column Axis",
+    sourceType: "multicolumn",
     dataType: dataTypes.FiniteNumber
   },
-  { key: "dv",
+  { key: "invert",
     display: "Linez",
-    sourceType: "column",
-    dataType: dataTypes.String
+    sourceType: "user",
+    dataType: dataTypes.Enumerated(["Yes", "No"])
   }
 ]
 

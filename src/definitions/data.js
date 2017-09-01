@@ -8,67 +8,75 @@ const typeDefaults = {
   args: []
 };
 
+const w = R.pipe(
+  R.merge(typeDefaults)
+)
+
+
 // Mutable for ease of construction. It can be treated as immutable upon
 // export. See Rich Hickey quote. :)
 let Types = {};
 
-Types.String = {
+Types.String = w({
+  key: 'String',
   test: x => true,
   cast: x => x,
-}
+})
 
-Types.NonEmptyString = {
+Types.NonEmptyString = w({
+  key: 'NonEmptyString',
   test: x => x !== '',
   cast: x => x,
   htmlPattern: ".+"
-}
+})
 
 // Useful regex for matching any JS number
 // "(?:NaN|-?(?:(?:\\d+|\\d*\\.\\d+)(?:[E|e][+|-]?\\d+)?|Infinity))"
 
-Types.FiniteNumber = {
+Types.FiniteNumber = w({
+  key: 'FiniteNumber',
   // test: x => {console.log(x); return !isNaN(parseFloat(x)) && isFinite(x)},
   test: x => !isNaN(parseFloat(x)) && isFinite(x),
   cast: parseFloat,
-}
+})
 
-Types.PositiveFiniteNumber = {
+Types.PositiveFiniteNumber = w({
+  key: 'PositiveFiniteNumber',
   test: x => Types.FiniteNumber.test(x) && x > 0,
   cast: parseFloat,
   // htmlPattern: "(?:(?:\\d+|\\d*\\.\\d+)(?:[E|e][+|-]?\\d+)?)"
-}
+})
 
-Types.Integer = {
+Types.Integer = w({
+  key: 'Integer',
   test: x => Types.FiniteNumber.test(x) && x % 1 === 0,
   cast: parseInt,
   htmlInputType: "number"
-}
+})
 
-Types.Date = {
+Types.Date = w({
+  key: 'Date',
   test: x => !isNaN(Date.parse(x)),
   cast: moment
-}
+})
 
-Types.Enumerated = values => ({
+Types.Enumerated = values => w({
+  key: 'Enumerated',
   test: R.contains(R.__, values),
   cast: R.identity,
   values
-});
+})
 
-// Types.Enumerated = {
-//   test: R.flip(R.contains),
-//   cast: (enums, val) => val,
-//   args: ['enums']
-// }
-
-
-const fleshOut = R.pipe(
-  R.map(R.merge(typeDefaults)),
-  R.mapObjIndexed((v, key) => R.merge({key}, v))
-)
+Types.Boolean = w({
+  key: 'Boolean',
+  test: R.contains(R.__, ["true", "false"]),
+  cast: x => x === "true"
+})
 
 
-module.exports = fleshOut(Types);
+
+
+module.exports = Types;
 
 
 const FullTypes = R.map(R.merge(typeDefaults), Types);

@@ -24,6 +24,17 @@ const select = (currentValue, options, onChange) => {
 }
 
 
+const checkbox = (currentValue, onChange) => {
+  return h(
+    'input',
+    { attrs: {type: 'checkbox'}
+    , on: {click: R.compose(onChange, cb => cb.target.checked)}
+    }
+  )
+}
+
+
 module.exports = {
-  select
+  select,
+  checkbox,
 };

@@ -4,7 +4,7 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 const {targetValue} = require('../lib/utils');
 const {validColumns} = require('../lib/dataset-functions');
-const {select} = require('./controls');
+const {select, checkbox} = require('./controls');
 const multiselect = require('./multiselect');
 
 const withBlank = R.prepend(h('option', {}, ''));
@@ -44,12 +44,18 @@ const build = R.curry((slot, inputs, dataset, onChange) => {
 
 const user = (slot, inputs, onChange) => {
   return slot.dataType.key === 'Enumerated' ?
-    column(
-      inputs[slot.key],
-      R.map(fixedOptions, slot.dataType.values),
-      onChange
-    ) :
-    textBox(slot, inputs[slot.key], onChange)
+      column(
+        inputs[slot.key],
+        R.map(fixedOptions, slot.dataType.values),
+        onChange
+      ) :
+    slot.dataType.key === 'Boolean' ?
+      checkbox(
+        inputs[slot.key],
+        onChange
+      ) :
+      textBox(slot, inputs[slot.key], onChange)
+
 }
 
 
@@ -97,6 +103,7 @@ const multicolumn = (currentValues, options, onChange) => {
 module.exports = {
   build,
   slotWrapper,
+  column,
   multicolumn: (t, cv, o, e) => slotWrapper(t, multicolumn(cv, o, e)),
   user: (t, s, cv, e) => slotWrapper(t, textBox(s, cv, e))
 };

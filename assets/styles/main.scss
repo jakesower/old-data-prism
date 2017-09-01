@@ -205,12 +205,19 @@ div.main-container {
         text-transform: uppercase;
       }
 
-      input, select {
+      input, select, .multiselect {
         margin: 4px 0;
         padding: 4px;
         display: block;
         font-size: 100%;
-        width: 100%;
+
+        &:not([type=checkbox]) {
+          width: 100%;
+        }
+      }
+
+      .multiselect {
+        padding: 0;
       }
 
       input {
