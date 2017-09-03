@@ -1,16 +1,15 @@
 const R = require('ramda');
 const daggy = require('daggy');
 const h = require('snabbdom/h').default;
-const {CoordinateSystem, Range, Point} = require('./canvas');
+const Basis = require('./basis');
 
 const svg = (dimensions, xRange, yRange, padding, shapes) => {
   const {height, width} = dimensions;
-  const basis = CoordinateSystem(
+  const basis = Basis(
     {height: height - padding * 2, width: width - padding * 2},
     xRange,
     yRange
   );
-  console.log({dimensions, xRange, yRange, padding, shapes})
 
   return h('svg', {
     attrs: {
@@ -26,19 +25,8 @@ const svg = (dimensions, xRange, yRange, padding, shapes) => {
 }
 
 
-const Shape = daggy.taggedSum('Shape', {
-  Circle: ['center', 'radius']
-});
-Shape.prototype.toSvg = function (basis) {
-  console.log(this, basis)
-  return this.cata({
-    Circle: basis.circle
-  })
-};
-
 module.exports = {
   svg,
-  Shape,
 }
 
 

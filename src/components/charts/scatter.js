@@ -3,8 +3,8 @@ const h = require('snabbdom/h').default;
 const dataTypes = require('../../definitions/data');
 const DSF = require('../../lib/dataset-functions');
 
-const {Range, Point} = require('./canvas');
-const {Shape, svg} = require('./utils');
+const {Shape, Range, Point} = require('./types');
+const {svg} = require('./utils');
 
 const slots = [
   { key: "rowAxis",
@@ -58,8 +58,11 @@ function fn(dataset, inputs, dimensions) {
   );
 
   const circles = R.map(toCircle, catGrid);
+  const yZero = Shape.Line(Point(0, 0), Point(xRange.max, 0));
 
-  return svg(dimensions, xRange, yRange, 10, circles);
+  const shapes = R.append(yZero, circles);
+
+  return svg(dimensions, xRange, yRange, 10, shapes);
 }
 
 module.exports = {
