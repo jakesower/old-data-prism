@@ -77,11 +77,16 @@ div.body-container {
       }
     }
 
+    .multiselect {
+      .option:hover {
+        background-color: $mid-orange;
+      }
+    }
+
     aside {
       .slot {
         .multicolumn {
           margin-top: 6px;
-          background-color: $mid-orange;
         }
       }
 
@@ -126,6 +131,12 @@ div.body-container {
 
   &.chart {
     @include page-colors($yellow);
+
+    .multiselect {
+      .option:hover {
+        background-color: $mid-yellow;
+      }
+    }
   }
 
   &.analyze {
@@ -163,10 +174,6 @@ div.main-container {
         .multiselect-content {
           background-clip: padding-box;
           background-color: #eee;
-
-          .option:hover {
-            background-color: $mid-orange;
-          }
         }
       }
     }

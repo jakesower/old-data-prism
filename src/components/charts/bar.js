@@ -99,7 +99,13 @@ function fn(dataset, inputs, dimensions) {
     R.map(R.nth(yAxis), dataset.records)
   );
 
-  const zeroLine = h('line', {attrs: {x1: 0, x2: dimensions.width, y1: zero, y2: zero, class: "zero"}});
+  const zeroLine = h('line', {attrs: {
+    x1: 0,
+    x2: dimensions.width,
+    y1: zero,
+    y2: zero,
+    class: "zero"
+  }});
 
   return h('svg', {
     attrs: {
