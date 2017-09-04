@@ -1,3 +1,4 @@
+const R = require('ramda');
 const daggy = require('daggy');
 
 
@@ -14,9 +15,10 @@ const Shape = daggy.taggedSum('Shape', {
   Circle: ['center', 'radius'],
   Rectangle: ['topLeft', 'bottomRight'],
   Line: ['start', 'end'],
+  Path: ['pts'],
 });
 
-const {Circle, Rectangle, Line} = Shape;
+const {Circle, Rectangle, Line, Path} = Shape;
 
 Shape.prototype.svgAttrs = function () {
   return this.cata({
@@ -32,23 +34,26 @@ Shape.prototype.svgAttrs = function () {
       y1: s.y,
       x2: e.x,
       y2: e.y
-    })
+    }),
+    Path: pts => {
+      const head = R.head(pts);
+      const pathStr = R.reduce(
+        (acc, pt) => `${acc} L ${pt.x} ${pt.y}`,
+        `M ${head.x} ${head.y}`,
+        R.tail(pts)
+      );
+
+      return {d: pathStr};
+    }
   })
 }
-
-Shape.prototype.coords = function (basis) {
-  return this.cata({
-    Circle: basis.circle,
-    Rectangle: basis.rect,
-    Line: basis.line,
-  })
-};
 
 Shape.prototype.project = function (basis) {
   return this.cata({
     Circle: (c, r) => Circle(basis.project(c), r),
     Rectangle: (tl, br) => Rectangle(basis.project(tl), basis.project(br)),
-    Line: (s, e) => Line(basis.project(s), basis.project(e))
+    Line: (s, e) => Line(basis.project(s), basis.project(e)),
+    Path: (pts) => Path(R.map(basis.project, pts)),
   })
 };
 
@@ -57,6 +62,7 @@ Shape.prototype.svgTag = function () {
     Circle: () => 'circle',
     Rectangle: () => 'rect',
     Line: () => 'line',
+    Path: () => 'path',
   })
 };
 

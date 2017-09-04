@@ -10,13 +10,13 @@ const forwardTo = require('flyd-forwardto');
 
 const barChart = require('./charts/bar');
 const scatterPlot = require('./charts/scatter');
-// const lineChart = require('./charts/line');
+const lineChart = require('./charts/line');
 
 
 const CHARTS = {
   bar: barChart,
-  scatterPlot
-  // line: lineChart,
+  scatterPlot,
+  line: lineChart,
 };
 
 

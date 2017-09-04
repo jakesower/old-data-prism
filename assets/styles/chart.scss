@@ -39,6 +39,40 @@
     stroke: black;
   }
 
+  path {
+    fill: transparent;
+    stroke-width: 3;
+    opacity: 0.5;
+
+    &:nth-child(7n) {
+      stroke: rgb(230, 159, 0);
+    }
+
+    &:nth-child(7n+1) {
+      stroke: rgb(86, 180, 233);
+    }
+
+    &:nth-child(7n+2) {
+      stroke: rgb(0, 158, 115);
+    }
+
+    &:nth-child(7n+3) {
+      stroke: rgb(240, 228, 66);
+    }
+
+    &:nth-child(7n+4) {
+      stroke: rgb(0, 114, 178);
+    }
+
+    &:nth-child(7n+5) {
+      stroke: rgb(213, 94, 0);
+    }
+
+    &:nth-child(7n+6) {
+      stroke: rgb(204, 121, 167);
+    }
+  }
+
   .zero {
     stroke: black;
     stroke-width: 1;
