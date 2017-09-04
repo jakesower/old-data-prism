@@ -4,7 +4,7 @@ const dataTypes = require('../../definitions/data');
 const DSF = require('../../lib/dataset-functions');
 
 const {Shape, Range, Point} = require('./types');
-const {svg} = require('./utils');
+const {paddedBasis, paddedSvg, toSvgTag} = require('./utils');
 
 const slots = [
   { key: "rowAxis",
@@ -46,7 +46,9 @@ function fn(dataset, inputs, dimensions) {
   //   R.map(R.nth(R.__, dataset.records), rowAxis);
   const numCategories = R.length(invert ? dataset.records : colAxes);
   const xRange = Range(0, numCategories);
-  const yRange = rangePipe(grid)
+  const yRange = rangePipe(grid);
+
+  const basis = paddedBasis(dimensions, xRange, yRange, 10, 0);
 
   const xs = R.range(0, numCategories);
   const toCircle = ({x, y}) => Shape.Circle(Point(x + 0.5, y), 4);
@@ -57,12 +59,24 @@ function fn(dataset, inputs, dimensions) {
     )
   );
 
-  const circles = R.map(toCircle, catGrid);
-  const yZero = Shape.Line(Point(0, 0), Point(xRange.max, 0));
+  const circles = R.pipe(
+    R.map(toCircle),
+    R.map(c => c.project(basis)),
+    R.map(toSvgTag({}))
+  )(catGrid);
 
-  const shapes = R.append(yZero, circles);
+  const yZero = toSvgTag(
+    {class: {zero: true}},
+    Shape.Line(Point(0, 0), Point(xRange.max, 0)).project(basis)
+  );
 
-  return svg(dimensions, xRange, yRange, 10, shapes);
+  return paddedSvg(dimensions, 10,
+    {class: {'scatter-plot': true}},
+    R.flatten([
+      circles,
+      [yZero]
+    ])
+  );
 }
 
 module.exports = {

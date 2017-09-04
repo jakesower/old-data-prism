@@ -1,13 +1,16 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 const dataTypes = require('../../definitions/data');
+const {Shape, Range, Point} = require('./types');
+const {paddedBasis, paddedSvg, toSvgTag} = require('./utils');
 
+const mapIndexed = R.addIndex(R.map);
 
 const slots = [
   { key: "xAxis",
     display: "Label",
     sourceType: "column",
-    dataType: dataTypes.FiniteNumber
+    dataType: dataTypes.String
   },
   { key: "yAxis",
     display: "Value",
@@ -21,106 +24,75 @@ function fn(dataset, inputs, dimensions) {
   const {xAxis, yAxis} = inputs;
   if (R.isNil(xAxis) || R.isNil(yAxis)) return [];
 
-  const maxValue = R.pipe(
-    R.map(R.nth(yAxis)),
-    R.map(parseFloat),
-    R.reduce(R.max, 0)  // always include 0
-  )(dataset.records);
-
-  const minValue = R.pipe(
-    R.map(R.nth(yAxis)),
-    R.map(parseFloat),
-    R.reduce(R.min, 0)  // always include 0
-  )(dataset.records);
-
-  // R.juxt instead?
-  const yRange = maxValue - minValue;
-
-  const numEntries = R.length(dataset.records);
-  const padding = 10;
   const textHeight = 20;
-  const totalPadding = (padding * (numEntries + 2));
-  const width = Math.floor((dimensions.width - totalPadding) / numEntries);
-  const barHeight = Math.floor(dimensions.height - padding - textHeight*2);
-  const scale = barHeight / yRange;
-  const zero = Math.abs(barHeight - Math.round(scale * minValue * -1));
 
-  const columnLabel = (val, idx) => {
+  const yVals = R.pipe(
+    R.map(R.nth(yAxis)),
+    R.map(parseFloat)
+  )(dataset.records);
+
+  const rangePipe = R.pipe(
+    R.append(0),
+    R.apply(R.juxt([Math.min, Math.max])),
+    R.apply(Range)
+  );
+
+  const xRange = Range(0, R.length(dataset.records));
+  const yRange = rangePipe(yVals);
+
+  const basis = paddedBasis(dimensions, xRange, yRange, 10, 20);
+
+  const yZero = toSvgTag(
+    {class: {zero: true}},
+    Shape.Line(Point(0, 0), Point(xRange.max, 0)).project(basis)
+  );
+
+  const barShape = (x, y) => y > 0 ?
+    Shape.Rectangle(Point(x, y), Point(x + 1, 0)) :
+    Shape.Rectangle(Point(x, 0), Point(x + 1, y));
+
+  const pad = R.curry((padding, shape) => shape.pad(padding));
+  const project = R.curry((basis, shape) => shape.project(basis));
+
+  const bars = R.pipe(
+    mapIndexed(R.flip(barShape)),
+    R.map(project(basis)),
+    R.map(pad(10)),
+    R.map(toSvgTag({}))
+  )(yVals);
+
+  const columnLabels = R.pipe(
+    R.map(R.nth(xAxis)),
+    mapIndexed((label, idx) => {
+      const xCoord = Point(idx+0.5, 0).project(basis).x;
+      return h(
+        'text',
+        {attrs: {x: xCoord, y: dimensions.height - 20}},
+        label
+      );
+    })
+  )(dataset.records);
+
+  const dataLabels = mapIndexed((yVal, idx) => {
+    const barTop = Point(idx + 0.5, yVal).project(basis);
+    const zeroPoint = Point(idx + 0.5, 0).project(basis);
+    const yDelta = barTop.y - zeroPoint.y;
+    const outside = Math.abs(yDelta) > textHeight;
+    const above = (outside && yDelta > 0) || (!outside && yDelta < 0);
     const attrs = {
-      x: Math.floor(((idx + 0.5) * (width + padding)) + padding*0.5),
-      y: barHeight + textHeight*2
+      x: barTop.x,
+      y: above ? (barTop.y - 8) : (barTop.y + textHeight)
     };
 
-    return h('text', {attrs}, val);
-  }
+    return h('text', {attrs}, yVal);
+  })(yVals);
 
-  const dataLabel = (val, idx) => {
-    const height = Math.abs(Math.floor(val * scale));
-    const tinyOffset = (textHeight * 1.5) < height ? 0 : textHeight * 1.5;
-    const yPoint =
-      val < 0 ?
-        zero + height - textHeight*1.5 + tinyOffset :
-        zero - height - tinyOffset;
-
-    const attrs = {
-      x: Math.floor(((idx + 0.5) * (width + padding)) + padding*0.5),
-      y: yPoint + textHeight
-    }
-
-    return h('text', {attrs}, val);
-  }
-
-  const rect = (val, idx) => {
-    const height = Math.abs(Math.floor(val * scale));
-    const yPoint = val < 0 ? zero : zero - height;
-
-    const attrs = {
-      x: (idx * (width + padding)) + padding,
-      width,
-      height,
-      y: yPoint
-    };
-
-    return h('rect', {attrs}, []);
-  }
-
-  const bars = R.addIndex(R.map)(
-    rect,
-    R.map(R.pipe(R.nth(yAxis), parseFloat), dataset.records)
-  );
-
-  const columnLabels = R.addIndex(R.map)(
-    columnLabel,
-    R.map(R.nth(xAxis), dataset.records)
-  );
-
-  const dataLabels = R.addIndex(R.map)(
-    dataLabel,
-    R.map(R.nth(yAxis), dataset.records)
-  );
-
-  const zeroLine = h('line', {attrs: {
-    x1: 0,
-    x2: dimensions.width,
-    y1: zero,
-    y2: zero,
-    class: "zero"
-  }});
-
-  return h('svg', {
-    attrs: {
-      xmlns: "http://www.w3.org/2000/svg",
-      viewBox: `0 0 ${dimensions.width} ${dimensions.height}`,
-      preserveAspectRatio: "xMidYMid",
-      class: "chart"
-    }
-  }, R.flatten([
-    [zeroLine],
+  return paddedSvg(dimensions, 10, {}, R.flatten([
     bars,
+    [yZero],
     columnLabels,
     dataLabels
-  ]))
-
+  ]));
 }
 
 module.exports = {
