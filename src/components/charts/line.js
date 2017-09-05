@@ -41,34 +41,20 @@ function fn(dataset, inputs, dimensions) {
   const rawPoints = R.map(c => columns[c].values, colAxes);
   const grid = invert ? R.transpose(rawPoints) : rawPoints;
 
-  // const categories = invert ?
-  //   R.map(c => columns[c].header, colAxes) :
-  //   R.map(R.nth(R.__, dataset.records), rowAxis);
   const numCategories = R.length(invert ? colAxes : dataset.records);
-  const xRange = Range(0, numCategories);
+  const xRange = Range(0, numCategories - 1);
   const yRange = rangePipe(grid);
 
   const basis = paddedBasis(dimensions, xRange, yRange, 10, 0);
 
   const xs = R.range(0, numCategories);
   const toPath = pts => Shape.Path(pts);
-  // need to fully expand y from an array to individual points
-  // const catGrid = R.zipWith(
-  //   (x, pts) => R.chain(y => Point(x, y), pts),
-  //   xs, grid
-  // );
   const catGrid = R.map(
-    R.addIndex(R.map)((y, idx) => Point(idx+0.5, y))
+    R.addIndex(R.map)((y, idx) => Point(idx, y))
   )(grid);
 
-  console.log({grid, catGrid})
-
   const paths = R.pipe(
-    // R.tap(console.log),
-    // R.unnest,
-    R.tap(console.log),
     R.map(toPath),
-    // R.tap(console.log),
     R.map(c => c.project(basis)),
     R.map(toSvgTag({}))
   )(catGrid);

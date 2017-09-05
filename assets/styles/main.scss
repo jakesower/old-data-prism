@@ -121,14 +121,6 @@ div.body-container {
     }
   }
 
-  &.viewgrid {
-    @include page-colors($yellow);
-
-    tr:nth-child(2n) {
-      background-color: #ffa;
-    }
-  }
-
   &.chart {
     @include page-colors($yellow);
 
@@ -139,7 +131,11 @@ div.body-container {
     }
   }
 
-  &.analyze {
+  &.annotate {
+    @include page-colors($green);
+  }
+
+  &.export {
     @include page-colors($blue);
   }
 
