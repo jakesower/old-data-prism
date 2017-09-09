@@ -9,15 +9,12 @@ const GroupingComponent = require('./group-operation');
 const GridComponent = require('./grid');
 const ChartComponent = require('./chart');
 
-const update = Action.caseOn({
-  StartUpload: (action$, model) => { // keep action$ out of here TODO
-    readCsv(action$, 'data-file');
-    return R.merge(model, {'dataUploading': true});
-  },
+const Samples = require('../samples/index');
 
+const update = Action.caseOn({
   SetData: (newData, model) =>
     R.merge(model, {
-      dataUploading: false,
+      dataLoading: false,
       dataset: newData,
       page: 'PrepareData'
     }),
@@ -68,14 +65,14 @@ const update = Action.caseOn({
     }, model)
   },
 
+  // LoadLocalFile, LoadURI are handled externally
   _: function(){ console.error(arguments)}
 });
 
 
-
 const firstInit = {
   page: 'UploadData',
-  dataUploading: false,
+  dataLoading: false,
   dataset: null,
   activeOperation: null,
   uid: 1,
@@ -89,27 +86,5 @@ const firstInit = {
 
 const init = state => state || firstInit;
 
-
-// Helper
-function readCsv(action$, fileDomId) {
-  var input = document.getElementById(fileDomId);
-  var file = input.files[0];
-
-  var r = new FileReader();
-  // r.onerror = function(e){error(e.target.error.name);};
-  r.onload = function(e) {
-    const result = e.target.result;
-    const handleData = (err, data) => {
-      action$(Action.SetData({
-        headers: data[0],
-        records: R.slice(1, Infinity, data)
-      }));
-    }
-
-    parseCsv(result, handleData);
-  };
-
-  r.readAsText(file);
-}
 
 module.exports = {Action, view, update, init};

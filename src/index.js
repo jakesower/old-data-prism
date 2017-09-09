@@ -10,6 +10,7 @@ const patch = require('snabbdom').init([
   require('snabbdom/modules/props').default,
 ]);
 const { debounce } = require('./lib/utils');
+const { readCsv, readUri } = require('./lib/data-fetchers');
 
 const Main = require('./components/main.js');
 const MainAction = require('./components/main/types').Action;
@@ -48,7 +49,7 @@ const rehydrateOperations = (model) => {
 }
 
 const restoreState = () => {
-  // return Main.init(null);
+  return Main.init(null);
   try {
     const restored = JSON.parse(localStorage.getItem('state'));
     // console.log(restored)
@@ -63,13 +64,31 @@ const restoreState = () => {
   }
 };
 
-// Streams
+// Side-effect handlers
 const action$ = flyd.stream();
-const model$ = flyd.scan(
-  S.flip(Main.update),
-  restoreState(),
-  action$
-);
+
+// Model -> Action -> Model
+const update = (model, action, x) => {
+  return MainAction.case({
+    LoadLocalFile: domNode => {
+      // console.log({model, domNode, action})
+      readCsv(action$, domNode);
+      return R.merge(model, {dataLoading: true});
+    },
+
+    LoadURI: uri => {
+      readUri(action$, uri);
+      return R.merge(model, {dataLoading: true});
+    },
+
+    _: () => {
+      return Main.update(action, model)
+    }
+  })(action);
+}
+
+// Streams
+const model$ = flyd.scan(update, restoreState(), action$);
 const vnode$ = flyd.map(
   // m => S.fromMaybe(
   //   errorVdom(forwardTo(model$, _ => Main.init(null))),

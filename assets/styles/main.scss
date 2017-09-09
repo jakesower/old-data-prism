@@ -2,6 +2,8 @@
 @import "variables.scss";
 @import "chart.scss";
 @import "fonts.scss";
+@import "forms.scss";
+@import "source.scss";
 
 @mixin page-colors($pure-color) {
   $light: lighten($pure-color, 40%);
@@ -208,40 +210,6 @@ div.main-container {
         text-transform: uppercase;
       }
 
-      input, select, .multiselect {
-        margin: 4px 0;
-        padding: 4px;
-        display: block;
-        font-size: 100%;
-
-        &:not([type=checkbox]) {
-          width: 100%;
-        }
-      }
-
-      .multiselect {
-        padding: 0;
-        margin-bottom: 12px;
-      }
-
-      input {
-        display: inline-block;
-        box-sizing: border-box;
-      }
-
-      input.invalid:not(.empty) {
-        border: 2px solid red;
-        outline: none;
-      }
-
-      select {
-        width: 100%;
-      }
-
-      .controls button {
-        margin: 0 5px 0 0;
-        font-size: 80%;
-      }
 
       .aggregator {
         padding: 5px 0;

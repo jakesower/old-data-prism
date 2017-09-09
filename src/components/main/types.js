@@ -6,7 +6,8 @@ const Action = Type({
   SetMainDimensions: [Object],
 
   // Import
-  StartUpload: [() => true],
+  LoadLocalFile: [() => true],
+  LoadURI: [String],
   SetData: [Object],
 
   // Prepare
