@@ -8,17 +8,23 @@ const pages = {
   PrepareData: require('./pages/prepare-data'),
   Chart: require('./pages/chart'),
   Annotate: require('./pages/annotate'),
-  Export: require('./pages/export'),
+  Export: require('./pages/annotate'),
+  Indigo: require('./pages/annotate'),
+  Purple: require('./pages/annotate'),
 };
 
 module.exports = R.curry(function(action$, model) {
   const pageClass = model.page.toLowerCase();
 
   return h('div', {
-    class: {"body-container": true, [pageClass]: true}
+    class: {"body-container": true, [pageClass]: true, help: model.help}
   }, [
     h('nav', {}, [
       h('h1', {}, 'Data Prism'),
+      h('div', {
+        class: {help: true},
+        on: {click: [action$, Action.ToggleHelp]}
+      }),
       h('a', {
         class: {selected: model.page === 'UploadData'},
         on: {click: [action$, Action.SetPage('UploadData')]}
@@ -39,6 +45,13 @@ module.exports = R.curry(function(action$, model) {
         class: {selected: model.page === 'Export'},
         on: {click: [action$, Action.SetPage('Export')]}
       }, 'Export'),
+      h('a', {
+        class: {selected: model.page === 'Purple'},
+        on: {click: [action$, Action.SetPage('Purple')]}
+      }, 'Purple'),
+    ]),
+    h('div', {class: {'help-bar': true}}, [
+      h('div', {class: {'help-text': true}}, "Hi, I'm the most helpful message in the whole goddamn world. You're not totally fucking this up, I promise!"),
     ]),
     pages[model.page](action$, model)
   ]);

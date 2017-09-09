@@ -2,17 +2,23 @@ aside.source {
   h2 {
     font-size: 120%;
     text-transform: uppercase;
-    padding-bottom: 0.5em;
   }
 }
 
 main.source {
-  display: flex;
-  flex-direction: row;
+  .colgroup {
+    display: flex;
+    flex-direction: row;
+    padding-bottom: 1em;
 
-  .upload-type {
-    flex: 1;
-    padding: 0 1em;
+    & > div {
+      flex: 1;
+      padding: 0 1em;
+    }
+  }
+
+  h1 {
+    font-size: 140%;
   }
 
   h2 {

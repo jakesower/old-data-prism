@@ -18,6 +18,10 @@
     }
   }
 
+  .help-bar {
+    background-color: $mid;
+  }
+
   aside {
     background-color: $mid;
   }
@@ -148,6 +152,19 @@ div.body-container {
   &.purple {
     @include page-colors($purple);
   }
+
+  .help-bar {
+    display: none;
+  }
+
+  &.help {
+    .help-bar {
+      display: block;
+      padding: 4px 1em;
+      text-align: right;
+    }
+  }
+
 }
 
 div.main-container {
@@ -269,52 +286,70 @@ div.main-container {
 }
 
 nav {
-  // background-color: #fffff3;
+  display: flex;
 
   h1 {
-    font-size: 120%;
+    &::after {
+      // content: " \f059 \f2c2";
+    }
+    font-size: 140%;
     display: inline-block;
     padding: 0.3em 1em;
+    flex: 0;
+    white-space: nowrap;
+    order: 1;
+  }
+
+  .help {
+    &::before {
+      content: "\f059";
+    }
+    font-size: 140%;
+    flex: 0;
+    order: 0;
+    min-width: 1em;
+    padding: 0.3em 0.5em;
+    color: white;
+    cursor: pointer;
+    display: none;
   }
 
   a {
+    text-align: center;
     display: inline-block;
     font-size: 140%;
     padding: 0.4em 1em 0.3em 1em;
     cursor: pointer;
+    flex: 1;
+    order: 2;
   }
 
-  a:nth-child(7n + 2) {
+  a:nth-child(6n + 3) {
     background-color: $light-red;
     &:hover { background-color: $mid-red; }
     &.selected { background-color: $mid-red; }
   }
-  a:nth-child(7n + 3) {
+  a:nth-child(6n + 4) {
     background-color: $light-orange;
     &:hover { background-color: $mid-orange; }
     &.selected { background-color: $mid-orange; }
   }
-  a:nth-child(7n + 4) {
+  a:nth-child(6n + 5) {
     background-color: $light-yellow;
     &:hover { background-color: $mid-yellow; }
     &.selected { background-color: $mid-yellow; }
   }
-  a:nth-child(7n + 5) {
+  a:nth-child(6n + 0) {
     background-color: $light-green;
     &:hover { background-color: $mid-green; }
     &.selected { background-color: $mid-green; }
   }
-  a:nth-child(7n + 6) {
+  a:nth-child(6n + 1) {
     background-color: $light-blue;
     &:hover { background-color: $mid-blue; }
     &.selected { background-color: $mid-blue; }
   }
-  a:nth-child(7n) {
-    background-color: $light-indigo;
-    &:hover { background-color: $mid-indigo; }
-    &.selected { background-color: $mid-indigo; }
-  }
-  a:nth-child(7n + 1) {
+  a:nth-child(6n + 2) {
     background-color: $light-purple;
     &:hover { background-color: $mid-purple; }
     &.selected { background-color: $mid-purple; }

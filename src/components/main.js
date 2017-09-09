@@ -20,6 +20,9 @@ const update = Action.caseOn({
     }),
 
   SetPage: R.assoc('page'),
+  ToggleHelp: model => R.assoc('help', !model.help, model),
+  ToggleWalkthrough: model => R.assoc('walkthrough', !model.walkthrough, model),
+
   SetActiveOperation: R.assoc('activeOperation'),
 
   ModifyOperation: (idx, updateFn, action, model) => {
@@ -74,6 +77,8 @@ const firstInit = {
   page: 'UploadData',
   dataLoading: false,
   dataset: null,
+  help: false,
+  walkthrough: false,
   activeOperation: null,
   uid: 1,
   operations: [],

@@ -4,6 +4,8 @@ const OperationTypes = require('../operation/types');
 const Action = Type({
   // General
   SetMainDimensions: [Object],
+  ToggleHelp: [],
+  ToggleWalkthrough: [],
 
   // Import
   LoadLocalFile: [() => true],
