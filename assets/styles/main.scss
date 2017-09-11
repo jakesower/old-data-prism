@@ -62,7 +62,7 @@ div.body-container {
 
   &.uploaddata { @include page-colors($red); }
 
-  &.preparedata {
+  &.remix {
     @include page-colors($orange);
 
     .column {
@@ -96,8 +96,14 @@ div.body-container {
         }
       }
 
+      hr {
+        border: 0;
+        border-top: 1px solid #222;
+      }
+
       .prepare-controls {
         display: flex;
+        flex-wrap: wrap;
         width: 100%;
         margin-top: 4px;
 
@@ -173,7 +179,7 @@ div.main-container {
   flex-direction: row;
 
   aside {
-    flex: 0 0 18em;
+    flex: 0 0 19em;
     padding: 1em;
 
     .slot {
@@ -306,12 +312,12 @@ nav {
     }
     font-size: 140%;
     flex: 0;
-    order: 0;
+    order: 3;
     min-width: 1em;
     padding: 0.3em 0.5em;
     color: white;
     cursor: pointer;
-    display: none;
+    // display: none;
   }
 
   a {
@@ -537,5 +543,20 @@ nav {
 
 .operation-grouping::before {
   content: "\f247";
+  font: normal normal normal 14px/1 FontAwesome;
+}
+
+.operation-save::before {
+  content: "\f0c7";
+  font: normal normal normal 14px/1 FontAwesome;
+}
+
+.operation-download::before {
+  content: "\f019";
+  font: normal normal normal 14px/1 FontAwesome;
+}
+
+.operation-columns::before {
+  content: "\f0db";
   font: normal normal normal 14px/1 FontAwesome;
 }

@@ -2,6 +2,8 @@ const R = require('ramda');
 const S = require('sanctuary');
 const parseCsv = require('csv-parse');
 
+const Dataset = require('../types/dataset');
+
 const view = require('./main/view');
 const {Action, Operation} = require('./main/types');
 const OperationComponent = require('./operation');
@@ -9,19 +11,19 @@ const GroupingComponent = require('./group-operation');
 const GridComponent = require('./grid');
 const ChartComponent = require('./chart');
 
-const Samples = require('../samples/index');
-
 const update = Action.caseOn({
   SetData: (newData, model) =>
     R.merge(model, {
       dataLoading: false,
-      dataset: newData,
-      page: 'PrepareData'
+      dataset: Dataset(newData.headers, newData.records),
+      page: 'Remix'
     }),
 
   SetPage: R.assoc('page'),
   ToggleHelp: model => R.assoc('help', !model.help, model),
   ToggleWalkthrough: model => R.assoc('walkthrough', !model.walkthrough, model),
+
+  SetOperations: R.assoc('operations'),
 
   SetActiveOperation: R.assoc('activeOperation'),
 

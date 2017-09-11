@@ -3,7 +3,7 @@ const h = require('snabbdom/h').default;
 const moment = require('moment');
 
 const notEmpty = R.complement(R.empty);
-const dataTypes = require('./data');
+const DataType = require('../types/data-type');
 const {appendColumn} = require('../lib/dataset-functions');
 
 const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
@@ -26,12 +26,12 @@ const FormattedDate = {
 
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.Date,
+      dataType: DataType.Date,
       key: "date",
       display: "date",
     },
     { sourceType: "user",
-      dataType: dataTypes.NonEmptyString,
+      dataType: DataType.NonEmptyString,
       key: "format",
       display: "format",
     }
@@ -47,12 +47,12 @@ const Quantile = {
 
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
       key: "n",
       display: "n",
     },
     { sourceType: "user",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
       key: "order",
       display: "order",
     }
@@ -105,7 +105,7 @@ const Sum = {
   slots: [{
     key: "addends",
     display: "addends",
-    dataType: dataTypes.FiniteNumber,
+    dataType: DataType.FiniteNumber,
     sourceType: "multicolumn"
   }],
 
@@ -127,11 +127,11 @@ const Difference = {
     { key: "minuend",
       display: "minuend",
       sourceType: "column",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
     },
     { key: "subtrahend",
       display: "subtrahend",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
       sourceType: "column"
     }
   ],
@@ -153,11 +153,11 @@ const Round = {
     { key: "num",
       display: "Column",
       sourceType: "column",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
     },
     { key: "precision",
       display: "Precision",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
       sourceType: "user"
     }
   ],
@@ -181,11 +181,11 @@ const Floor = {
     { key: "num",
       display: "Column",
       sourceType: "column",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
     },
     { key: "precision",
       display: "Precision",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
       sourceType: "user"
     }
   ],
@@ -209,11 +209,11 @@ const Ceiling = {
     { key: "num",
       display: "Column",
       sourceType: "column",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
     },
     { key: "precision",
       display: "Precision",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
       sourceType: "user"
     }
   ],
@@ -237,11 +237,11 @@ const Logarithm = {
     { key: "num",
       display: "Column",
       sourceType: "column",
-      dataType: dataTypes.PositiveFiniteNumber,
+      dataType: DataType.PositiveFiniteNumber,
     },
     { key: "base",
       display: "Base",
-      dataType: dataTypes.PositiveFiniteNumber,
+      dataType: DataType.PositiveFiniteNumber,
       sourceType: "user"
     }
   ],

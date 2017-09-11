@@ -82,8 +82,7 @@ const view = R.curry(function(itemPool, dataset, editing, action$, model) {
         R.compose(
           action$,
           Action.SetDefinition,
-          R.prop(R.__, itemPool),
-          R.tap(console.log)
+          R.prop(R.__, itemPool)
         )
       )
     );

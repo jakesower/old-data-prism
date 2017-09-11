@@ -5,7 +5,7 @@ const {Action} = require('./types');
 
 const pages = {
   UploadData: require('./pages/upload-data'),
-  PrepareData: require('./pages/prepare-data'),
+  Remix: require('./pages/remix'),
   Chart: require('./pages/chart'),
   Annotate: require('./pages/annotate'),
   Export: require('./pages/annotate'),
@@ -30,8 +30,8 @@ module.exports = R.curry(function(action$, model) {
         on: {click: [action$, Action.SetPage('UploadData')]}
       }, 'Source'),
       h('a', {
-        class: {selected: model.page === 'PrepareData'},
-        on: {click: [action$, Action.SetPage('PrepareData')]}
+        class: {selected: model.page === 'Remix'},
+        on: {click: [action$, Action.SetPage('Remix')]}
       }, 'Remix'),
       h('a', {
         class: {selected: model.page === 'Chart'},

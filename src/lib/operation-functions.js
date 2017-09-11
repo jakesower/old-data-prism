@@ -4,6 +4,9 @@ const S = require('sanctuary');
 const {populateSlots} = require('../lib/operation-utils');
 const {validColumn, columns} = require('./dataset-functions');
 
+// An operation is essentially a definition plus data
+const {Operation} = require('../types/operation');
+
 
 const applyGroupingOperation = (dataset, operation) => {
   const applyAggregators = groups => {
@@ -40,16 +43,20 @@ const applyGroupingOperation = (dataset, operation) => {
 
 
 const applyOperation = R.curry((dataset, operation) => {
-  if (!operationValid(dataset, operation)) {
-    return dataset;
-  }
-  else if (operation.type === 'Grouping') {
-    return applyGroupingOperation(dataset, operation);
-  }
-  else {
-    const inputs = populateSlots(operation.definition, operation.inputs, dataset);
-    return operation.definition.fn(dataset, inputs, operation.columnName);
-  }
+  console.log(operation)
+  return operation.valid(dataset) ?
+    operation.apply(dataset) :
+    operation.applyInvalid(dataset);
+  // if (!operationValid(dataset, operation)) {
+  //   return dataset;
+  // }
+  // else if (operation.type === 'Grouping') {
+  //   return applyGroupingOperation(dataset, operation);
+  // }
+  // else {
+  //   const inputs = populateSlots(operation.definition, operation.inputs, dataset);
+  //   return operation.definition.fn(dataset, inputs, operation.columnName);
+  // }
 })
 
 /**

@@ -11,13 +11,13 @@ module.exports = () => {
     description: "Examine raw temperature data to see a pattern of warming over the north pole.",
     steps: [
       { text: 'First, load the test dataset by clicking "Load Sample" and selecting "Monthly North Pole Temperature Deviations"',
-        action: MainAction.LoadURI(cData.uri)
+        action: MainAction.LoadURI(cData.uri),
       },
       { text: 'Wait for the data to load.',
         action: MainAction
       }
       { text: 'Click the "Remix" tab at the top.',
-        action: MainAction.SetPage('PrepareData')
+        action: MainAction.SetPage('Remix')
       }
     ]
   }

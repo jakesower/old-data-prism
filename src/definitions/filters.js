@@ -1,7 +1,7 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 
-const dataTypes = require('./data');
+const DataType = require('../types/data-type');
 
 const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
 const col = R.curry((dataset, cName) =>
@@ -34,12 +34,12 @@ const Equality = rowFilter({
 
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.String,
+      dataType: DataType.String,
       key: "a",
       display: "Column"
     },
     { sourceType: "user",
-      dataType: dataTypes.String,
+      dataType: DataType.String,
       key: "b",
       display: "is equal to"
     }
@@ -58,12 +58,12 @@ const LT = rowFilter({
   name: "Less Than",
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
       key: "base",
       display: "Column",
     },
     { sourceType: "user",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
       key: "target",
       display: "is less than",
     }

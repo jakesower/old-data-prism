@@ -20,7 +20,7 @@ const populateSlots = (operation, inputs, dataset) => {
 
   const extractSlot = ({sourceType, dataType, key}) =>
     sourceType === 'user'   ? inputs[key] :
-    sourceType === 'column' ? colVal(dataType, inputs[key])
+    sourceType === 'column' ? Number.isInteger(inputs[key]) && colVal(dataType, inputs[key])
         /* 'multicolumn' */ : colVals(dataType, inputs[key]);
 
   return R.pipe(

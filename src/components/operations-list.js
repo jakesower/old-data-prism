@@ -2,16 +2,12 @@ const R = require('ramda');
 const S = require('sanctuary');
 const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
+const Type = require('union-type');
 
-const {Action, Operation, GroupAction} = require('../types');
-const {applyOperation, applyOperations, operationsValid} = require('../../../lib/operation-functions');
+const Operation = require('../../../types/operation');
 
-const OperationAction = require('../../operation/types').Action;
 const OperationComponent = require('../../operation');
-
-const GroupingComponent = require('../../group-operation');
-
-const GridComponent = require('../../grid');
+const GroupOperationComponent = require('../../group-operation');
 
 const AGGREGATORS = require('../../../definitions/aggregators');
 const DERIVERS = require('../../../definitions/derivers');
@@ -30,11 +26,29 @@ const componentsByType = {
 }
 
 
-const operationView = R.curry((action$, dataset, editing, operation, idx) => {
+// these are the things this component responds to--it's the parent's job to
+// pass appropriate streams to write up to
+const Action = Type({
+  DeleteOperation,
+  SetActiveOperation,
+  ModifyOperation
+})
+
+
+const operationView = R.curry((operations$, currentEditing$) => {
   const component = componentsByType[operation.type];
 
   return component.view(
-    itemPools[operation.type],
+    { items: itemPools[operation.type],
+      dataset,
+      editing
+    },
+    { modify$: Action.ModifyOperation, ???
+      delete$: Action.DeleteOperation, ???
+      setActive$: Action.SetActive ???
+    }
+  )
+    ,
     dataset,
     editing,
     forwardTo(action$, act => {
@@ -52,17 +66,18 @@ const operationView = R.curry((action$, dataset, editing, operation, idx) => {
 const renderOperations = R.curry((action$, dataset, operations, idx, active) => {
   const [head, tail] = [R.head(operations), R.tail(operations)];
   if (!head) return [];
+  const operation = toOperation(head);
 
   return R.prepend(
     operationView(action$, dataset, head.id === active, head, idx),
-    renderOperations(action$, applyOperation(dataset, head), tail, idx+1, active)
+    renderOperations(action$, operation.apply(dataset), tail, idx+1, active)
   );
 });
 
 
-module.exports = R.curry((action$, model) => {
-  if (!model.dataset) return h('div', {}, '');
-  const {dataset, operations, activeOperation, grids} = model;
+module.exports = R.curry((operations$, currentEditing$, dataset, operations) => {
+  const {dataset, operations: ops, activeOperation, grids} = model;
+  const operations = R.map(toOperation, ops);
   const ctrlAttrs = action => ({
     class: {control: true},
     on: {click: [action$, action]}
@@ -75,13 +90,20 @@ module.exports = R.curry((action$, model) => {
 
   return h('div', {class: {"main-container": true}}, R.flatten([
     h('aside', {}, R.flatten([
-      renderOperations(action$, dataset, operations, 0, activeOperation),
+      renderOperations(action$, dataset, ops, 0, activeOperation),
 
       h('div', {class: {"prepare-controls": true}, key: 'prepare-controls'}, [
         h('div', ctrlAttrs(Action.CreateFilter), iconed('Filter')),
         h('div', ctrlAttrs(Action.CreateDeriver), iconed('Deriver')),
-        h('div', ctrlAttrs(Action.CreateGrouping), iconed('Grouping'))
-      ])
+        h('div', ctrlAttrs(Action.CreateGrouping), iconed('Grouping')),
+      ]),
+
+      h('div', {class: {"prepare-controls": true}, key: 'prepare-controls'}, [
+        h('div', ctrlAttrs(Action.PickColumns), iconed('Columns')),
+        h('div', ctrlAttrs(Action.SaveRemix), iconed('Save')),
+        h('div', ctrlAttrs(Action.SaveRemix), iconed('Download')),
+      ]),
+
     ])),
 
     h('main', {}, [

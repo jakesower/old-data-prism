@@ -1,5 +1,5 @@
 const R = require('ramda');
-const dataTypes = require('./data');
+const DataType = require('../types/data-type');
 
 const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
 const col = R.curry((dataset, cName) =>
@@ -21,7 +21,7 @@ const Mean = {
   name: "Mean",
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
       key: "a",
       display: "Column"
     },
@@ -35,7 +35,7 @@ const Median = {
   name: "Median",
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
       key: "a",
       display: "Column"
     },
@@ -50,7 +50,7 @@ const Maximum = {
   name: "Maximum",
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
       key: "a",
       display: "Column"
     },
@@ -64,7 +64,7 @@ const Minimum = {
   name: "Minimum",
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
       key: "a",
       display: "Column"
     },
@@ -78,7 +78,7 @@ const Sum = {
   name: "Sum",
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
       key: "a",
       display: "Column"
     },
@@ -92,7 +92,7 @@ const Product = {
   name: "Product",
   slots: [
     { sourceType: "column",
-      dataType: dataTypes.FiniteNumber,
+      dataType: DataType.FiniteNumber,
       key: "a",
       display: "Product"
     },
