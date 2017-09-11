@@ -20,46 +20,46 @@ const slotWrapper = R.curry((title, vdom) => {
 })
 
 
-const build = R.curry((slot, inputs, dataset, onChange) => {
+const build = R.curry((slot, inputs, dataset, change$) => {
   const sw = slotWrapper(slot.display);
 
   switch (slot.sourceType) {
     case 'user':
-      return sw(user(slot, inputs, onChange));
+      return sw(user(slot, inputs, change$));
     case 'column':
       return sw(column(
         inputs[slot.key],
         R.map(columnOptions, validColumns(dataset, slot.dataType)),
-        onChange
+        change$
       ));
     case 'multicolumn':
       return sw(multicolumn(
         inputs[slot.key],
         R.map(columnOptions, validColumns(dataset, slot.dataType)),
-        onChange
+        change$
       ));
   }
 });
 
 
-const user = (slot, inputs, onChange) => {
+const user = (slot, inputs, change$) => {
   return slot.dataType.key === 'Enumerated' ?
       column(
         inputs[slot.key],
         R.map(fixedOptions, slot.dataType.values),
-        onChange
+        change$
       ) :
     slot.dataType.key === 'Boolean' ?
       checkbox(
         inputs[slot.key],
-        onChange
+        change$
       ) :
-      textBox(slot, inputs[slot.key], onChange)
+      textBox(slot, inputs[slot.key], change$)
 
 }
 
 
-const textBox = (slot, currentValue, onChange) => {
+const textBox = (slot, currentValue, change$) => {
   const attrs = {
     value: currentValue,
     type: slot.dataType.htmlInputType || "text",
@@ -73,29 +73,29 @@ const textBox = (slot, currentValue, onChange) => {
 
   return h('input', {
     attrs: R.filter(R.complement(R.isNil), attrs),
-    on: {keyup: R.compose(onChange, targetValue)},
+    on: {keyup: R.compose(change$, targetValue)},
     class: classes
   }, [])
 }
 
 
-const column = (currentValue, options, onChange) => {
+const column = (currentValue, options, change$) => {
   return select(
     currentValue,
     options,
-    R.compose(onChange, parseInt)
+    R.compose(change$, parseInt)
   );
 }
 
 
-const multicolumn = (currentValues, options, onChange) => {
+const multicolumn = (currentValues, options, change$) => {
   const option = item => {
     return h('div', {}, item.display);
   };
 
   return h('div',
     {class: {multicolumn: true}},
-    multiselect(options, currentValues, {change: onChange})
+    multiselect(options, currentValues, {change: change$})
   );
 }
 

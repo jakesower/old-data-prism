@@ -1,9 +1,9 @@
-const targetValue = function(ev) {
+const targetValue = function (ev) {
   return ev.target.value;
 }
 
 
-const debounce = function(func, wait) {
+const debounce = function (func, wait) {
   let timeout;
   return function() {
     let context = this, args = arguments;

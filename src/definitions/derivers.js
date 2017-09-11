@@ -250,6 +250,7 @@ const Logarithm = {
     const den = Math.log(base);
     return R.map(n => Math.log(n) / den, num);
   },
+  
   display: (args, dataset) =>
     h('div', {}, [
       `Log base ${base} of `,

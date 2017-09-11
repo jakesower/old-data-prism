@@ -1,12 +1,9 @@
 const R = require('ramda');
 const daggy = require('daggy');
 
-const DSF = require('../lib/dataset-functions');
-const {populateSlots} = require('../lib/operation-utils');
-
 
 const Operation = daggy.taggedSum('Operation', {
-  Empty: [],
+  Empty: ['inputs'],
   Filter: ['definition', 'inputs'],
   Deriver: ['definition', 'inputs'],
   Grouping: ['inputs'],
@@ -15,6 +12,8 @@ const Operation = daggy.taggedSum('Operation', {
 
 const {Filter, Deriver, Grouping} = Operation;
 
+
+// Operation ~> Dataset -> Dataset
 Operation.prototype.applyInvalid = function (dataset) {
   return this.cata({
     Empty: () => dataset,
@@ -24,6 +23,7 @@ Operation.prototype.applyInvalid = function (dataset) {
     Aggregation: () => dataset,
   })
 }
+
 
 // Operation ~> Dataset -> StrMap -> Dataset
 Operation.prototype.apply = function (dataset) {
@@ -41,16 +41,18 @@ Operation.prototype.apply = function (dataset) {
   });
 }
 
+
+// Operation ~> Dataset -> Boolean
 Operation.prototype.valid = function (dataset) {
   const nonGrouping = ({slots}, inputs) => {
-    return R.all(s => slotValid(dataset, inputs, s), slots);
+    return R.all(s => s.valid(dataset, inputs), slots);
   }
 
   return this.cata({
     Empty: () => false,
     Filter: nonGrouping,
     Deriver: nonGrouping,
-    Aggregator: nonGrouping,
+    Aggregation: nonGrouping,
     Grouping: (inputs) =>
       inputs.columns.length > 0 &&
       R.all(a => a.valid(dataset, inputs), inputs.aggregators)
@@ -58,16 +60,30 @@ Operation.prototype.valid = function (dataset) {
 }
 
 
+// Operation ~> Dataset -> StrMap
+Operation.prototype.populateSlots = function (dataset) {
+  const base = ({slots}, inputs) => R.map(s => s.populate(dataset, inputs), slots);
 
+  return this.cata({
+    Empty: () => ({}),
+    Filter: base,
+    Deriver: base,
+    Aggregation: base,
+    Grouping: () => ({})
+  })
+}
+
+
+// TODO: refactor me plz
 function applyGrouping(dataset, {columns, aggregators}) {
   const applyAggregators = groups => {
     const applyAggregator = R.curry((dataset, aggregator) => {
-      const inputs = populateSlots(aggregator.definition, aggregator.inputs, dataset);
+      const inputs = aggregator.populateSlots(dataset);
       return aggregator.definition.fn(dataset, inputs);
     });
 
     const headers = R.concat(
-      R.map(n => DSF.columns(dataset)[n].header, columns),
+      R.map(n => dataset.columns()[n].header, columns),
       R.map(R.prop('columnName'), aggregators)
     );
 
@@ -91,29 +107,6 @@ function applyGrouping(dataset, {columns, aggregators}) {
     applyAggregators
   )(dataset);
 }
-
-
-function slotValid(dataset, inputs, slot) {
-  const columnValid = (dataset, inputs, slot) => {
-    const slotInput = DSF.columns(dataset)[inputs[slot.key]];
-    return slotInput && validColumn(slot.dataType, slotInput);
-  }
-
-  const multicolumnValid = (dataset, inputs, slot) => {
-    const slotInputs = R.map(R.prop(R.__, DSF.columns(dataset)), inputs[slot.key]);
-    return slotInputs && R.all(validColumn(slot.dataType), slotInputs);
-  }
-
-  const userValid = (inputs, slot) =>
-    slot.dataType.test(inputs[slot.key]);
-
-  return (
-    slot.sourceType === "column"      ? columnValid(dataset, inputs, slot) :
-    slot.sourceType === "multicolumn" ? multicolumnValid(dataset, inputs, slot) :
-                        /* user */      userValid(inputs, slot)
-  );
-}
-
 
 
 module.exports = Operation;

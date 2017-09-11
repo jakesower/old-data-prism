@@ -1,7 +1,7 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 
-const DataType = require('../types/data-type');
+const {DataType, Slot} = require('../types');
 
 const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
 const col = R.curry((dataset, cName) =>
@@ -33,16 +33,8 @@ const Equality = rowFilter({
   name: "Equality",
 
   slots: [
-    { sourceType: "column",
-      dataType: DataType.String,
-      key: "a",
-      display: "Column"
-    },
-    { sourceType: "user",
-      dataType: DataType.String,
-      key: "b",
-      display: "is equal to"
-    }
+    Slot('a', 'Column', DataType.String),
+    Slot('b', 'User', DataType.String),
   ],
 
   fn: inputs => inputs.a === inputs.b,
@@ -57,16 +49,8 @@ const Equality = rowFilter({
 const LT = rowFilter({
   name: "Less Than",
   slots: [
-    { sourceType: "column",
-      dataType: DataType.FiniteNumber,
-      key: "base",
-      display: "Column",
-    },
-    { sourceType: "user",
-      dataType: DataType.FiniteNumber,
-      key: "target",
-      display: "is less than",
-    }
+    Slot('base', 'Column', DataType.FiniteNumber),
+    Slot('base', 'is less than', DataType.FiniteNumber),
   ],
   fn: inputs => parseFloat(inputs.base) < parseFloat(inputs.target),
   display: (inputs, dataset) =>
@@ -81,8 +65,8 @@ const LTE = rowFilter({
   name: "Less Than or Equal",
   fn: inputs => parseFloat(inputs.base) <= parseFloat(inputs.target),
   slots: [
-    LT.slots[0],
-    R.merge(LT.slots[1], {display: "is less than or equal to"})
+    Slot('base', 'Column', DataType.FiniteNumber),
+    Slot('base', 'is less than or equal to', DataType.FiniteNumber),
   ],
   display: (inputs, dataset) =>
     h('div', {}, [
@@ -96,8 +80,8 @@ const GT = rowFilter({
   name: "Greater Than",
   fn: inputs => inputs.base > inputs.target,
   slots: [
-    LT.slots[0],
-    R.merge(LT.slots[1], {display: "is greater than"})
+    Slot('base', 'Column', DataType.FiniteNumber),
+    Slot('base', 'is greater than', DataType.FiniteNumber),
   ],
   display: (inputs, dataset) =>
     h('div', {}, [
@@ -111,8 +95,8 @@ const GTE = rowFilter({
   name: "Greater Than or Equal",
   fn: inputs => parseFloat(inputs.base) >= parseFloat(inputs.target),
   slots: [
-    LT.slots[0],
-    R.merge(LT.slots[1], {display: "is greater than or equal to"})
+    Slot('base', 'Column', DataType.FiniteNumber),
+    Slot('base', 'is greater than or equal to', DataType.FiniteNumber),
   ],
   display: (inputs, dataset) =>
     h('div', {}, [

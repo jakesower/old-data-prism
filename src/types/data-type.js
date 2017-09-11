@@ -1,7 +1,11 @@
 const R = require('ramda');
 const daggy = require('daggy');
-
 const moment = require('moment');
+
+/**
+ * These are not conventional simple data types. Each function within accepts
+ * a string and attempts to deal with it.
+ */
 
 const DataType = daggy.taggedSum('DataType', {
   String: [],
@@ -14,7 +18,8 @@ const DataType = daggy.taggedSum('DataType', {
   Enumerated: ['values']
 });
 
-// String -> Boolean
+
+// DataType ~> String -> Boolean
 const finiteNum = x => !isNaN(parseFloat(x)) && isFinite(x)
 DataType.prototype.test = function (val) {
   return this.cata({
@@ -29,6 +34,8 @@ DataType.prototype.test = function (val) {
   })
 }
 
+
+// DataType ~> String -> Any
 DataType.prototype.cast = function (val) {
   return this.cata({
     String: () => val,
@@ -41,3 +48,5 @@ DataType.prototype.cast = function (val) {
     Enumerated: (values) => val,
   })
 }
+
+module.exports = DataType;

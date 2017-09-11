@@ -6,7 +6,7 @@ const {validColumns} = require('../lib/dataset-functions');
 const withBlank = R.prepend(h('option', {}, ''));
 
 
-const select = (currentValue, options, onChange) => {
+const select = (currentValue, options, change$) => {
   const option = item => {
     return h('option', {
       attrs: {
@@ -18,17 +18,17 @@ const select = (currentValue, options, onChange) => {
 
   return h(
     'select',
-    {on: {change: R.compose(onChange, targetValue)}},
+    {on: {change: R.compose(change$, targetValue)}},
     withBlank(R.map(option, options))
   );
 }
 
 
-const checkbox = (currentValue, onChange) => {
+const checkbox = (currentValue, change$) => {
   return h(
     'input',
     { attrs: {type: 'checkbox'}
-    , on: {click: R.compose(onChange, cb => cb.target.checked)}
+    , on: {click: R.compose(change$, cb => cb.target.checked)}
     }
   )
 }
