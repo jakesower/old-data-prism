@@ -1,7 +1,7 @@
 const R = require('ramda');
 const parseCsv = require('csv-parse');
 
-const {Action} = require('../components/main/types');
+const Action = require('../components/main/action');
 
 
 //

@@ -1,6 +1,6 @@
 const R = require('ramda');
 const ChartComponent = require('../../chart');
-const {Action} = require('../types');
+const Action = require('../action');
 const {applyOperations} = require('../../../lib/operation-functions');
 const forwardTo = require('flyd-forwardto');
 

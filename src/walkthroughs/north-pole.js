@@ -1,5 +1,5 @@
 const R = require('ramda');
-const MainAction = require('../components/main/types').Action;
+const MainAction = require('../components/main/action');
 const {catalog} = require('../samples/index');
 
 module.exports = () => {

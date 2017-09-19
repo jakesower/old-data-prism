@@ -2,34 +2,14 @@ const R = require('ramda');
 const S = require('sanctuary');
 const parseCsv = require('csv-parse');
 
-const {Dataset} = require('../types');
+const {Dataset} = require('../types/index');
 
 const OperationListComponent = require('./operation-list');
 const GridComponent = require('./grid');
 const ChartComponent = require('./chart');
 
 const view = require('./main/view');
-
-
-const Action = Type({
-  // General
-  SetMainDimensions: [Object],
-  ToggleHelp: [],
-  ToggleWalkthrough: [],
-
-  // Import
-  LoadLocalFile: [() => true],
-  LoadURI: [String],
-  SetData: [Object],
-
-  // Prepare
-  SetOperations: [Object],
-  SetGridState: [String, Object],
-
-  // Chart
-  SetChart: [Object],
-});
-
+const Action = require('./main/action');
 
 const update = Action.caseOn({
   SetData: (newData, model) =>
@@ -43,7 +23,10 @@ const update = Action.caseOn({
   ToggleHelp: model => R.assoc('help', !model.help, model),
   ToggleWalkthrough: model => R.assoc('walkthrough', !model.walkthrough, model),
 
-  SetOperations: (act, mod) => R.assoc('operations', OperationListComponent.update(act, mod)),
+  SetOperations: (act, mod) => R.assoc('operations',
+    OperationListComponent.update(act, mod.operations),
+    mod
+  ),
 
   SetGridState: (gridId, action, model) =>
     R.over(R.lensPath(['grids', gridId]), GridComponent.update(action), model),

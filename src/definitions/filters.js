@@ -33,8 +33,8 @@ const Equality = rowFilter({
   name: "Equality",
 
   slots: [
-    Slot('a', 'Column', DataType.String),
-    Slot('b', 'User', DataType.String),
+    Slot.Column('a', 'Column', DataType.String),
+    Slot.User('b', 'Equals', DataType.String),
   ],
 
   fn: inputs => inputs.a === inputs.b,
@@ -49,8 +49,8 @@ const Equality = rowFilter({
 const LT = rowFilter({
   name: "Less Than",
   slots: [
-    Slot('base', 'Column', DataType.FiniteNumber),
-    Slot('base', 'is less than', DataType.FiniteNumber),
+    Slot.Column('base', 'Column', DataType.FiniteNumber),
+    Slot.User('target', 'is less than', DataType.FiniteNumber),
   ],
   fn: inputs => parseFloat(inputs.base) < parseFloat(inputs.target),
   display: (inputs, dataset) =>
@@ -65,8 +65,8 @@ const LTE = rowFilter({
   name: "Less Than or Equal",
   fn: inputs => parseFloat(inputs.base) <= parseFloat(inputs.target),
   slots: [
-    Slot('base', 'Column', DataType.FiniteNumber),
-    Slot('base', 'is less than or equal to', DataType.FiniteNumber),
+    Slot.Column('base', 'Column', DataType.FiniteNumber),
+    Slot.User('target', 'is less than or equal to', DataType.FiniteNumber),
   ],
   display: (inputs, dataset) =>
     h('div', {}, [
@@ -80,8 +80,8 @@ const GT = rowFilter({
   name: "Greater Than",
   fn: inputs => inputs.base > inputs.target,
   slots: [
-    Slot('base', 'Column', DataType.FiniteNumber),
-    Slot('base', 'is greater than', DataType.FiniteNumber),
+    Slot.Column('base', 'Column', DataType.FiniteNumber),
+    Slot.User('target', 'is greater than', DataType.FiniteNumber),
   ],
   display: (inputs, dataset) =>
     h('div', {}, [
@@ -95,8 +95,8 @@ const GTE = rowFilter({
   name: "Greater Than or Equal",
   fn: inputs => parseFloat(inputs.base) >= parseFloat(inputs.target),
   slots: [
-    Slot('base', 'Column', DataType.FiniteNumber),
-    Slot('base', 'is greater than or equal to', DataType.FiniteNumber),
+    Slot.Column('base', 'Column', DataType.FiniteNumber),
+    Slot.User('target', 'is greater than or equal to', DataType.FiniteNumber),
   ],
   display: (inputs, dataset) =>
     h('div', {}, [

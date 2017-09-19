@@ -28,11 +28,10 @@ const componentsByType = {
 // these are the things this component responds to--it's the parent's job to
 // pass appropriate streams to write up to
 const Action = Type({
-  DeleteOperation: [Number], // id
-  SetActiveOperation: [Number], // id
-  ModifyOperation: [Number, Object], // id, operation
   CreateOperation: [String], // Type
-  SetActive: [Number], // id
+  SetOperation: [Number, Object], // id, operation
+  DeleteOperation: [Number], // id
+  SetActiveOperation: [Number] // id
 });
 
 
@@ -45,32 +44,34 @@ const init = () => ({
 
 const update = Action.caseOn({
   CreateOperation: (type, model) => R.evolve({
-    operations: R.append(OperationComponent.init(model.uid, type)),
+    operations: R.append(OperationComponent.init(type, model.uid)),
     uid: R.inc,
     active: R.always(model.uid)
   }, model),
-  SetOperation: (id, act, mod) => R.map(op =>
-    op.id === id ? componentsByType[op.type].update(act, mod) : op
+  SetOperation: (id, act, mod) => R.over(
+    R.lensProp('operations'),
+    R.map(op => op.id === id ? componentsByType[op.type].update(act, op) : op),
+    mod
   ),
   DeleteOperation: id => R.filter(op => op.id !== id),
   SetActive: R.assoc('active'),
 });
 
 
-const renderOperations = R.curry((action$, dataset, model) => {
-  const {active, operations} = model;
+const renderOperations = R.curry((action$, dataset, operationList) => {
+  const {active, operations} = operationList;
   const af = a => forwardTo(action$, a);
 
   return R.map(
-    op => {
+    operation => {
       const component = componentsByType[operation.type];
       return component.view(
         { dataset
-        , operation: op
+        , operation: operation
         , itemPool: itemPools[operation.type] // TODO: type implies pool
-        , active: op.id === active
+        , editing: operation.id === active
         },
-        { set$: af(Action.SetOperation)
+        { set$: af(Action.SetOperation(operation.id))
         , delete$: af(Action.DeleteOperation)
         , setActive$: af(Action.SetActive)
         }
@@ -92,8 +93,8 @@ const view = R.curry((action$, dataset, operationList) => {
     return h('span', {class: {[i]: true}}, ` ${name}`);
   }
 
-  return h('div', {class: {"main-container": true}}, [
-    renderOperations(action$, dataset, model),
+  return R.flatten([
+    renderOperations(action$, dataset, operationList),
 
     h('div', {class: {"prepare-controls": true}, key: 'prepare-controls'}, [
       h('div', ctrlAttrs(Action.CreateOperation('Filter')), iconed('Filter')),

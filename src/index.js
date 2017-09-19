@@ -13,7 +13,7 @@ const { debounce } = require('./lib/utils');
 const { readCsv, readUri } = require('./lib/data-fetchers');
 
 const Main = require('./components/main.js');
-const MainAction = require('./components/main/types').Action;
+const MainAction = require('./components/main/action');
 
 const Operations = require('./definitions/operations');
 

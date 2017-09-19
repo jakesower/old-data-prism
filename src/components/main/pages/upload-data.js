@@ -2,7 +2,7 @@ const R = require('ramda');
 const h = require('snabbdom/h').default;
 const {targetValue} = require('../../../lib/utils');
 
-const Action = require('../types').Action;
+const Action = require('../action');
 const Samples = require('../../../samples/index');
 
 const emptyOption = h('option', {}, '');

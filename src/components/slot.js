@@ -22,9 +22,11 @@ const slotWrapper = R.curry((title, vdom) => {
 
 const build = R.curry((slot, inputs, dataset, change$) => {
   const sw = slotWrapper(slot.display);
+  console.log({slot, t: slot['@@tag']})
+  console.log(slot)
 
-  switch (slot.sourceType) {
-    case 'user':
+  switch (slot['@@tag']) {
+    case 'User':
       return sw(user(slot, inputs, change$));
     case 'column':
       return sw(column(

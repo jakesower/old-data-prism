@@ -1,7 +1,7 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 
-const {Action} = require('./types');
+const Action = require('./action');
 
 const pages = {
   UploadData: require('./pages/upload-data'),

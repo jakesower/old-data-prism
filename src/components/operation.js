@@ -8,7 +8,6 @@ const ColumnSelector = require('./column-selector');
 const {operationValid} = require('../lib/operation-functions');
 const dataTypes = require('../types/data-type');
 
-const {Action} = require('./operation/types');
 const Slot = require('./slot');
 const {select} = require('./controls');
 
@@ -27,11 +26,17 @@ const functionSlot = fs => ({
 })
 
 
+const Action = Type({
+  SetDefinition: [R.T],
+  SetInput: [String, String],
+});
+
+
 const update = Action.caseOn({
   SetDefinition: (definition, model) => {
     const slots = definition.slots;
-    const inputs = R.pipe(
-      R.map(s => ({[s.key]: s.sourceType === 'multicolumn' ? [] : ''})),
+    const inputs = R.pipe( // TODO: no stringly typed crap
+      R.map(s => ({[s.id]: s['@@type'] === 'multicolumn' ? [] : ''})),
       R.append(createsColumn(model.type) ? {columnName: model.inputs.columnName} : {}),
       R.reduce(R.merge, {})
     )(slots);
@@ -51,25 +56,24 @@ const init = (type, id) => ({
 
 
 const createsColumn = type => type === 'Deriver' || type === 'Aggregator';
-const view = (
-  {dataset, operation, itemPool, active},
-  {set$, delete$, setActive$} ) => {
-
+const view = (model, {set$, delete$, setActive$} ) => {
+  const {dataset, operation, itemPool, editing} = model;
   return h('div', {class: {operation: true, editing: editing}},
     editing ? edit() : show());
 
-
   function edit() {
-    const {definition, inputs} = model;
+    console.log({model, operation})
+    const {definition, inputs} = operation;
 
     const headerVdom = h('div', {class: {"operation-header": true}}, [
       h('span', {class: {remove: true}, on: {click: [delete$, operation.id]}}),
-      h('h2', {}, "Edit " + model.type),
+      h('h2', {}, "Edit " + operation.type),
     ]);
 
-    const functionSlotVdom = Slot.slotWrapper("Function",
+    const functionSlotVdom = Slot.slotWrapper(
+      "Function",
       select(
-        R.path(['definition', 'key'], model),
+        R.path(['definition', 'key'], operation),
         R.map(i => ({val: i.key, display: i.name}), R.values(itemPool)),
         forwardTo(set$, R.compose(Action.SetDefinition, R.prop(R.__, itemPool)))
       )
@@ -79,7 +83,7 @@ const view = (
       h('div', {class: {controls: true}}, [
         h('button',
           { on: {click: [setActive$, null]}
-          , attrs: {disabled: !operationValid(dataset, model)}
+          // , attrs: {disabled: !operationValid(dataset, model)}
           },
           'Done'
         )
@@ -90,7 +94,7 @@ const view = (
       slot,
       inputs,
       dataset,
-      forwardTo(set$, Action.SetInput(slot.key))
+      forwardTo(set$, Action.SetInput(slot.id))
     ), item.slots);
 
 
@@ -98,14 +102,14 @@ const view = (
       Slot.user(
         "Column Name",
         columnNameSlot,
-        model.inputs.columnName,
+        operation.inputs.columnName,
         forwardTo(set$, Action.SetInput('columnName'))
       )
 
     return h('div', {class: {"operation-form": true, form: true}},
       R.flatten([
         headerVdom,
-        createsColumn(model.type) ? columnNameVdom : [],
+        createsColumn(operation.type) ? columnNameVdom : [],
         functionSlotVdom,
         definition ? inputVdom(definition) : [],
         controlsVdom
@@ -115,13 +119,13 @@ const view = (
 
 
   function show() {
-    const text = operation.definition ?
+    const text = R.path(['definition', 'display'], operation) ?
       operation.definition.display(operation.inputs, dataset) :
       "Invalid";
 
     return [
       h('div',
-        {class: {definition: true, fa: true, ["operation-"+model.type.toLowerCase()]: true}}
+        {class: {definition: true, fa: true, ["operation-"+operation.type.toLowerCase()]: true}}
         , text),
 
       h('div', {class: {controls: true}}, [
