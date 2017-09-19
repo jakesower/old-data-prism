@@ -5,9 +5,9 @@ const daggy = require('daggy');
 const Operation = daggy.taggedSum('Operation', {
   Empty: ['inputs'],
   Filter: ['definition', 'inputs'],
-  Deriver: ['definition', 'inputs'],
+  Deriver: ['definition', 'inputs', 'columnName'],
   Grouping: ['inputs'],
-  Aggregation: ['definition', 'inputs'],
+  Aggregation: ['definition', 'inputs', 'columnName'],
 });
 
 const {Filter, Deriver, Grouping} = Operation;
@@ -27,14 +27,14 @@ Operation.prototype.applyInvalid = function (dataset) {
 
 // Operation ~> Dataset -> StrMap -> Dataset
 Operation.prototype.apply = function (dataset) {
-  const base = (definition, inputs) => {
-    const popInputs = populateSlots(definition, inputs, dataset);
-    return definition.fn(dataset, popInputs);
+  const base = (definition, inputs, columnName) => {
+    const popInputs = this.populateSlots(dataset);
+    return definition.fn(dataset, popInputs, columnName);
   }
 
   return this.cata({
     Empty: () => dataset,
-    Filter: base,
+    Filter: R.binary(base), // filters don't have names
     Deriver: base,
     Grouping: (inputs) => applyGrouping(dataset, inputs),
     Aggregation: () => {throw("x_x I shouldn't be here since I return a value and not a dataset!")}
@@ -62,7 +62,12 @@ Operation.prototype.valid = function (dataset) {
 
 // Operation ~> Dataset -> StrMap
 Operation.prototype.populateSlots = function (dataset) {
-  const base = ({slots}, inputs) => R.map(s => s.populate(dataset, inputs), slots);
+  const base = ({slots}, inputs) => {
+    return R.pipe(
+      R.map(s => s.populate(dataset, inputs)),
+      R.mergeAll
+    )(slots);
+  }
 
   return this.cata({
     Empty: () => ({}),

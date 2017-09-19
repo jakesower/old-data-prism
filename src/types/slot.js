@@ -30,14 +30,17 @@ Slot.prototype.valid = function (dataset, inputs) {
 // Slot ~> Dataset -> StrMap -> StrMap
 Slot.prototype.populate = function (dataset, inputs) {
   return this.cata({
-    User: (id, _, dataType) => dataType.cast(inputs[id]),
+    User: (id, _, dataType) => ({[id]: dataType.cast(inputs[id])}),
     Column: (id, _, dataType) => {
       const col = dataset.columns()[inputs[id]];
-      return R.map(dataType.cast, col.values);
+      const vals = R.map(v => dataType.cast(v), col.values);
+      return {[id]: vals};
     },
     Multicolumn: (id, _, dataType) => {
       const cols = R.map(i => dataset.columns()[i], inputs[id]);
-      return R.map(col => R.map(dataType.cast, col.values), cols);
+      const expanded = R.map(col => R.map(v => dataType.cast(v), col.values), cols);
+      const vals = R.transpose(expanded);
+      return {[id]: vals};
     }
   })
 }

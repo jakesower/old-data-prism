@@ -27,8 +27,8 @@ DataType.prototype.test = function (val) {
     NonEmptyString: () => val !== "",
     FiniteNumber: () => finiteNum(val),
     PositiveFiniteNumber: () => finiteNum(val) && val > 0,
-    Integer: () => finiteNum(val) && x % 1 === 0,
-    Date: () => !isNaN(Date.parse(x)),
+    Integer: () => finiteNum(val) && val % 1 === 0,
+    Date: () => !isNaN(Date.parse(val)),
     Boolean: () => val === 'true' || val === 'false',
     Enumerated: (values) => R.contains(val, values),
   })

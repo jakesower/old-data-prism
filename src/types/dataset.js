@@ -8,7 +8,7 @@ const mapWithIndex = R.addIndex(R.map);
 
 const Dataset = daggy.tagged('Dataset', ['headers', 'records']);
 
-Dataset.prototype.columns = () => {
+Dataset.prototype.columns = function () {
   const {headers, records} = this;
   const mapWithIndex = R.addIndex(R.map);
 
@@ -18,14 +18,16 @@ Dataset.prototype.columns = () => {
   );
 }
 
-Dataset.prototype.appendColumn = column =>
-  Dataset(
+Dataset.prototype.appendColumn = function (column) {
+  return Dataset(
     R.append(column.header, this.headers),
-    R.zipWith(R.append, column.values, this.records)
+    R.zipWith(R.append, R.map(x => x.toString(), column.values), this.records)
   );
+}
 
-Dataset.prototype.validColumns = dataType =>
-  R.filter(col => col.hasType(dataType), this.columns());
+Dataset.prototype.validColumns = function (dataType) {
+  return R.filter(col => col.hasType(dataType), this.columns());
+}
 
 
 module.exports = Dataset;
