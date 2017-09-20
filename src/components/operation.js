@@ -28,7 +28,7 @@ const functionSlot = fs => ({
 
 const Action = Type({
   SetDefinition: [R.T],
-  SetInput: [String, String],
+  SetInput: [String, R.T],
 });
 
 
@@ -43,7 +43,7 @@ const update = Action.caseOn({
 
     return R.merge(model, { inputs, definition })
   },
-  SetInput: key => R.set(R.lensPath(['inputs', key]))
+  SetInput: (key, val, model) => R.set(R.lensPath(['inputs', key]), val, model)
 });
 
 
@@ -62,7 +62,6 @@ const view = (model, {set$, delete$, setActive$} ) => {
     editing ? edit() : show());
 
   function edit() {
-    console.log({model, operation})
     const {definition, inputs} = operation;
 
     const headerVdom = h('div', {class: {"operation-header": true}}, [
@@ -74,7 +73,7 @@ const view = (model, {set$, delete$, setActive$} ) => {
       "Function",
       select(
         R.path(['definition', 'key'], operation),
-        R.map(i => ({val: i.key, display: i.name}), R.values(itemPool)),
+        R.map(i => ({value: i.key, display: i.name}), R.values(itemPool)),
         forwardTo(set$, R.compose(Action.SetDefinition, R.prop(R.__, itemPool)))
       )
     );
@@ -83,7 +82,7 @@ const view = (model, {set$, delete$, setActive$} ) => {
       h('div', {class: {controls: true}}, [
         h('button',
           { on: {click: [setActive$, null]}
-          // , attrs: {disabled: !operationValid(dataset, model)}
+          // , attrs: {disabled: !operation.valid(dataset)}
           },
           'Done'
         )

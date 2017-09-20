@@ -28,11 +28,11 @@ module.exports = R.curry((action$, model) => {
     ),
 
     h('main', {}, [
-      // GridComponent.view(
-      //   applyOperations(dataset, operations),
-      //   forwardTo(action$, Action.SetGridState('prepareData')),
-      //   grids.prepareData
-      // )
+      GridComponent.view(
+        applyOperations(dataset, operations),
+        forwardTo(action$, Action.SetGridState('prepareData')),
+        grids.prepareData
+      )
     ])
   ]))
 });

@@ -10,8 +10,8 @@ const select = (currentValue, options, change$) => {
   const option = item => {
     return h('option', {
       attrs: {
-        selected: (item.val === currentValue),
-        value: item.val
+        selected: (item.value === currentValue),
+        value: item.value
       }},
       item.display);
   };

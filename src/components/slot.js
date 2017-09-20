@@ -8,7 +8,7 @@ const {select, checkbox} = require('./controls');
 const multiselect = require('./multiselect');
 
 const withBlank = R.prepend(h('option', {}, ''));
-const columnOptions = col => ({val: col.index, display: col.header});
+const columnOptions = (col, idx) => ({value: idx, display: col.header});
 const fixedOptions = opt => ({val: opt, display: opt});
 
 
@@ -22,19 +22,20 @@ const slotWrapper = R.curry((title, vdom) => {
 
 const build = R.curry((slot, inputs, dataset, change$) => {
   const sw = slotWrapper(slot.display);
-  console.log({slot, t: slot['@@tag']})
-  console.log(slot)
+  // console.log({slot, t: slot['@@tag']})
+  // console.log(slot)
+  // console.log(dataset.validColumns(slot.dataType))
 
   switch (slot['@@tag']) {
     case 'User':
       return sw(user(slot, inputs, change$));
-    case 'column':
+    case 'Column':
       return sw(column(
-        inputs[slot.key],
-        R.map(columnOptions, validColumns(dataset, slot.dataType)),
+        inputs[slot.id],
+        R.addIndex(R.map)(columnOptions, dataset.validColumns(slot.dataType)),
         change$
       ));
-    case 'multicolumn':
+    case 'Multicolumn':
       return sw(multicolumn(
         inputs[slot.key],
         R.map(columnOptions, validColumns(dataset, slot.dataType)),
@@ -47,17 +48,16 @@ const build = R.curry((slot, inputs, dataset, change$) => {
 const user = (slot, inputs, change$) => {
   return slot.dataType.key === 'Enumerated' ?
       column(
-        inputs[slot.key],
+        inputs[slot.id],
         R.map(fixedOptions, slot.dataType.values),
         change$
       ) :
     slot.dataType.key === 'Boolean' ?
       checkbox(
-        inputs[slot.key],
+        inputs[slot.id],
         change$
       ) :
-      textBox(slot, inputs[slot.key], change$)
-
+      textBox(slot, inputs[slot.id], change$)
 }
 
 

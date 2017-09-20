@@ -26,7 +26,7 @@ Dataset.prototype.appendColumn = function (column) {
 }
 
 Dataset.prototype.validColumns = function (dataType) {
-  return R.filter(col => col.hasType(dataType), this.columns());
+  return R.filter(col => col.valid(dataType), this.columns());
 }
 
 

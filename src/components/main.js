@@ -23,8 +23,9 @@ const update = Action.caseOn({
   ToggleHelp: model => R.assoc('help', !model.help, model),
   ToggleWalkthrough: model => R.assoc('walkthrough', !model.walkthrough, model),
 
-  SetOperations: (act, mod) => R.assoc('operations',
-    OperationListComponent.update(act, mod.operations),
+  SetOperations: (act, mod) => R.over(
+    R.lensProp('operations'),
+    OperationListComponent.update(act),
     mod
   ),
 

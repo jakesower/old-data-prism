@@ -31,7 +31,7 @@ const Action = Type({
   CreateOperation: [String], // Type
   SetOperation: [Number, Object], // id, operation
   DeleteOperation: [Number], // id
-  SetActiveOperation: [Number] // id
+  SetActive: [R.T] // id
 });
 
 
@@ -53,7 +53,11 @@ const update = Action.caseOn({
     R.map(op => op.id === id ? componentsByType[op.type].update(act, op) : op),
     mod
   ),
-  DeleteOperation: id => R.filter(op => op.id !== id),
+  DeleteOperation: (id, mod) => R.over(
+    R.lensProp('operations'),
+    R.filter(op => op.id !== id),
+    mod
+  ),
   SetActive: R.assoc('active'),
 });
 
