@@ -1,7 +1,7 @@
 const R = require('ramda');
 const assert = require('chai').assert;
 
-const {Dataset, Column} = require('../../src/types');
+const {Dataset, Column, DataType, Operation, Slot} = require('../../src/types');
 
 const germany = Dataset(
   ['Date', 'Opponent', 'Goals For', 'Goals Against'],
@@ -23,7 +23,6 @@ describe ('dataset type', function() {
     assert.deepEqual(cols[2], Column('Goals For', ['4', '2', '1', '2', '1', '7', '1']));
   });
 
-
   it ('appends columns', function() {
     const places = Column(
       'Location',
@@ -33,6 +32,32 @@ describe ('dataset type', function() {
     const withLocation = germany.appendColumn(places);
 
     assert.deepEqual(withLocation.records[0], ['2014-06-16', 'Portugal', '4', '0', 'Salvador']);
+  });
+
+  it ('detects valid columns', function() {
+    const numberColumns = germany.validColumns(DataType.FiniteNumber);
+    assert.deepEqual(numberColumns.map(c => c.header), ['Goals For', 'Goals Against']);
+  });
+
+  it ('applies operations', function() {
+    const operation = Operation.Filter(
+      { fn: (ds, inputs) => Dataset(
+            ds.headers,
+            R.pipe(
+              R.zip(R.__, inputs.a),
+              R.filter(pair => pair[1] === 7),
+              R.map(pair => pair[0])
+            )(ds.records)),
+        slots: [Slot.Column('a', 'A', DataType.FiniteNumber)]
+      },
+      { a: 2 }
+    );
+
+    const nextDS = germany.applyOperation(operation);
+    assert.deepEqual(nextDS, Dataset(
+      ['Date', 'Opponent', 'Goals For', 'Goals Against'],
+      [['2014-07-08', 'Brazil', '7', '1']]
+    ));
   });
 
 });

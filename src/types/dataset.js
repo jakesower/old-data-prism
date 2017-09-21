@@ -29,5 +29,19 @@ Dataset.prototype.validColumns = function (dataType) {
   return R.filter(col => col.valid(dataType), this.columns());
 }
 
+Dataset.prototype.applyOperation = function (operation) {
+  return operation.apply(this);
+}
+
+// Dataset ~> List Operation -> Dataset
+Dataset.prototype.applyValidOperations = function (operations) {
+  console.log(operations)
+  return R.reduce(
+    (acc, op) => op.valid(acc) ? op.apply(acc) : R.reduced(acc),
+    this,
+    operations
+  );
+}
+
 
 module.exports = Dataset;

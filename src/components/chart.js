@@ -60,7 +60,7 @@ const view = R.curry((action$, dimensions, dataset, model) => {
             model.type,
             R.map(t => ({ val: t, display: t }), R.keys(CHARTS)),
             forwardTo(action$, Action.SetType)
-          ),
+          )
         ),
 
         R.map(s => Slot.build(s, model.inputs, dataset, action(s)), slots)

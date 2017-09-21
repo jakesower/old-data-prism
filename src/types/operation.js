@@ -13,6 +13,17 @@ const Operation = daggy.taggedSum('Operation', {
 const {Filter, Deriver, Grouping} = Operation;
 
 
+// StrMap -> Operation
+// Takes the raw UI stuff and turns it into an Operation
+Operation.fromDefinition = ({definition, inputs, columnName, type}) =>
+  R.isNil(definition) ?
+    Operation.Empty(inputs) :
+    type === 'Grouping' ?
+      Operation.Grouping(inputs) :
+      type === 'Filter' ?
+        Operation.Filter(definition, inputs) :
+        Operation[type](definition, inputs, columnName);
+
 // Operation ~> Dataset -> Dataset
 Operation.prototype.applyInvalid = function (dataset) {
   return this.cata({
@@ -25,7 +36,7 @@ Operation.prototype.applyInvalid = function (dataset) {
 }
 
 
-// Operation ~> Dataset -> StrMap -> Dataset
+// Operation ~> Dataset -> Dataset
 Operation.prototype.apply = function (dataset) {
   const base = (definition, inputs, columnName) => {
     const popInputs = this.populateSlots(dataset);
@@ -77,6 +88,7 @@ Operation.prototype.populateSlots = function (dataset) {
     Grouping: () => ({})
   })
 }
+
 
 
 // TODO: refactor me plz
