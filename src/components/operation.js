@@ -56,23 +56,22 @@ const init = (type, id) => ({
 
 
 const createsColumn = type => type === 'Deriver' || type === 'Aggregator';
-const view = (model, {set$, delete$, setActive$} ) => {
-  const {dataset, operation, itemPool, editing} = model;
-  return h('div', {class: {operation: true, editing: editing}},
+const view = (model, {dataset, itemPool, editing}, {set$, delete$, setActive$}) => {
+  return h('div', {class: {operation: true, editing}},
     editing ? edit() : show());
 
   function edit() {
-    const {definition, inputs} = operation;
+    const {definition, inputs} = model;
 
     const headerVdom = h('div', {class: {"operation-header": true}}, [
-      h('span', {class: {remove: true}, on: {click: [delete$, operation.id]}}),
-      h('h2', {}, "Edit " + operation.type),
+      h('span', {class: {remove: true}, on: {click: [delete$, model.id]}}),
+      h('h2', {}, "Edit " + model.type),
     ]);
 
     const functionSlotVdom = Slot.slotWrapper(
       "Function",
       select(
-        R.path(['definition', 'key'], operation),
+        R.path(['definition', 'key'], model),
         R.map(i => ({value: i.key, display: i.name}), R.values(itemPool)),
         forwardTo(set$, R.compose(Action.SetDefinition, R.prop(R.__, itemPool)))
       )
@@ -101,14 +100,14 @@ const view = (model, {set$, delete$, setActive$} ) => {
       Slot.user(
         "Column Name",
         columnNameSlot,
-        operation.inputs.columnName,
+        inputs.columnName,
         forwardTo(set$, Action.SetInput('columnName'))
       )
 
     return h('div', {class: {"operation-form": true, form: true}},
       R.flatten([
         headerVdom,
-        createsColumn(operation.type) ? columnNameVdom : [],
+        createsColumn(model.type) ? columnNameVdom : [],
         functionSlotVdom,
         definition ? inputVdom(definition) : [],
         controlsVdom
@@ -118,18 +117,18 @@ const view = (model, {set$, delete$, setActive$} ) => {
 
 
   function show() {
-    const text = R.path(['definition', 'display'], operation) ?
-      operation.definition.display(operation.inputs, dataset) :
+    const text = R.path(['definition', 'display'], model) ?
+      model.definition.display(model.inputs, dataset) :
       "Invalid";
 
     return [
       h('div',
-        {class: {definition: true, fa: true, ["operation-"+operation.type.toLowerCase()]: true}}
+        {class: {definition: true, fa: true, ["operation-"+model.type.toLowerCase()]: true}}
         , text),
 
       h('div', {class: {controls: true}}, [
-        h('span', {class: {edit: true}, on: {click: [setActive$, operation.id]}}),
-        h('span', {class: {remove: true}, on: {click: [delete$, operation.id]}})
+        h('span', {class: {edit: true}, on: {click: [setActive$, model.id]}}),
+        h('span', {class: {remove: true}, on: {click: [delete$, model.id]}})
       ])
     ];
   }

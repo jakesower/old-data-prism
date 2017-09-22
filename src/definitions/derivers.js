@@ -1,9 +1,9 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
-const moment = require('moment');
+
+const {DataType, Slot} = require('../types');
 
 const notEmpty = R.complement(R.empty);
-const DataType = require('../types/data-type');
 const {appendColumn} = require('../lib/dataset-functions');
 
 const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
@@ -13,9 +13,10 @@ const col = R.curry((dataset, cName) =>
 const makeDeriver = def =>
   R.merge(def, {
     fn: (dataset, inputs, columnName) => {
+      // console.log({dataset, inputs})
       return appendColumn(dataset, {
         header: columnName,
-        values: def.fn(inputs)
+        values: R.map(x => x.toString(), def.fn(inputs))
       })
     }
   })
@@ -25,19 +26,11 @@ const FormattedDate = {
   name: "Formatted Date",
 
   slots: [
-    { sourceType: "column",
-      dataType: DataType.Date,
-      key: "date",
-      display: "date",
-    },
-    { sourceType: "user",
-      dataType: DataType.NonEmptyString,
-      key: "format",
-      display: "format",
-    }
+    Slot.Column('date', 'Date', DataType.Date),
+    Slot.User('format', 'Format', DataType.NonEmptyString)
   ],
 
-  fn: (args) => R.map(d => d.format(args.format), args.date),
+  fn: (args) => {return R.map(d => d.format(args.format), args.date)},
   display: (args, dataset) => `<span class="column-name">${dataset.headers[args.date]}</span> with format ${args.format}`
 };
 
@@ -46,16 +39,8 @@ const Quantile = {
   name: "Quantile",
 
   slots: [
-    { sourceType: "column",
-      dataType: DataType.FiniteNumber,
-      key: "n",
-      display: "n",
-    },
-    { sourceType: "user",
-      dataType: DataType.FiniteNumber,
-      key: "order",
-      display: "order",
-    }
+    Slot.Column('n', 'n', DataType.FiniteNumber),
+    Slot.User('order', 'order', DataType.PositiveInteger)
   ],
 
   fn: (args) => {
@@ -102,12 +87,9 @@ const Sum = {
   name: "Summation",
 
   userInputs: [],
-  slots: [{
-    key: "addends",
-    display: "addends",
-    dataType: DataType.FiniteNumber,
-    sourceType: "multicolumn"
-  }],
+  slots: [
+    Slot.Multicolumn('addends', 'Addends', DataType.FiniteNumber)
+  ],
 
   fn: args => R.map(R.sum, args.addends),
   display: (args, dataset) => {
@@ -124,16 +106,8 @@ const Difference = {
   name: "Difference",
 
   slots: [
-    { key: "minuend",
-      display: "minuend",
-      sourceType: "column",
-      dataType: DataType.FiniteNumber,
-    },
-    { key: "subtrahend",
-      display: "subtrahend",
-      dataType: DataType.FiniteNumber,
-      sourceType: "column"
-    }
+    Slot.Column('minuend', 'Minuend', DataType.FiniteNumber),
+    Slot.Column('subtrahend', 'Subtrahend', DataType.FiniteNumber)
   ],
 
   fn: args => R.zipWith(R.subtract, args.minuend, args.subtrahend),
@@ -150,16 +124,8 @@ const Round = {
   name: "Round",
 
   slots: [
-    { key: "num",
-      display: "Column",
-      sourceType: "column",
-      dataType: DataType.FiniteNumber,
-    },
-    { key: "precision",
-      display: "Precision",
-      dataType: DataType.FiniteNumber,
-      sourceType: "user"
-    }
+    Slot.Column('num', 'Column', DataType.FiniteNumber),
+    Slot.User('precision', 'Precision', DataType.Integer)
   ],
 
   fn: ({num, precision}) => {
@@ -178,16 +144,9 @@ const Floor = {
   name: "Floor",
 
   slots: [
-    { key: "num",
-      display: "Column",
-      sourceType: "column",
-      dataType: DataType.FiniteNumber,
-    },
-    { key: "precision",
-      display: "Precision",
-      dataType: DataType.FiniteNumber,
-      sourceType: "user"
-    }
+    Slot.Column('num', 'Column', DataType.FiniteNumber),
+    Slot.User('precision', 'Precision', DataType.Integer)
+
   ],
 
   fn: ({num, precision}) => {
@@ -206,16 +165,8 @@ const Ceiling = {
   name: "Ceiling",
 
   slots: [
-    { key: "num",
-      display: "Column",
-      sourceType: "column",
-      dataType: DataType.FiniteNumber,
-    },
-    { key: "precision",
-      display: "Precision",
-      dataType: DataType.FiniteNumber,
-      sourceType: "user"
-    }
+    Slot.Column('num', 'Column', DataType.FiniteNumber),
+    Slot.User('precision', 'Precision', DataType.Integer)
   ],
 
   fn: ({num, precision}) => {
@@ -234,27 +185,21 @@ const Logarithm = {
   name: "Logarithm",
 
   slots: [
-    { key: "num",
-      display: "Column",
-      sourceType: "column",
-      dataType: DataType.PositiveFiniteNumber,
-    },
-    { key: "base",
-      display: "Base",
-      dataType: DataType.PositiveFiniteNumber,
-      sourceType: "user"
-    }
+    Slot.Column('num', 'Column', DataType.PositiveFiniteNumber),
+    Slot.User('base', 'Base', DataType.PositiveFiniteNumber)
   ],
 
+  // NOTE: this could benefit from "exit" checking to ensure the result is
+  // actually a number and not NaN
   fn: ({num, base}) => {
     const den = Math.log(base);
     return R.map(n => Math.log(n) / den, num);
   },
-  
-  display: (args, dataset) =>
+
+  display: ({base, num}, dataset) =>
     h('div', {}, [
       `Log base ${base} of `,
-      col(dataset, args.num)
+      col(dataset, num)
     ])
 }
 

@@ -13,6 +13,7 @@ const DataType = daggy.taggedSum('DataType', {
   FiniteNumber: [],
   PositiveFiniteNumber: [],
   Integer: [],
+  PositiveInteger: [],
   Date: [],
   Boolean: [],
   Enumerated: ['values']
@@ -25,9 +26,11 @@ DataType.prototype.test = function (val) {
   return this.cata({
     String: () => true,
     NonEmptyString: () => val !== "",
+    Number: () => !isNaN(parseFloat(x)),
     FiniteNumber: () => finiteNum(val),
     PositiveFiniteNumber: () => finiteNum(val) && val > 0,
     Integer: () => finiteNum(val) && val % 1 === 0,
+    PositiveInteger: () => finiteNum(val) && val % 1 === 0 && val > 0,
     Date: () => !isNaN(Date.parse(val)),
     Boolean: () => val === 'true' || val === 'false',
     Enumerated: (values) => R.contains(val, values),
@@ -40,9 +43,11 @@ DataType.prototype.cast = function (val) {
   return this.cata({
     String: () => val,
     NonEmptyString: () => val,
+    Number: () => parseFloat(val),
     FiniteNumber: () => parseFloat(val),
     PositiveFiniteNumber: () => parseFloat(val),
     Integer: () => parseFloat(val),
+    PositiveInteger: () => parseFloat(val),
     Date: () => moment(val),
     Boolean: () => val === 'true',
     Enumerated: (values) => val,

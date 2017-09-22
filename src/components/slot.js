@@ -37,8 +37,8 @@ const build = R.curry((slot, inputs, dataset, change$) => {
       ));
     case 'Multicolumn':
       return sw(multicolumn(
-        inputs[slot.key],
-        R.map(columnOptions, validColumns(dataset, slot.dataType)),
+        inputs[slot.id],
+        R.map(columnOptions, dataset.validColumns(slot.dataType)),
         change$
       ));
   }

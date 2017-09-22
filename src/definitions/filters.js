@@ -52,7 +52,7 @@ const LT = rowFilter({
     Slot.Column('base', 'Column', DataType.FiniteNumber),
     Slot.User('target', 'is less than', DataType.FiniteNumber),
   ],
-  fn: inputs => parseFloat(inputs.base) < parseFloat(inputs.target),
+  fn: inputs => inputs.base < inputs.target,
   display: (inputs, dataset) =>
     h('div', {}, [
       h('span', {class: {"column-name": true}}, dataset.headers[inputs.base]),
@@ -63,7 +63,7 @@ const LT = rowFilter({
 
 const LTE = rowFilter({
   name: "Less Than or Equal",
-  fn: inputs => parseFloat(inputs.base) <= parseFloat(inputs.target),
+  fn: inputs => inputs.base <= inputs.target,
   slots: [
     Slot.Column('base', 'Column', DataType.FiniteNumber),
     Slot.User('target', 'is less than or equal to', DataType.FiniteNumber),
@@ -93,7 +93,7 @@ const GT = rowFilter({
 
 const GTE = rowFilter({
   name: "Greater Than or Equal",
-  fn: inputs => parseFloat(inputs.base) >= parseFloat(inputs.target),
+  fn: inputs => inputs.base >= inputs.target,
   slots: [
     Slot.Column('base', 'Column', DataType.FiniteNumber),
     Slot.User('target', 'is greater than or equal to', DataType.FiniteNumber),
