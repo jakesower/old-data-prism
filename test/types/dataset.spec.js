@@ -5,13 +5,13 @@ const {Dataset, Column, DataType, Operation, Slot} = require('../../src/types');
 
 const germany = Dataset(
   ['Date', 'Opponent', 'Goals For', 'Goals Against'],
-  [ ['2014-06-16', 'Portugal', '4', '0'],
-    ['2014-06-21', 'Ghana', '2', '2'],
-    ['2014-06-26', 'USA', '1', '0'],
-    ['2014-06-30', 'Algeria', '2', '1'],
-    ['2014-07-05', 'France', '1', '0'],
-    ['2014-07-08', 'Brazil', '7', '1'],
-    ['2014-07-13', 'Argentina', '1', '0']
+  [ ['2014-06-16', 'Portugal',      '4', '0'],
+    ['2014-06-21', 'Ghana',         '2', '2'],
+    ['2014-06-26', 'United States', '1', '0'],
+    ['2014-06-30', 'Algeria',       '2', '1'],
+    ['2014-07-05', 'France',        '1', '0'],
+    ['2014-07-08', 'Brazil',        '7', '1'],
+    ['2014-07-13', 'Argentina',     '1', '0']
   ]
 );
 
@@ -59,5 +59,34 @@ describe ('dataset type', function() {
       [['2014-07-08', 'Brazil', '7', '1']]
     ));
   });
+
+  it ('applies valid operations', function () {
+    const validOperation = Operation.Filter(
+      { fn: (ds, inputs) => Dataset(
+            ds.headers,
+            R.pipe(
+              R.zip(R.__, inputs.a),
+              R.filter(pair => pair[1] === 7),
+              R.map(pair => pair[0])
+            )(ds.records)),
+        slots: [Slot.Column('a', 'A', DataType.FiniteNumber)]
+      },
+      { a: 2 }
+    );
+
+    const invalidOperation = Operation.Filter(
+      { fn: R.always(Dataset([], [[]])),
+        slots: [Slot.User('b', 'B', DataType.FiniteNumber)]
+      },
+      { b: "Oh hai, I'm not a number" }
+    );
+
+    const nextDS = germany.applyValidOperations([validOperation, invalidOperation]);
+    assert.deepEqual(nextDS, Dataset(
+      ['Date', 'Opponent', 'Goals For', 'Goals Against'],
+      [['2014-07-08', 'Brazil', '7', '1']]
+    ));
+
+  })
 
 });

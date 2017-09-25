@@ -35,7 +35,7 @@ const samples = {
 baseViewCheck = (itemPool, m, editing) => view(
   {set$: stream(), delete$: stream(), setActive$: stream()},
   {dataset: ecuador, itemPool, editing},
-  m,
+  m
 );
 
 

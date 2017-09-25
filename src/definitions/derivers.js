@@ -3,6 +3,7 @@ const h = require('snabbdom/h').default;
 
 const DataType = require('../types/data-type');
 const Slot = require('../types/slot');
+const Column = require('../types/column');
 
 const notEmpty = R.complement(R.empty);
 
@@ -13,7 +14,6 @@ const col = R.curry((dataset, cName) =>
 const makeDeriver = def =>
   R.merge(def, {
     fn: (dataset, inputs, columnName) => {
-      // console.log({dataset, inputs})
       return dataset.appendColumn(Column(
         columnName,
         R.map(x => x.toString(), def.fn(inputs))

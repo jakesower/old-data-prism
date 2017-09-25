@@ -5,7 +5,7 @@ const forwardTo = require('flyd-forwardto');
 
 const {targetValue} = require('../lib/utils');
 const ColumnSelector = require('./column-selector');
-const dataTypes = require('../types/data-type');
+const Types = require('../types');
 
 const filterPool = require('../definitions/filters');
 const deriverPool = require('../definitions/derivers');
@@ -14,20 +14,7 @@ const aggregatorPool = require('../definitions/aggregators');
 const Slot = require('./slot');
 const {select} = require('./controls');
 
-const columnNameSlot = {
-  sourceType: "user",
-  key: "columnName",
-  display: "Column Name",
-  dataType: dataTypes.NonEmptyString,
-};
-
-const functionSlot = fs => ({
-  sourceType: "user",
-  key: "function",
-  display: "Function",
-  dataType: dataTypes.Enumerated(fs),
-})
-
+const columnNameSlot = Types.Slot.User('columnName', 'Column Name', Types.DataType.NonEmptyString);
 
 const Action = Type({
   SetDefinitionKey: [String],

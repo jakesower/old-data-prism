@@ -33,7 +33,8 @@ Operation.fromDefinition = ({definitionKey, inputs, columnName, type}) =>
       Grouping(inputs) :
       type === 'Filter' ?
         Filter(Operation.lookup('Filter', definitionKey), inputs) :
-        Operation[type](Operation.lookup(type, definitionKey), inputs, columnName);
+        Operation[type](Operation.lookup(type, definitionKey), inputs, inputs.columnName);
+
 
 // Operation ~> Dataset -> Dataset
 Operation.prototype.applyInvalid = function (dataset) {

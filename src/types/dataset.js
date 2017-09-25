@@ -34,6 +34,8 @@ Dataset.prototype.applyOperation = function (operation) {
 }
 
 // Dataset ~> List Operation -> Dataset
+// Applies a list of operations, so long as they are all valid. If an invalid
+// operation is encountered, it returns the last result.
 Dataset.prototype.applyValidOperations = function (operations) {
   return R.reduce(
     (acc, op) => op.valid(acc) ? op.apply(acc) : R.reduced(acc),

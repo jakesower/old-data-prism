@@ -35,7 +35,7 @@ const states = {
 const viewCheck = (m, editing) => view(
   {set$: stream(), delete$: stream(), setActive$: stream()},
   {dataset: spain, aggregatorPool, editing},
-  m,
+  m
 );
 
 
@@ -54,7 +54,7 @@ describe('operation list component actions', function () {
 
   it ('creates aggregators', function () {
     const ns = update(Action.CreateAggregator, states.withCols);
-    assert.deepEqual(ns.aggregators, [OperationComponent.init('Aggregator', 1)])
+    assert.deepEqual(ns.aggregators, [OperationComponent.init('Aggregator', 1)]);
     viewCheck(ns, false);
     viewCheck(ns, true);
   });

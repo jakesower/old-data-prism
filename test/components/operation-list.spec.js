@@ -54,7 +54,7 @@ describe('operation list component actions', function () {
   it ('sets operation state', function () {
     const ns = update(
       Action.SetOperation(1,
-        OperationComponent.Action.SetDefinitionKey('Equality'),
+        OperationComponent.Action.SetDefinitionKey('Equality')
       ),
       states.withFilter
     );

@@ -15,8 +15,6 @@ const { readCsv, readUri } = require('./lib/data-fetchers');
 const Main = require('./components/main.js');
 const MainAction = require('./components/main/action');
 
-const Operations = require('./definitions/operations');
-
 const errorVdom = require('./components/error-view');
 
 // State Functions
@@ -24,29 +22,29 @@ const saveState = (model) => {
   localStorage.setItem('state', JSON.stringify(model));
 };
 
-const rehydrateOperations = (model) => {
-  const rehydrateOperation = item => {
-    const pool = Operations[item.type];
-    const key = R.path(['definition', 'key'], item);
-
-    return R.reduce(R.mergeDeepRight, item, [
-      key ? {definition: pool[key]} : {},
-    ]);
-  };
-
-  const rehydrateGrouping = (grouping) => {
-    return R.reduce(R.mergeDeepRight, grouping, [
-      {aggregators: R.map(rehydrateOperation, grouping.aggregators)},
-    ]);
-  }
-
-  const operations = R.map(item =>
-    (item.type === 'Grouping' ? rehydrateGrouping : rehydrateOperation)(item),
-    model.operations
-  )
-
-  return R.merge(model, {operations});
-}
+// const rehydrateOperations = (model) => {
+//   const rehydrateOperation = item => {
+//     const pool = Operations[item.type];
+//     const key = R.path(['definition', 'key'], item);
+//
+//     return R.reduce(R.mergeDeepRight, item, [
+//       key ? {definition: pool[key]} : {},
+//     ]);
+//   };
+//
+//   const rehydrateGrouping = (grouping) => {
+//     return R.reduce(R.mergeDeepRight, grouping, [
+//       {aggregators: R.map(rehydrateOperation, grouping.aggregators)},
+//     ]);
+//   }
+//
+//   const operations = R.map(item =>
+//     (item.type === 'Grouping' ? rehydrateGrouping : rehydrateOperation)(item),
+//     model.operations
+//   )
+//
+//   return R.merge(model, {operations});
+// }
 
 const restoreState = () => {
   return Main.init(null);
@@ -56,7 +54,7 @@ const restoreState = () => {
     // const safe = S.encase(rehydrateOperations);
     return restored === null ?
       Main.init(null) :
-      rehydrateOperations(restored);
+      Main.init(restored);
       // S.fromMaybe(Main.init, safe(restored));
   }
   catch(e) {

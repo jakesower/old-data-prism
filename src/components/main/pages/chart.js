@@ -12,5 +12,5 @@ module.exports = R.curry((action$, model) => {
   const dataset = model.dataset.applyValidOperations(operations);
   const chartAction$ = forwardTo(action$, Action.SetChart);
 
-  return ChartComponent.view(chartAction$, mainDimensions, dataset, chart);
+  return ChartComponent.view(chartAction$, {dimensions: mainDimensions, dataset}, chart);
 });

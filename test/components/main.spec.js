@@ -80,7 +80,11 @@ describe('main component actions', function () {
           active: 1,
           operations: [{
             id: 1,
-            type: "Grouping"
+            type: "Grouping",
+            uid: 2,
+            active: null,
+            columns: [],
+            aggregators: []
           }],
           uid: 2
         }
