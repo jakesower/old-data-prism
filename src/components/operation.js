@@ -5,8 +5,11 @@ const forwardTo = require('flyd-forwardto');
 
 const {targetValue} = require('../lib/utils');
 const ColumnSelector = require('./column-selector');
-const {operationValid} = require('../lib/operation-functions');
 const dataTypes = require('../types/data-type');
+
+const filterPool = require('../definitions/filters');
+const deriverPool = require('../definitions/derivers');
+const aggregatorPool = require('../definitions/aggregators');
 
 const Slot = require('./slot');
 const {select} = require('./controls');
@@ -27,13 +30,14 @@ const functionSlot = fs => ({
 
 
 const Action = Type({
-  SetDefinition: [R.T],
+  SetDefinitionKey: [String],
   SetInput: [String, R.T],
 });
 
 
 const update = Action.caseOn({
-  SetDefinition: (definition, model) => {
+  SetDefinitionKey: (definitionKey, model) => {
+    const definition = operationDefinition(model.type, definitionKey);
     const slots = definition.slots;
     const inputs = R.pipe( // TODO: no stringly typed crap
       R.map(s => ({[s.id]: s['@@type'] === 'multicolumn' ? [] : ''})),
@@ -41,7 +45,7 @@ const update = Action.caseOn({
       R.reduce(R.merge, {})
     )(slots);
 
-    return R.merge(model, { inputs, definition })
+    return R.merge(model, { inputs, definitionKey })
   },
   SetInput: (key, val, model) => R.set(R.lensPath(['inputs', key]), val, model)
 });
@@ -50,18 +54,19 @@ const update = Action.caseOn({
 const init = (type, id) => ({
   type,
   id,
-  definition: null,
+  definitionKey: null,
   inputs: {}
 });
 
 
 const createsColumn = type => type === 'Deriver' || type === 'Aggregator';
-const view = (model, {dataset, itemPool, editing}, {set$, delete$, setActive$}) => {
+const view = ({set$, delete$, setActive$}, {dataset, itemPool, editing}, model) => {
   return h('div', {class: {operation: true, editing}},
     editing ? edit() : show());
 
   function edit() {
-    const {definition, inputs} = model;
+    const {definitionKey, inputs} = model;
+    const definition = operationDefinition(model.type, definitionKey);
 
     const headerVdom = h('div', {class: {"operation-header": true}}, [
       h('span', {class: {remove: true}, on: {click: [delete$, model.id]}}),
@@ -71,9 +76,9 @@ const view = (model, {dataset, itemPool, editing}, {set$, delete$, setActive$}) 
     const functionSlotVdom = Slot.slotWrapper(
       "Function",
       select(
-        R.path(['definition', 'key'], model),
+        R.path(['definitionKey'], model),
         R.map(i => ({value: i.key, display: i.name}), R.values(itemPool)),
-        forwardTo(set$, R.compose(Action.SetDefinition, R.prop(R.__, itemPool)))
+        forwardTo(set$, R.compose(Action.SetDefinitionKey))
       )
     );
 
@@ -117,8 +122,9 @@ const view = (model, {dataset, itemPool, editing}, {set$, delete$, setActive$}) 
 
 
   function show() {
-    const text = R.path(['definition', 'display'], model) ?
-      model.definition.display(model.inputs, dataset) :
+    const definition = operationDefinition(model.type, model.definitionKey);
+    const text = definition ?
+      definition.display(model.inputs, dataset) :
       "Invalid";
 
     return [
@@ -133,5 +139,10 @@ const view = (model, {dataset, itemPool, editing}, {set$, delete$, setActive$}) 
     ];
   }
 };
+
+function operationDefinition(type, key) {
+  const pools = {Filter: filterPool, Deriver: deriverPool, Aggregator: aggregatorPool};
+  return R.path([type, key], pools);
+}
 
 module.exports = {Action, view, update, init};

@@ -1,5 +1,6 @@
 const R = require('ramda');
-const {DataType, Slot} = require('../types');
+const DataType = require('../types/data-type');
+const Slot = require('../types/slot');
 
 const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
 const col = R.curry((dataset, cName) =>

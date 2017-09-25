@@ -3,10 +3,10 @@ const h = require('snabbdom/h').default;
 
 module.exports = (options, currentValues, events) => {
   const optionVdom = option => {
-    const on = R.contains(option.val, currentValues);
+    const on = R.contains(option.value, currentValues);
     const nextVal = on ?
-      R.filter(R.complement(R.equals(option.val)), currentValues) :
-      R.append(option.val, currentValues);
+      R.filter(R.complement(R.equals(option.value)), currentValues) :
+      R.append(option.value, currentValues);
 
     return h('div', {
       class: {option: true},
@@ -18,7 +18,7 @@ module.exports = (options, currentValues, events) => {
   }
 
   const displayVal = R.pipe(
-    v => R.find(R.propEq('val', v), options),
+    v => R.find(R.propEq('value', v), options),
     R.prop('display')
   )
 

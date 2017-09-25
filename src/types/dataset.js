@@ -35,7 +35,6 @@ Dataset.prototype.applyOperation = function (operation) {
 
 // Dataset ~> List Operation -> Dataset
 Dataset.prototype.applyValidOperations = function (operations) {
-  console.log(operations)
   return R.reduce(
     (acc, op) => op.valid(acc) ? op.apply(acc) : R.reduced(acc),
     this,

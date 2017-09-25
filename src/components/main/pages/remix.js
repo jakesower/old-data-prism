@@ -5,7 +5,6 @@ const forwardTo = require('flyd-forwardto');
 
 const Operation = require('../../../types/operation');
 const Action = require('../action');
-const {applyOperation, applyOperations, operationsValid} = require('../../../lib/operation-functions');
 
 const OperationListComponent = require('../../operation-list');
 const GridComponent = require('../../grid');

@@ -1,10 +1,10 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 
-const {DataType, Slot} = require('../types');
+const DataType = require('../types/data-type');
+const Slot = require('../types/slot');
 
 const notEmpty = R.complement(R.empty);
-const {appendColumn} = require('../lib/dataset-functions');
 
 const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
 const col = R.curry((dataset, cName) =>
@@ -14,10 +14,10 @@ const makeDeriver = def =>
   R.merge(def, {
     fn: (dataset, inputs, columnName) => {
       // console.log({dataset, inputs})
-      return appendColumn(dataset, {
-        header: columnName,
-        values: R.map(x => x.toString(), def.fn(inputs))
-      })
+      return dataset.appendColumn(Column(
+        columnName,
+        R.map(x => x.toString(), def.fn(inputs))
+      ))
     }
   })
 

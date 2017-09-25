@@ -12,11 +12,12 @@ const Slot = daggy.taggedSum('Slot', {
 Slot.prototype.valid = function (dataset, inputs) {
   const v = id => inputs[id];
 
+  // TODO: Ensure that Column values are always integers or null (or Maybe)
   return this.cata({
     User: (id, _, dataType) => dataType.test(v(id)),
     Column: (id, _, dataType) => {
       const col = dataset.columns()[v(id)];
-      return col.valid(dataType);
+      return col && col.valid(dataType);
     },
     Multicolumn: (id, _, dataType) => {
       const cols = R.map(c => dataset.columns()[c], v(id));

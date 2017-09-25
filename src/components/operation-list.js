@@ -62,23 +62,23 @@ const update = Action.caseOn({
 });
 
 
-const renderOperations = R.curry((action$, dataset, operationList) => {
-  const {active, operations} = operationList;
+const renderOperations = R.curry((action$, dataset, model) => {
+  const {active, operations} = model;
   const af = a => forwardTo(action$, a);
 
   return R.map(
     operation => {
       const component = componentsByType[operation.type];
       return component.view(
-        { dataset
-        , operation: operation
-        , itemPool: itemPools[operation.type] // TODO: type implies pool
-        , editing: operation.id === active
+        { set$: af(Action.SetOperation(operation.id)),
+          delete$: af(Action.DeleteOperation),
+          setActive$: af(Action.SetActive),
         },
-        { set$: af(Action.SetOperation(operation.id))
-        , delete$: af(Action.DeleteOperation)
-        , setActive$: af(Action.SetActive)
-        }
+        { dataset,
+          itemPool: itemPools[operation.type], // TODO: type implies pool
+          editing: operation.id === active
+        },
+        operation
       )
     }
     , operations
@@ -86,7 +86,7 @@ const renderOperations = R.curry((action$, dataset, operationList) => {
 });
 
 
-const view = R.curry((action$, dataset, operationList) => {
+const view = R.curry((action$, dataset, model) => {
   const ctrlAttrs = action => ({
     class: {control: true},
     on: {click: [action$, action]}
@@ -98,7 +98,7 @@ const view = R.curry((action$, dataset, operationList) => {
   }
 
   return R.flatten([
-    renderOperations(action$, dataset, operationList),
+    renderOperations(action$, dataset, model),
 
     h('div', {class: {"prepare-controls": true}, key: 'prepare-controls'}, [
       h('div', ctrlAttrs(Action.CreateOperation('Filter')), iconed('Filter')),
@@ -116,4 +116,4 @@ const view = R.curry((action$, dataset, operationList) => {
 });
 
 
-module.exports = {update, init, view};
+module.exports = {Action, update, init, view};

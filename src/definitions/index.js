@@ -1,5 +1,5 @@
-const derivers = require('./derivers');
 const filters = require('./filters');
+const derivers = require('./derivers');
 const aggregators = require('./aggregators');
 
 module.exports = {

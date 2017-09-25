@@ -3,7 +3,6 @@ const S = require('sanctuary');
 const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 const {targetValue} = require('../lib/utils');
-const {validColumns} = require('../lib/dataset-functions');
 const {select, checkbox} = require('./controls');
 const multiselect = require('./multiselect');
 
@@ -91,10 +90,6 @@ const column = (currentValue, options, change$) => {
 
 
 const multicolumn = (currentValues, options, change$) => {
-  const option = item => {
-    return h('div', {}, item.display);
-  };
-
   return h('div',
     {class: {multicolumn: true}},
     multiselect(options, currentValues, {change: change$})

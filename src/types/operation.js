@@ -1,28 +1,39 @@
 const R = require('ramda');
 const daggy = require('daggy');
 
+const deriverPool = require('../definitions/derivers');
+const filterPool = require('../definitions/filters');
+const aggregatorPool = require('../definitions/aggregators');
+
 
 const Operation = daggy.taggedSum('Operation', {
   Empty: ['inputs'],
   Filter: ['definition', 'inputs'],
   Deriver: ['definition', 'inputs', 'columnName'],
   Grouping: ['inputs'],
-  Aggregation: ['definition', 'inputs', 'columnName'],
+  Aggregator: ['definition', 'inputs', 'columnName'],
 });
 
-const {Filter, Deriver, Grouping} = Operation;
+const {Empty, Filter, Deriver, Grouping} = Operation;
+
+
+// String -> String -> StrMap
+Operation.lookup = (type, key) =>{
+  const pools = {Filter: filterPool, Deriver: deriverPool, Aggregator: aggregatorPool};
+  return R.path([type, key], pools);
+}
 
 
 // StrMap -> Operation
 // Takes the raw UI stuff and turns it into an Operation
-Operation.fromDefinition = ({definition, inputs, columnName, type}) =>
-  R.isNil(definition) ?
-    Operation.Empty(inputs) :
+Operation.fromDefinition = ({definitionKey, inputs, columnName, type}) =>
+  R.isNil(definitionKey) ?
+    Empty(inputs) :
     type === 'Grouping' ?
-      Operation.Grouping(inputs) :
+      Grouping(inputs) :
       type === 'Filter' ?
-        Operation.Filter(definition, inputs) :
-        Operation[type](definition, inputs, columnName);
+        Filter(Operation.lookup('Filter', definitionKey), inputs) :
+        Operation[type](Operation.lookup(type, definitionKey), inputs, columnName);
 
 // Operation ~> Dataset -> Dataset
 Operation.prototype.applyInvalid = function (dataset) {
@@ -31,7 +42,7 @@ Operation.prototype.applyInvalid = function (dataset) {
     Filter: () => dataset,
     Deriver: () => dataset,
     Grouping: () => dataset,
-    Aggregation: () => dataset,
+    Aggregator: () => dataset,
   })
 }
 
@@ -48,7 +59,7 @@ Operation.prototype.apply = function (dataset) {
     Filter: R.binary(base), // filters don't have names
     Deriver: base,
     Grouping: (inputs) => applyGrouping(dataset, inputs),
-    Aggregation: () => {throw("x_x I shouldn't be here since I return a value and not a dataset!")}
+    Aggregator: () => {throw("x_x I shouldn't be here since I return a value and not a dataset!")}
   });
 }
 
@@ -63,7 +74,7 @@ Operation.prototype.valid = function (dataset) {
     Empty: () => false,
     Filter: nonGrouping,
     Deriver: nonGrouping,
-    Aggregation: nonGrouping,
+    Aggregator: nonGrouping,
     Grouping: (inputs) =>
       inputs.columns.length > 0 &&
       R.all(a => a.valid(dataset, inputs), inputs.aggregators)
@@ -84,7 +95,7 @@ Operation.prototype.populateSlots = function (dataset) {
     Empty: () => ({}),
     Filter: base,
     Deriver: base,
-    Aggregation: base,
+    Aggregator: base,
     Grouping: () => ({})
   })
 }

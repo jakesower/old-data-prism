@@ -1,11 +1,20 @@
 const assert = require('chai').assert;
+const R = require('ramda');
+const stream = require('flyd').stream;
+
 const MainComponent = require('../../src/components/main');
 const subject = MainComponent;
-
-const R = require('ramda');
 const {Dataset} = require('../../src/types');
 
 const {Action, view, update, init} = MainComponent;
+
+const croatia = Dataset(
+  ['Date', 'Opponent', 'Goals For', 'Goals Against'],
+  [ ['2014-06-12', 'Brazil',   '1', '3'],
+    ['2014-06-18', 'Cameroon', '4', '0'],
+    ['2014-06-23', 'Mexico',   '1', '3']
+  ]
+);
 
 const blank = init(null);
 
@@ -46,6 +55,58 @@ describe('main component actions', function () {
     const ns = update(Action.SetData({headers: ['One'], records: [['Thing']]}), blank);
     assert.deepEqual(ns.dataset, Dataset(['One'], [['Thing']]));
     assert.doesNotThrow(view(ns));
+  });
+
+  describe ('various app states', function () {
+    const base = init(null);
+
+    const states = [
+      { page: 'Remix',
+        dataset: croatia,
+        operations: {
+          active: 1,
+          operations: [{
+            definitionKey: 'Equality',
+            id: 1,
+            inputs: {a: "", b: ""},
+            type: "Filter"
+          }],
+          uid: 2
+        }
+      },
+      { page: 'Remix',
+        dataset: croatia,
+        operations: {
+          active: 1,
+          operations: [{
+            id: 1,
+            type: "Grouping"
+          }],
+          uid: 2
+        }
+      },
+      { page: 'Chart',
+        dataset: croatia,
+        mainDimensions: {height: 500, width: 500},
+        operations: {
+          active: 1,
+          operations: [{
+            definitionKey: 'Equality',
+            id: 1,
+            inputs: {a: "", b: ""},
+            type: "Filter"
+          }],
+          uid: 2
+        }
+      },
+    ]
+
+    states.forEach(ns => {
+      it ("works", function () {
+        view(stream(), R.merge(base, ns));
+        assert.doesNotThrow(() => view(stream(), R.merge(base, ns)))
+      })
+    });
   });
 
   // SetPage: [String],

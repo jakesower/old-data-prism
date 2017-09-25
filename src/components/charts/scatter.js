@@ -1,7 +1,6 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 const dataTypes = require('../../definitions/data');
-const DSF = require('../../lib/dataset-functions');
 
 const {Shape, Range, Point} = require('./types');
 const {paddedBasis, paddedSvg, toSvgTag} = require('./utils');

@@ -5,7 +5,6 @@ const {select} = require('./controls');
 const Type = require('union-type');
 const h = require('snabbdom/h').default;
 
-const {validColumns} = require('../lib/dataset-functions');
 const forwardTo = require('flyd-forwardto');
 
 const barChart = require('./charts/bar');

@@ -2,6 +2,7 @@ const R = require('ramda');
 const assert = require('chai').assert;
 
 const {Dataset, Operation, Slot, DataType, Column} = require('../../src/types');
+const filterPool = require('../../src/definitions/filters');
 
 const empty = Operation.Empty({});
 
@@ -39,6 +40,19 @@ describe ('operation type', function() {
     assert.deepEqual(appliedSum.records[2], ['2014-06-24', 'Japan', '4', '1', '5']);
   });
 
+  it ('looks up keys', function () {
+    const found = Operation.lookup('Filter', 'Equality');
+    assert.deepEqual(found, filterPool.Equality);
+  });
 
+  it ('constructs filter operations from definitions', function () {
+    const op = Operation.fromDefinition({
+      type: 'Filter',
+      definitionKey: 'Equality',
+      inputs: {a: 1, b: "Something"},
+    });
+
+    assert.deepEqual(op, Operation.Filter(filterPool.Equality, {a: 1, b: "Something"}));
+  });
 
 });

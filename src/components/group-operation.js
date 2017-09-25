@@ -4,33 +4,40 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 const Type = require('union-type');
 const ColumnSelector = require('./column-selector');
-const DSF = require('../lib/dataset-functions');
 const OperationComponent = require('./operation');
 const Slot = require('./slot');
+const aggregatorPool = require('../definitions/aggregators');
 
 
 const Action = Type({
   SetColumns: [Array],
-  SetActive: [Number],
   CreateAggregator: [],
   SetAggregator: [Number, Object],
-  DeleteAggregator: [Number]
+  DeleteAggregator: [Number],
+  SetActive: [R.T],
 });
 
 
 const update = Action.caseOn({
-  SetActive: R.assoc('active'),
+  SetColumns: R.assoc('columns'),
   CreateAggregator: model => {
     return R.evolve({
       aggregators: R.append(OperationComponent.init('Aggregator', model.uid)),
       uid: R.inc,
-      activeAggregator: R.always(model.uid),
+      active: R.always(model.uid),
     }, model);
   },
-  SetAggregator: (id, act) => R.map(
-    agg => agg.id === id ? OperationComponent.update(act, agg) : agg
+  SetAggregator: (id, act, mod) => R.over(
+    R.lensProp('aggregators'),
+    R.map(agg => agg.id === id ? OperationComponent.update(act, agg) : agg),
+    mod
   ),
-  DeleteAggregator: id => R.filter(agg => agg.id !== id),
+  DeleteAggregator: (id, mod) => R.over(
+    R.lensProp('aggregators'),
+    R.filter(agg => agg.id !== id),
+    mod
+  ),
+  SetActive: R.assoc('active'),
 });
 
 
@@ -38,18 +45,18 @@ const init = id => ({
   id: id,
   type: 'Grouping',
   uid: 1,
-  activeAggregator: null,
+  active: null,
 
   columns: [],
   aggregators: [],
 });
 
 
-const view = ({dataset, operation, itemPool, active}, {set$, delete$, setActive$}) => {
+const view = ({set$, delete$, setActive$}, {dataset, itemPool, editing}, model) => {
   return editing ? edit() : show();
 
   function edit() {
-    const {id, columns, aggregators} = model;
+    const {id, columns, aggregators, active} = model;
 
     const toOption = opt => h('option', {value: opt.index}, opt.header);
     const withBlank = R.prepend(h('option', {}, ''));
@@ -71,13 +78,13 @@ const view = ({dataset, operation, itemPool, active}, {set$, delete$, setActive$
 
     // column groupings
     const columnsVdom = h('div', {class: {columns: true}}, (() => {
-      const optionPair = col => ({val: col.index, display: col.header});
+      const optionPair = (col, idx) => ({value: idx, display: col.header});
       const clean = R.compose(Action.SetColumns, R.map(parseInt));
 
       return Slot.multicolumn(
         "Grouping Columns",
         columns,
-        R.map(optionPair, DSF.columns(dataset)),
+        R.addIndex(R.map)(optionPair, dataset.columns()),
         forwardTo(set$, clean)
       );
     })());
@@ -87,15 +94,15 @@ const view = ({dataset, operation, itemPool, active}, {set$, delete$, setActive$
     const existingAggs = R.map(
       aggregator => {
         return OperationComponent.view(
-          { dataset
-          , operation: op
-          , itemPool: aggregatorPool
-          , active: op.id === active
+          { set$: af(Action.SetAggregator),
+            delete$: af(Action.DeleteAggegator),
+            setActive$: af(Action.SetActive)
           },
-          { set$: af(Action.SetAggregator)
-          , delete$: af(Action.DeleteAggegator)
-          , setActive$: af(Action.SetActive)
-          }
+          { dataset,
+            itemPool: aggregatorPool,
+            active: aggregator.id === active
+          },
+          aggregator
         );
       },
       model.aggregators
