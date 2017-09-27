@@ -1,14 +1,14 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
-const {DataType, Slot} = require('../../types');
+const {DataType, DataSlot} = require('../../types');
 
 const {Shape, Range, Point} = require('./types');
 const {paddedBasis, paddedSvg, toSvgTag} = require('./utils');
 
 const slots = [
-  Slot.Column('rowAxis', 'Row Axis', DataType.String),
-  Slot.Multicolumn('colAxes', 'Column Axes', DataType.FiniteNumber),
-  Slot.User('invert', 'Invert', DataType.Boolean)
+  DataSlot.Column('rowAxis', 'Row Axis', DataType.String),
+  DataSlot.Multicolumn('colAxes', 'Column Axes', DataType.FiniteNumber),
+  DataSlot.User('invert', 'Invert', DataType.Boolean)
 ]
 
 

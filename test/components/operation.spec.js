@@ -69,23 +69,23 @@ describe('operation component actions', function () {
     it ('sets definition', function () {
       const ns = update(Action.SetDefinitionKey(sample.key), model);
       assert.equal(ns.definitionKey, sample.key);
-      assert.doesNotThrow(() => viewCheck(ns, true));
-      assert.doesNotThrow(() => viewCheck(ns, false));
+      viewCheck(ns, true);
+      viewCheck(ns, false);
     });
 
     it ('set an input', function () {
       const ns = update(Action.SetInput('a', 'moo'), model);
       assert.equal(ns.inputs.a, 'moo');
-      assert.doesNotThrow(() => viewCheck(ns, true));
-      assert.doesNotThrow(() => viewCheck(ns, false));
+      viewCheck(ns, true);
+      viewCheck(ns, false);
     });
 
     it ('renders all filters', function () {
       R.forEach(
         o => {
           const ns = update(Action.SetDefinitionKey(o.key), model);
-          assert.doesNotThrow(() => viewCheck(ns, true));
-          assert.doesNotThrow(() => viewCheck(ns, false));
+          viewCheck(ns, true);
+          viewCheck(ns, false);
         },
         R.values(filterPool)
       );
@@ -108,27 +108,27 @@ describe('operation component actions', function () {
     it ('sets definition', function () {
       const ns = update(Action.SetDefinitionKey(sample.key), model);
       assert.equal(ns.definitionKey, sample.key);
-      assert.doesNotThrow(() => viewCheck(ns, true));
-      assert.doesNotThrow(() => viewCheck(ns, false));
+      viewCheck(ns, true);
+      viewCheck(ns, false);
     });
 
     it ('sets an input', function () {
       const ns = update(Action.SetInput('addends', [2, 3]), model);
       assert.deepEqual(ns.inputs.addends, [2, 3]);
-      assert.doesNotThrow(() => viewCheck(ns, true));
-      assert.doesNotThrow(() => viewCheck(ns, false));
+      viewCheck(ns, true);
+      viewCheck(ns, false);
     });
 
-    it ('renders all derivers', function () {
-      R.forEach(
-        o => {
+    R.forEach(
+      o => {
+        it ('renders the ' + o.key + ' deriver', function () {
           const ns = update(Action.SetDefinitionKey(o.key), model);
-          assert.doesNotThrow(() => viewCheck(ns, true));
-          assert.doesNotThrow(() => viewCheck(ns, false));
-        },
-        R.values(deriverPool)
-      );
-    });
+          viewCheck(ns, true);
+          viewCheck(ns, false);
+        })
+      },
+      R.values(deriverPool)
+    );
 
     if (runTestCheck) {
       R.values(deriverPool).forEach(o => {
@@ -147,23 +147,23 @@ describe('operation component actions', function () {
     it ('sets definition', function () {
       const ns = update(Action.SetDefinitionKey(sample.key), model);
       assert.equal(ns.definitionKey, sample.key);
-      assert.doesNotThrow(() => viewCheck(ns, true));
-      assert.doesNotThrow(() => viewCheck(ns, false));
+      viewCheck(ns, true);
+      viewCheck(ns, false);
     });
 
     it ('sets an input', function () {
       const ns = update(Action.SetInput('a', 2), model);
       assert.deepEqual(ns.inputs.a, 2);
-      assert.doesNotThrow(() => viewCheck(ns, true));
-      assert.doesNotThrow(() => viewCheck(ns, false));
+      viewCheck(ns, true);
+      viewCheck(ns, false);
     });
 
     it ('renders all aggregators', function () {
       R.forEach(
         o => {
           const ns = update(Action.SetDefinitionKey(o.key), model);
-          assert.doesNotThrow(() => viewCheck(ns, true));
-          assert.doesNotThrow(() => viewCheck(ns, false));
+          viewCheck(ns, true);
+          viewCheck(ns, false);
         },
         R.values(aggregatorPool)
       );

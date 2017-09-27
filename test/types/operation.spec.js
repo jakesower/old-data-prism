@@ -1,15 +1,15 @@
 const R = require('ramda');
 const assert = require('chai').assert;
 
-const {Dataset, Operation, Slot, DataType, Column} = require('../../src/types');
+const {Dataset, Operation, DataSlot, DataType, Column} = require('../../src/types');
 const filterPool = require('../../src/definitions/filters');
 const aggregatorPool = require('../../src/definitions/aggregators');
 
-const empty = Operation.Empty({});
+const empty = Operation.Empty;
 
 const sumDef = {
   name: "Sum",
-  slots: [Slot.Multicolumn('addends', 'Addends', DataType.FiniteNumber)],
+  slots: [DataSlot.Multicolumn('addends', 'Addends', DataType.FiniteNumber)],
   display: () => "",
   fn: (dataset, inputs, columnName) => {
     const sum = R.reduce(R.add, 0);

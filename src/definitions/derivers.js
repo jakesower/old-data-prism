@@ -2,7 +2,7 @@ const R = require('ramda');
 const h = require('snabbdom/h').default;
 
 const DataType = require('../types/data-type');
-const Slot = require('../types/slot');
+const DataSlot = require('../types/data-slot');
 const Column = require('../types/column');
 
 const notEmpty = R.complement(R.empty);
@@ -26,8 +26,8 @@ const FormattedDate = {
   name: "Formatted Date",
 
   slots: [
-    Slot.Column('date', 'Date', DataType.Date),
-    Slot.User('format', 'Format', DataType.NonEmptyString)
+    DataSlot.Column('date', 'Date', DataType.Date),
+    DataSlot.User('format', 'Format', DataType.NonEmptyString)
   ],
 
   fn: (args) => {return R.map(d => d.format(args.format), args.date)},
@@ -39,8 +39,8 @@ const Quantile = {
   name: "Quantile",
 
   slots: [
-    Slot.Column('n', 'n', DataType.FiniteNumber),
-    Slot.User('order', 'order', DataType.PositiveInteger)
+    DataSlot.Column('n', 'n', DataType.FiniteNumber),
+    DataSlot.User('order', 'order', DataType.PositiveInteger)
   ],
 
   fn: (args) => {
@@ -88,7 +88,7 @@ const Sum = {
 
   userInputs: [],
   slots: [
-    Slot.Multicolumn('addends', 'Addends', DataType.FiniteNumber)
+    DataSlot.Multicolumn('addends', 'Addends', DataType.FiniteNumber)
   ],
 
   fn: args => R.map(R.sum, args.addends),
@@ -106,8 +106,8 @@ const Difference = {
   name: "Difference",
 
   slots: [
-    Slot.Column('minuend', 'Minuend', DataType.FiniteNumber),
-    Slot.Column('subtrahend', 'Subtrahend', DataType.FiniteNumber)
+    DataSlot.Column('minuend', 'Minuend', DataType.FiniteNumber),
+    DataSlot.Column('subtrahend', 'Subtrahend', DataType.FiniteNumber)
   ],
 
   fn: args => R.zipWith(R.subtract, args.minuend, args.subtrahend),
@@ -124,8 +124,8 @@ const Round = {
   name: "Round",
 
   slots: [
-    Slot.Column('num', 'Column', DataType.FiniteNumber),
-    Slot.User('precision', 'Precision', DataType.Integer)
+    DataSlot.Column('num', 'Column', DataType.FiniteNumber),
+    DataSlot.User('precision', 'Precision', DataType.Integer)
   ],
 
   fn: ({num, precision}) => {
@@ -144,8 +144,8 @@ const Floor = {
   name: "Floor",
 
   slots: [
-    Slot.Column('num', 'Column', DataType.FiniteNumber),
-    Slot.User('precision', 'Precision', DataType.Integer)
+    DataSlot.Column('num', 'Column', DataType.FiniteNumber),
+    DataSlot.User('precision', 'Precision', DataType.Integer)
 
   ],
 
@@ -165,8 +165,8 @@ const Ceiling = {
   name: "Ceiling",
 
   slots: [
-    Slot.Column('num', 'Column', DataType.FiniteNumber),
-    Slot.User('precision', 'Precision', DataType.Integer)
+    DataSlot.Column('num', 'Column', DataType.FiniteNumber),
+    DataSlot.User('precision', 'Precision', DataType.Integer)
   ],
 
   fn: ({num, precision}) => {
@@ -185,8 +185,8 @@ const Logarithm = {
   name: "Logarithm",
 
   slots: [
-    Slot.Column('num', 'Column', DataType.PositiveFiniteNumber),
-    Slot.User('base', 'Base', DataType.PositiveFiniteNumber)
+    DataSlot.Column('num', 'Column', DataType.PositiveFiniteNumber),
+    DataSlot.User('base', 'Base', DataType.PositiveFiniteNumber)
   ],
 
   // NOTE: this could benefit from "exit" checking to ensure the result is

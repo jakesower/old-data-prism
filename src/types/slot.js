@@ -2,56 +2,35 @@ const R = require('ramda');
 const daggy = require('daggy');
 
 const Slot = daggy.taggedSum('Slot', {
-  User: ['id', 'display', 'dataType'],
-  Column: ['id', 'display', 'dataType'],
-  Multicolumn: ['id', 'display', 'dataType'],
+  Anonymous: ['display'],
+  Free: ['id', 'display', 'dataType'],
+  Pool: ['id', 'display', 'dataType', 'pool'],
+  Multipool: ['id', 'display', 'dataType', 'pool'],
 });
 
 
-// Slot ~> Dataset -> StrMap -> Boolean
-Slot.prototype.valid = function (dataset, inputs) {
-  const v = id => inputs[id];
+// Slot ~> StrMap -> Boolean
+Slot.prototype.valid = function (value) {
+  const inPool = R.curry((pool, v) => R.contains(v, R.map(R.prop('value'), pool)));
 
-  // TODO: Ensure that Column values are always integers or null (or Maybe)
   return this.cata({
-    User: (id, _, dataType) => dataType.test(v(id)),
-    Column: (id, _, dataType) => {
-      const col = dataset.columns()[v(id)];
-      return col && col.valid(dataType);
-    },
-    Multicolumn: (id, _, dataType) => {
-      const cols = R.map(c => dataset.columns()[c], v(id));
-      return R.all(col => col.valid(dataType), cols);
-    }
+    Anonymous: _ => true,
+    Free: (_, _1, dataType) => dataType.test(value),
+    Pool: (_, _1, dataType, pool) => dataType.test(value) && inPool(pool, value),
+    Multipool: (_, _1, dataType, pool) =>
+      R.all
+        (R.allPass([v => dataType.test(v), inPool(pool)]))
+        (value)
   });
-}
-
-
-// Assumes valid inputs
-// Slot ~> Dataset -> StrMap -> StrMap
-Slot.prototype.populate = function (dataset, inputs) {
-  return this.cata({
-    User: (id, _, dataType) => ({[id]: dataType.cast(inputs[id])}),
-    Column: (id, _, dataType) => {
-      const col = dataset.columns()[inputs[id]];
-      const vals = R.map(v => dataType.cast(v), col.values);
-      return {[id]: vals};
-    },
-    Multicolumn: (id, _, dataType) => {
-      const cols = R.map(i => dataset.columns()[i], inputs[id]);
-      const expanded = R.map(col => R.map(v => dataType.cast(v), col.values), cols);
-      const vals = R.transpose(expanded);
-      return {[id]: vals};
-    }
-  })
 }
 
 // Slot ~> a
 Slot.prototype.defaultValue = function () {
   return this.cata({
-    User: () => '',
-    Column: () => null,
-    Multicolumn: () => []
+    Anonymous: () => '',
+    Free: () => '',
+    Pool: () => ({display: '', value: ''}),
+    Multipool: () => []
   });
 }
 

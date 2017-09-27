@@ -1,14 +1,14 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
-const {DataType, Slot} = require('../../types');
+const {DataType, DataSlot} = require('../../types');
 const {Shape, Range, Point} = require('./types');
 const {paddedBasis, paddedSvg, toSvgTag} = require('./utils');
 
 const mapIndexed = R.addIndex(R.map);
 
 const slots = [
-  Slot.Column('xAxis', 'Label', DataType.String),
-  Slot.Column('yAxis', 'Value', DataType.FiniteNumber)
+  DataSlot.Column('xAxis', 'Label', DataType.String),
+  DataSlot.Column('yAxis', 'Value', DataType.FiniteNumber)
 ]
 
 

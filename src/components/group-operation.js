@@ -5,7 +5,8 @@ const forwardTo = require('flyd-forwardto');
 const Type = require('union-type');
 const ColumnSelector = require('./column-selector');
 const OperationComponent = require('./operation');
-const Slot = require('./slot');
+const {Slot, DataType} = require('../types');
+const SlotCollector = require('./slot-collector');
 const aggregatorPool = require('../definitions/aggregators');
 
 
@@ -79,12 +80,12 @@ const view = ({set$, delete$, setActive$}, {dataset, editing}, model) => {
     // column groupings
     const columnsVdom = h('div', {class: {columns: true}}, (() => {
       const optionPair = (col, idx) => ({value: idx, display: col.header});
+      const pool = R.addIndex(R.map)(optionPair, dataset.columns());
 
-      return Slot.multicolumn(
-        "Grouping Columns",
-        columns,
-        R.addIndex(R.map)(optionPair, dataset.columns()),
-        forwardTo(set$, Action.SetColumns)
+      return SlotCollector(
+        forwardTo(set$, Action.SetColumns),
+        Slot.Multipool('columns', 'Grouping Columns', DataType.FiniteNumber, pool),
+        columns
       );
     })());
 

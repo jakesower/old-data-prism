@@ -3,18 +3,21 @@ const h = require('snabbdom/h').default;
 const Type = require('union-type');
 const forwardTo = require('flyd-forwardto');
 
-const {targetValue} = require('../lib/utils');
-const ColumnSelector = require('./column-selector');
-const Types = require('../types');
+const {switchcase} = require('../lib/utils');
+const {Slot, DataType, Operation} = require('../types');
 
 const filterPool = require('../definitions/filters');
 const deriverPool = require('../definitions/derivers');
 const aggregatorPool = require('../definitions/aggregators');
 
-const Slot = require('./slot');
-const {select} = require('./controls');
+const SlotCollector = require('./slot-collector');
 
-const columnNameSlot = Types.Slot.User('columnName', 'Column Name', Types.DataType.NonEmptyString);
+const toOperation = switchcase({
+  Filter: (definition, inputs) => Operation.Filter(definition, inputs),
+  Deriver: (definition, inputs) => Operation.Deriver(definition, inputs, inputs.columnName),
+  Aggregator: (definition, inputs) => Operation.Aggregator(definition, inputs, inputs.columnName),
+});
+
 
 const Action = Type({
   SetDefinitionKey: [String],
@@ -26,8 +29,8 @@ const update = Action.caseOn({
   SetDefinitionKey: (definitionKey, model) => {
     const definition = operationDefinition(model.type, definitionKey);
     const slots = definition.slots;
-    const inputs = R.pipe( // TODO: no stringly typed crap
-      R.map(s => ({[s.id]: s['@@tag'] === 'Multicolumn' ? [] : ''})),
+    const inputs = R.pipe(
+      R.map(s => ({[s.id]: s.defaultValue()})),
       R.append(createsColumn(model.type) ? {columnName: model.inputs.columnName} : {}),
       R.reduce(R.merge, {})
     )(slots);
@@ -54,47 +57,52 @@ const view = ({set$, delete$, setActive$}, {dataset, itemPool, editing}, model) 
   function edit() {
     const {definitionKey, inputs} = model;
     const definition = operationDefinition(model.type, definitionKey);
+    const operation = definition ?
+      toOperation(model.type)(definition, inputs) :
+      Operation.Empty;
 
     const headerVdom = h('div', {class: {"operation-header": true}}, [
       h('span', {class: {remove: true}, on: {click: [delete$, model.id]}}),
       h('h2', {}, "Edit " + model.type),
     ]);
 
-    const functionSlotVdom = Slot.slotWrapper(
-      "Function",
-      select(
-        R.path(['definitionKey'], model),
-        R.map(i => ({value: i.key, display: i.name}), R.values(itemPool)),
-        forwardTo(set$, R.compose(Action.SetDefinitionKey))
-      )
+    const functionSlotVdom = SlotCollector(
+      forwardTo(set$, R.compose(Action.SetDefinitionKey)),
+      Slot.Pool(
+        'function',
+        'Function',
+        DataType.String,
+        R.map(i => ({value: i.key, display: i.name}), R.values(itemPool))
+      ),
+      R.path(['definitionKey'], model)
     );
 
     const controlsVdom = [
       h('div', {class: {controls: true}}, [
         h('button',
           { on: {click: [setActive$, null]}
-          // , attrs: {disabled: !operation.valid(dataset)}
+          , attrs: {disabled: !operation.valid(dataset)}
           },
           'Done'
         )
       ])
-    ]
+    ];
 
-    const inputVdom = item => R.map(slot => Slot.build(
-      slot,
-      inputs,
-      dataset,
-      forwardTo(set$, Action.SetInput(slot.id))
-    ), item.slots);
+    const columnNameVdom = SlotCollector(
+      forwardTo(set$, Action.SetInput('columnName')),
+      Slot.Anonymous('Column Name'),
+      inputs.columnName
+    );
 
+    const inputVdom = R.pipe(
+      R.prop('slots'),
+      R.map(dataSlot => SlotCollector(
+        forwardTo(set$, Action.SetInput(dataSlot.id)),
+        dataSlot.toSlot(dataset),
+        inputs[dataSlot.id]
+      ))
+    );
 
-    const columnNameVdom =
-      Slot.user(
-        "Column Name",
-        columnNameSlot,
-        inputs.columnName,
-        forwardTo(set$, Action.SetInput('columnName'))
-      )
 
     return h('div', {class: {"operation-form": true, form: true}},
       R.flatten([

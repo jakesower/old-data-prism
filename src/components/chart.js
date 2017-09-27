@@ -1,11 +1,11 @@
 const R = require('ramda');
-const ColumnSelector = require('./column-selector');
-const Slot = require('./slot');
-const {select} = require('./controls');
+const forwardTo = require('flyd-forwardto');
+
+const {Slot, DataType} = require('../types');
+const SlotCollector = require('./slot-collector');
 const Type = require('union-type');
 const h = require('snabbdom/h').default;
 
-const forwardTo = require('flyd-forwardto');
 
 const barChart = require('./charts/bar');
 const scatterPlot = require('./charts/scatter');
@@ -49,20 +49,25 @@ const update = Action.caseOn({
 
 const view = R.curry((action$, {dimensions, dataset}, model) => {
   const slots = R.pathOr([], [model.type, 'slots'], CHARTS);
+  
   const action = slot => forwardTo(action$, Action.SetInput(slot.id));
+  const typePool = R.map(t => ({ value: t, display: t }), R.keys(CHARTS));
+  const toCollector = s => SlotCollector(
+    action(s),
+    s.toSlot(dataset),
+    model.inputs[s.id]
+  );
 
   return h('div', {class: {"main-container": true}}, [
     h('aside', {}, [
       h('div', {class: {"form": true}}, R.flatten([
-        Slot.slotWrapper('Chart Type',
-          select(
-            model.type,
-            R.map(t => ({ value: t, display: t }), R.keys(CHARTS)),
-            forwardTo(action$, Action.SetType)
-          )
+        SlotCollector(
+          forwardTo(action$, Action.SetType),
+          Slot.Pool('chartType', 'Chart Type', DataType.String, typePool),
+          model.type
         ),
 
-        R.map(s => Slot.build(s, model.inputs, dataset, action(s)), slots)
+        R.map(toCollector, slots)
       ]))
     ]),
 

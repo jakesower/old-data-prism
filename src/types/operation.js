@@ -9,7 +9,7 @@ const Dataset = require('./dataset');
 
 
 const Operation = daggy.taggedSum('Operation', {
-  Empty: ['inputs'],
+  Empty: [],
   Filter: ['definition', 'inputs'],
   Deriver: ['definition', 'inputs', 'columnName'],
   Grouping: ['columns', 'aggregators'],

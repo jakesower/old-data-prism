@@ -1,6 +1,7 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 const {targetValue} = require('../lib/utils');
+const multiselect = require('./multiselect');
 
 const withBlank = R.prepend(h('option', {}, ''));
 
@@ -45,6 +46,7 @@ const text = (currentValue, change$) => {
 
 module.exports = {
   select,
+  multiselect,
   checkbox,
   text,
 };

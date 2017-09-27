@@ -1,6 +1,6 @@
 const R = require('ramda');
 const DataType = require('../types/data-type');
-const Slot = require('../types/slot');
+const DataSlot = require('../types/data-slot');
 
 const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
 const col = R.curry((dataset, cName) =>
@@ -21,7 +21,7 @@ const Count = {
 const Mean = {
   name: "Mean",
   slots: [
-    Slot.Column('a', 'Column', DataType.FiniteNumber)
+    DataSlot.Column('a', 'Column', DataType.FiniteNumber)
   ],
   fn: (group, inputs) => R.mean(inputs.a),
   display: () => 'Mean'
@@ -31,7 +31,7 @@ const Mean = {
 const Median = {
   name: "Median",
   slots: [
-    Slot.Column('a', 'Column', DataType.FiniteNumber)
+    DataSlot.Column('a', 'Column', DataType.FiniteNumber)
   ],
   fn: (group, inputs) => R.median(inputs.a),
   display: (inputs, group) => 'Median'
@@ -42,7 +42,7 @@ const Median = {
 const Maximum = {
   name: "Maximum",
   slots: [
-    Slot.Column('a', 'Column', DataType.FiniteNumber)
+    DataSlot.Column('a', 'Column', DataType.FiniteNumber)
   ],
   fn: (group, inputs) => R.max(inputs.a),
   display: () => 'Maximum'
@@ -52,7 +52,7 @@ const Maximum = {
 const Minimum = {
   name: "Minimum",
   slots: [
-    Slot.Column('a', 'Column', DataType.FiniteNumber)
+    DataSlot.Column('a', 'Column', DataType.FiniteNumber)
   ],
   fn: (group, inputs) => R.min(inputs.a),
   display: () => 'minimum'
@@ -62,7 +62,7 @@ const Minimum = {
 const Sum = {
   name: "Sum",
   slots: [
-    Slot.Column('a', 'Column', DataType.FiniteNumber)
+    DataSlot.Column('a', 'Column', DataType.FiniteNumber)
   ],
   fn: (group, inputs) => R.sum(inputs.a),
   display: () => 'Sum'
@@ -72,7 +72,7 @@ const Sum = {
 const Product = {
   name: "Product",
   slots: [
-    Slot.Column('a', 'Column', DataType.FiniteNumber)
+    DataSlot.Column('a', 'Column', DataType.FiniteNumber)
   ],
   fn: (group, inputs) => R.product(inputs.a),
   display: () => 'Product'

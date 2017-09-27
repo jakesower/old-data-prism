@@ -4,18 +4,13 @@ const forwardTo = require('flyd-forwardto');
 const Type = require('union-type');
 
 const SlotCollector = require('./slot-collector');
-const {Slot} = require('../types');
 
 
 const Action = Type({
   SetInput: [String, () => true]
 });
 
-const init = (type, id) => ({
-  type,
-  id,
-  inputs: {}
-});
+const init = (type, id, inputs) => ({type, id, inputs});
 
 const update = Action.caseOn({
   SetInput: (key, val, model) => R.set(R.lensPath(['inputs', key]), val, model)
@@ -40,7 +35,6 @@ const view = (streams, misc, model) => {
         SlotCollector(
           slotStream(slot),
           slot,
-          pool,
           R.has(slot.id, inputs) ? inputs[slot.id] : slot.defaultValue()
         )
       ])}, slots),

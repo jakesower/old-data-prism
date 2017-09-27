@@ -2,51 +2,35 @@ const R = require('ramda');
 const assert = require('chai').assert;
 const moment = require('moment');
 
-const {Dataset, DataType, Slot} = require('../../src/types');
+const {DataType, Slot} = require('../../src/types');
 
-const iran = Dataset(
-  ['Date', 'Opponent', 'Goals For', 'Goals Against'],
-  [ ['2014-06-16', 'Nigeria',                '0', '0'],
-    ['2014-06-21', 'Argentina',              '0', '1'],
-    ['2014-06-25', 'Bosnia and Herzegovina', '1', '3'],
-  ]
-);
+const o = R.map(v => ({value: v, display: v}));
 
-const gameQuality = Slot.User('quality', 'Quality of Game', DataType.PositiveFiniteNumber);
-const date = Slot.Column('date', 'Date of Play', DataType.Date);
-const scores = Slot.Multicolumn('scores', 'Scores', DataType.FiniteNumber);
+const gameQuality = Slot.Free('quality', 'Quality of Game', DataType.PositiveFiniteNumber);
+const falseSlot = Slot.Pool('false', 'False', DataType.Boolean, o(['false']));
+const scores = Slot.Multipool('lowscores', 'Low Scores', DataType.FiniteNumber, o(['0', '1', '2']));
 
 
 describe ('slot type', function() {
   it ('determines validity', function() {
     const invalids = [
-      gameQuality.valid(iran, {quality: "lol"}),
-      date.valid(iran, {date: 1}),
-      scores.valid(iran, {scores: [1, 2]})
+      gameQuality.valid("lol"),
+      falseSlot.valid("true"),
+      falseSlot.valid("lol"),
+      scores.valid(['1', '3']),
+      scores.valid("lol")
     ];
 
     invalids.forEach(i => assert.equal(i, false));
 
     const valids = [
-      gameQuality.valid(iran, {quality: "8"}),
-      date.valid(iran, {date: 0}),
-      scores.valid(iran, {scores: [3, 2]})
+      gameQuality.valid("8"),
+      falseSlot.valid('false'),
+      scores.valid(['2', '0'])
     ];
 
-    valids.forEach(i => assert.equal(i, true));
+    valids.forEach(v => assert.equal(v, true));
   });
 
-
-  it ('populates', function() {
-    const pops = {quality: '8', date: 0, scores: [2, 3]};
-
-    const gqPop = gameQuality.populate(iran, pops);
-    const dPop = date.populate(iran, pops);
-    const sPop = scores.populate(iran, pops);
-
-    assert.equal(gqPop.quality, 8);
-    assert.deepEqual(dPop.date, ['2014-06-16', '2014-06-21', '2014-06-25'].map(d => moment(d)));
-    assert.deepEqual(sPop.scores, [[0, 0], [0, 1], [1, 3]]);
-  });
 
 });

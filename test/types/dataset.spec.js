@@ -1,7 +1,7 @@
 const R = require('ramda');
 const assert = require('chai').assert;
 
-const {Dataset, Column, DataType, Operation, Slot} = require('../../src/types');
+const {Dataset, Column, DataType, Operation, DataSlot} = require('../../src/types');
 
 const germany = Dataset(
   ['Date', 'Opponent', 'Goals For', 'Goals Against'],
@@ -48,7 +48,7 @@ describe ('dataset type', function() {
               R.filter(pair => pair[1] === 7),
               R.map(pair => pair[0])
             )(ds.records)),
-        slots: [Slot.Column('a', 'A', DataType.FiniteNumber)]
+        slots: [DataSlot.Column('a', 'A', DataType.FiniteNumber)]
       },
       { a: 2 }
     );
@@ -69,14 +69,14 @@ describe ('dataset type', function() {
               R.filter(pair => pair[1] === 7),
               R.map(pair => pair[0])
             )(ds.records)),
-        slots: [Slot.Column('a', 'A', DataType.FiniteNumber)]
+        slots: [DataSlot.Column('a', 'A', DataType.FiniteNumber)]
       },
       { a: 2 }
     );
 
     const invalidOperation = Operation.Filter(
       { fn: R.always(Dataset([], [[]])),
-        slots: [Slot.User('b', 'B', DataType.FiniteNumber)]
+        slots: [DataSlot.User('b', 'B', DataType.FiniteNumber)]
       },
       { b: "Oh hai, I'm not a number" }
     );

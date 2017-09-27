@@ -79,10 +79,10 @@ const view = (dataset, action$, model) => {
       h('strong', {class: {"button": true}}, `${page} / ${numPages}`),
       pageButton(">", page + 1),
       pageButton(">>", numPages),
-      h('a', {
-        class: {button: true},
-        on: {click: [exportCsv, dataset]}
-      }, 'Export')
+      // h('a', {
+      //   class: {button: true},
+      //   on: {click: [exportCsv, dataset]}
+      // }, 'Export')
     ]),
 
     h('table', {}, R.prepend(

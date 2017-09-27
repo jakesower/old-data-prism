@@ -28,28 +28,32 @@ const componentsByType = {
 }
 
 // TODO: ...
-const slots = dataset => [
-  { slot: Slot.Multicolumn('columns', 'Columns', DataType.String),
-    pool: R.addIndex(R.map)((h, idx) => ({display: h, value: idx}), dataset.headers),
-    label: 'Columns'
-  }
-]
+const slots = dataset => {
+  const pool = R.addIndex(R.map)((h, idx) => ({display: h, value: idx}), dataset.headers);
+  return [
+    { slot: Slot.Multipool('columns', 'Columns', DataType.String, pool),
+      label: 'Columns'
+    }
+  ]
+}
 
 
-// Can we express all operations in terms of...
-
-// 1. Initial state by type
-// 2. State changes that cause other state changes (definitionKey)
-// 3. Show mode
-const create = switchcase({
+const createType = switchcase({
   Grouping: ({id}) => GroupingOperationComponent.init('Grouping', id),
   Columns: ({id, dataset}) => {
-    // const allCols = R.range(0, R.length(dataset));
-    SlotOperationComponent.init('Columns', id)
+    SlotOperationComponent.init('Columns', id, {columns: R.range(0, 255)})
   },
   Filter: ({id}) => OperationComponent.init('Filter', id),
   Deriver: ({id}) => OperationComponent.init('Deriver', id),
   Aggregator: ({id}) => OperationComponent.init('Aggregator', id),
+});
+
+const updateType = switchcase({
+  Grouping: (action, op) => GroupingOperationComponent.update(action, op),
+  Columns: (action, op) => SlotOperationComponent.update(action, op),
+  Filter: (action, op) => OperationComponent.update(action, op),
+  Deriver: (action, op) => OperationComponent.update(action, op),
+  Aggregator: (action, op) => OperationComponent.update(action, op),
 })
 
 
@@ -73,16 +77,17 @@ const init = () => ({
 
 const update = Action.caseOn({
   CreateOperation: (type, model) => R.evolve({
-    operations: R.append(create(type)({id: model.uid})),
-    // operations: R.append(componentsByType[type].init(type, model.uid)),
+    operations: R.append(createType(type)({id: model.uid})),
     uid: R.inc,
     active: R.always(model.uid)
   }, model),
-  SetOperation: (id, act, mod) => R.over(
-    R.lensProp('operations'),
-    R.map(op => op.id === id ? componentsByType[op.type].update(act, op) : op),
-    mod
-  ),
+  SetOperation: (id, act, mod) => {
+    return R.over(
+      R.lensProp('operations'),
+      R.map(op => op.id === id ? updateType(op.type)(act, op) : op),
+      mod
+    );
+  },
   DeleteOperation: (id, mod) => R.over(
     R.lensProp('operations'),
     R.filter(op => op.id !== id),
