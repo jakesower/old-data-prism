@@ -35,7 +35,7 @@ const update = Action.caseOn({
   SetType: (type, model) => {
     const slots = R.pathOr([], [type, 'slots'], CHARTS);
     const inputs = R.pipe( // TODO: no stringly typed crap
-      R.map(s => ({[s.id]: s['@@type'] === 'multicolumn' ? [] : ''})),
+      R.map(s => ({[s.id]: s['@@tag'] === 'Multicolumn' ? [] : ''})),
       R.mergeAll
     )(slots);
 
@@ -49,7 +49,7 @@ const update = Action.caseOn({
 
 const view = R.curry((action$, {dimensions, dataset}, model) => {
   const slots = R.pathOr([], [model.type, 'slots'], CHARTS);
-  const action = slot => forwardTo(action$, Action.SetInput(slot.key));
+  const action = slot => forwardTo(action$, Action.SetInput(slot.id));
 
   return h('div', {class: {"main-container": true}}, [
     h('aside', {}, [

@@ -1,7 +1,7 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 
-module.exports = (options, currentValues, events) => {
+module.exports = (currentValues, options, change$) => {
   const optionVdom = option => {
     const on = R.contains(option.value, currentValues);
     const nextVal = on ?
@@ -10,7 +10,7 @@ module.exports = (options, currentValues, events) => {
 
     return h('div', {
       class: {option: true},
-      on: {click: () => events.change(nextVal)}
+      on: {click: () => change$(nextVal)}
     }, [
       h('div', {class: {check: true}}, on ? '✓' : ''),
       h('div', {class: {value: true}}, option.display)

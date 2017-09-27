@@ -3,9 +3,11 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 const Type = require('union-type');
 
-const Operation = require('../types/operation');
+const {switchcase} = require('../lib/utils');
+const {Operation, Slot, DataType} = require('../types');
 
 const OperationComponent = require('./operation');
+const SlotOperationComponent = require('./slot-operation');
 const GroupOperationComponent = require('./group-operation');
 
 const AGGREGATORS = require('../definitions/aggregators');
@@ -21,8 +23,35 @@ const itemPools = {
 const componentsByType = {
   Filter: OperationComponent,
   Deriver: OperationComponent,
-  Grouping: GroupOperationComponent
+  Grouping: GroupOperationComponent,
+  Columns: SlotOperationComponent,
 }
+
+// TODO: ...
+const slots = dataset => [
+  { slot: Slot.Multicolumn('columns', 'Columns', DataType.String),
+    pool: R.addIndex(R.map)((h, idx) => ({display: h, value: idx}), dataset.headers),
+    label: 'Columns'
+  }
+]
+
+
+// Can we express all operations in terms of...
+
+// 1. Initial state by type
+// 2. State changes that cause other state changes (definitionKey)
+// 3. Show mode
+const create = switchcase({
+  Grouping: ({id}) => GroupingOperationComponent.init('Grouping', id),
+  Columns: ({id, dataset}) => {
+    // const allCols = R.range(0, R.length(dataset));
+    SlotOperationComponent.init('Columns', id)
+  },
+  Filter: ({id}) => OperationComponent.init('Filter', id),
+  Deriver: ({id}) => OperationComponent.init('Deriver', id),
+  Aggregator: ({id}) => OperationComponent.init('Aggregator', id),
+})
+
 
 
 // these are the things this component responds to--it's the parent's job to
@@ -44,7 +73,8 @@ const init = () => ({
 
 const update = Action.caseOn({
   CreateOperation: (type, model) => R.evolve({
-    operations: R.append(OperationComponent.init(type, model.uid)),
+    operations: R.append(create(type)({id: model.uid})),
+    // operations: R.append(componentsByType[type].init(type, model.uid)),
     uid: R.inc,
     active: R.always(model.uid)
   }, model),
@@ -75,6 +105,7 @@ const renderOperations = R.curry((action$, dataset, model) => {
           setActive$: af(Action.SetActive),
         },
         { dataset,
+          slots: slots(dataset),
           itemPool: itemPools[operation.type], // TODO: type implies pool
           editing: operation.id === active
         },
@@ -107,7 +138,7 @@ const view = R.curry((action$, dataset, model) => {
     ]),
 
     h('div', {class: {"prepare-controls": true}, key: 'prepare-controls'}, [
-      h('div', ctrlAttrs(Action.PickColumns), iconed('Columns')),
+      h('div', ctrlAttrs(Action.CreateOperation('Columns')), iconed('Columns')),
       h('div', ctrlAttrs(Action.SaveRemix), iconed('Save')),
       h('div', ctrlAttrs(Action.SaveRemix), iconed('Download')),
     ]),

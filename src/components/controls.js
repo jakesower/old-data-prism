@@ -33,7 +33,18 @@ const checkbox = (currentValue, change$) => {
 }
 
 
+const text = (currentValue, change$) => {
+  return h(
+    'input',
+    { attrs: {type: 'text'}
+    , on: {keyup: R.compose(change$, targetValue)}
+    }
+  )
+}
+
+
 module.exports = {
   select,
   checkbox,
+  text,
 };

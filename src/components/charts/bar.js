@@ -14,7 +14,7 @@ const slots = [
 
 function fn(dataset, inputs, dimensions) {
   const {xAxis, yAxis} = inputs;
-  if (R.isNil(xAxis) || R.isNil(yAxis)) return [];
+  if (R.isEmpty(xAxis) || R.isEmpty(yAxis)) return [];
 
   const textHeight = 20;
 

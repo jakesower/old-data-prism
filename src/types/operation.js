@@ -5,16 +5,19 @@ const deriverPool = require('../definitions/derivers');
 const filterPool = require('../definitions/filters');
 const aggregatorPool = require('../definitions/aggregators');
 
+const Dataset = require('./dataset');
+
 
 const Operation = daggy.taggedSum('Operation', {
   Empty: ['inputs'],
   Filter: ['definition', 'inputs'],
   Deriver: ['definition', 'inputs', 'columnName'],
-  Grouping: ['inputs'],
+  Grouping: ['columns', 'aggregators'],
   Aggregator: ['definition', 'inputs', 'columnName'],
+  Columns: ['columns'],
 });
 
-const {Empty, Filter, Deriver, Grouping} = Operation;
+const {Empty, Filter, Deriver, Grouping, Columns} = Operation;
 
 
 // String -> String -> StrMap
@@ -26,15 +29,17 @@ Operation.lookup = (type, key) =>{
 
 // StrMap -> Operation
 // Takes the raw UI stuff and turns it into an Operation
-Operation.fromDefinition = ({definitionKey, inputs, columnName, type}) =>
-  R.isNil(definitionKey) ?
-    Empty(inputs) :
-    type === 'Grouping' ?
-      Grouping(inputs) :
-      type === 'Filter' ?
-        Filter(Operation.lookup('Filter', definitionKey), inputs) :
-        Operation[type](Operation.lookup(type, definitionKey), inputs, inputs.columnName);
-
+Operation.fromDefinition = ({definitionKey, inputs, columnName, type, aggregators, columns}) => {
+  return type === 'Grouping' ?
+    Grouping(columns, R.map(a => Operation.fromDefinition(a), aggregators)) :
+    type === 'Columns' ?
+      Columns(inputs.columns) :
+      R.isNil(definitionKey) ?
+        Empty(inputs) :
+        type === 'Filter' ?
+          Filter(Operation.lookup('Filter', definitionKey), inputs) :
+          Operation[type](Operation.lookup(type, definitionKey), inputs, inputs.columnName);
+}
 
 // Operation ~> Dataset -> Dataset
 Operation.prototype.applyInvalid = function (dataset) {
@@ -44,6 +49,7 @@ Operation.prototype.applyInvalid = function (dataset) {
     Deriver: () => dataset,
     Grouping: () => dataset,
     Aggregator: () => dataset,
+    Columns: () => dataset,
   })
 }
 
@@ -59,7 +65,14 @@ Operation.prototype.apply = function (dataset) {
     Empty: () => dataset,
     Filter: R.binary(base), // filters don't have names
     Deriver: base,
-    Grouping: (inputs) => applyGrouping(dataset, inputs),
+    Grouping: (columns, aggregators) => applyGrouping(dataset, columns, aggregators),
+    Columns: columns => {
+      const nths = row => R.map(n => row[n], columns);
+      return Dataset(
+        nths(dataset.headers),
+        R.map(nths, dataset.records)
+      );
+    },
     Aggregator: () => {throw("x_x I shouldn't be here since I return a value and not a dataset!")}
   });
 }
@@ -76,9 +89,10 @@ Operation.prototype.valid = function (dataset) {
     Filter: nonGrouping,
     Deriver: nonGrouping,
     Aggregator: nonGrouping,
-    Grouping: (inputs) =>
-      inputs.columns.length > 0 &&
-      R.all(a => a.valid(dataset, inputs), inputs.aggregators)
+    Grouping: (columns, aggregators) =>
+      columns.length > 0 &&
+      R.all(a => a.valid(dataset), aggregators),
+    Columns: columns => R.length(columns) > 0
   })
 }
 
@@ -97,18 +111,19 @@ Operation.prototype.populateSlots = function (dataset) {
     Filter: base,
     Deriver: base,
     Aggregator: base,
-    Grouping: () => ({})
+    Grouping: (_, aggregators) => R.map(a => a.populateSlots(dataset), aggregators),
+    Columns: () => ({})
   })
 }
 
 
 
 // TODO: refactor me plz
-function applyGrouping(dataset, {columns, aggregators}) {
+function applyGrouping(dataset, columns, aggregators) {
   const applyAggregators = groups => {
     const applyAggregator = R.curry((dataset, aggregator) => {
       const inputs = aggregator.populateSlots(dataset);
-      return aggregator.definition.fn(dataset, inputs);
+      return aggregator.definition.fn(dataset, inputs).toString();
     });
 
     const headers = R.concat(
@@ -126,7 +141,7 @@ function applyGrouping(dataset, {columns, aggregators}) {
       )
     }, groups);
 
-    return { headers, records };
+    return Dataset(headers, records);
   }
 
   return R.pipe(

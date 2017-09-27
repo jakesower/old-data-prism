@@ -1,3 +1,5 @@
+const R = require('ramda');
+
 const targetValue = function (ev) {
   return ev.target.value;
 }
@@ -20,4 +22,7 @@ const debounce = function (func, wait) {
 }
 
 
-module.exports = {targetValue, debounce};
+const switchcase = R.curry((cases, c) => cases[c])
+
+
+module.exports = {targetValue, debounce, switchcase};

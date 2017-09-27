@@ -27,7 +27,7 @@ const update = Action.caseOn({
     const definition = operationDefinition(model.type, definitionKey);
     const slots = definition.slots;
     const inputs = R.pipe( // TODO: no stringly typed crap
-      R.map(s => ({[s.id]: s['@@type'] === 'multicolumn' ? [] : ''})),
+      R.map(s => ({[s.id]: s['@@tag'] === 'Multicolumn' ? [] : ''})),
       R.append(createsColumn(model.type) ? {columnName: model.inputs.columnName} : {}),
       R.reduce(R.merge, {})
     )(slots);

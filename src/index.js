@@ -98,7 +98,7 @@ const vnode$ = flyd.map(
 // const vnode$ = flyd.map(() => errorVdom, model$)
 
 flyd.map(saveState, model$);
-// flyd.map(console.log, action$);
+flyd.map(console.log, action$);
 flyd.map(console.log, model$);
 
 

@@ -46,5 +46,14 @@ Slot.prototype.populate = function (dataset, inputs) {
   })
 }
 
+// Slot ~> a
+Slot.prototype.defaultValue = function () {
+  return this.cata({
+    User: () => '',
+    Column: () => null,
+    Multicolumn: () => []
+  });
+}
+
 
 module.exports = Slot;

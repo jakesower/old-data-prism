@@ -34,7 +34,7 @@ const build = R.curry((slot, inputs, dataset, change$) => {
     case 'Multicolumn':
       return sw(multicolumn(
         inputs[slot.id],
-        R.map(columnOptions, dataset.validColumns(slot.dataType)),
+        R.addIndex(R.map)(columnOptions, dataset.validColumns(slot.dataType)),
         change$
       ));
   }
@@ -48,7 +48,7 @@ const user = (slot, inputs, change$) => {
         R.map(fixedOptions, slot.dataType.values),
         change$
       ) :
-    slot.dataType.key === 'Boolean' ?
+    slot.dataType['@@tag'] === 'Boolean' ?
       checkbox(
         inputs[slot.id],
         change$
@@ -89,7 +89,7 @@ const column = (currentValue, options, change$) => {
 const multicolumn = (currentValues, options, change$) => {
   return h('div',
     {class: {multicolumn: true}},
-    multiselect(options, currentValues, {change: change$})
+    multiselect(currentValues, options, {change: change$})
   );
 }
 

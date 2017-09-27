@@ -41,7 +41,7 @@ const update = Action.caseOn({
 });
 
 
-const init = id => ({
+const init = (_, id) => ({
   id: id,
   type: 'Grouping',
   uid: 1,
@@ -52,7 +52,7 @@ const init = id => ({
 });
 
 
-const view = ({set$, delete$, setActive$}, {dataset, itemPool, editing}, model) => {
+const view = ({set$, delete$, setActive$}, {dataset, editing}, model) => {
   return editing ? edit() : show();
 
   function edit() {
@@ -79,13 +79,12 @@ const view = ({set$, delete$, setActive$}, {dataset, itemPool, editing}, model) 
     // column groupings
     const columnsVdom = h('div', {class: {columns: true}}, (() => {
       const optionPair = (col, idx) => ({value: idx, display: col.header});
-      const clean = R.compose(Action.SetColumns, R.map(parseInt));
 
       return Slot.multicolumn(
         "Grouping Columns",
         columns,
         R.addIndex(R.map)(optionPair, dataset.columns()),
-        forwardTo(set$, clean)
+        forwardTo(set$, Action.SetColumns)
       );
     })());
 
@@ -94,13 +93,13 @@ const view = ({set$, delete$, setActive$}, {dataset, itemPool, editing}, model) 
     const existingAggs = R.map(
       aggregator => {
         return OperationComponent.view(
-          { set$: af(Action.SetAggregator),
+          { set$: af(Action.SetAggregator(aggregator.id)),
             delete$: af(Action.DeleteAggegator),
             setActive$: af(Action.SetActive)
           },
           { dataset,
             itemPool: aggregatorPool,
-            active: aggregator.id === active
+            editing: aggregator.id === active
           },
           aggregator
         );

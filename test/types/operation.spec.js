@@ -3,6 +3,7 @@ const assert = require('chai').assert;
 
 const {Dataset, Operation, Slot, DataType, Column} = require('../../src/types');
 const filterPool = require('../../src/definitions/filters');
+const aggregatorPool = require('../../src/definitions/aggregators');
 
 const empty = Operation.Empty({});
 
@@ -54,5 +55,74 @@ describe ('operation type', function() {
 
     assert.deepEqual(op, Operation.Filter(filterPool.Equality, {a: 1, b: "Something"}));
   });
+
+  it ('creates a grouping from its definition', function () {
+    const op = Operation.fromDefinition({
+      type: 'Grouping',
+      columns: [3],
+      aggregators: [],
+      uid: 1,
+      active: null
+    });
+
+    assert.deepEqual(op, Operation.Grouping(
+      [3],
+      []
+    ))
+  });
+
+  it ('applies grouping functions to a dataset', function () {
+    const op = Operation.fromDefinition({
+      type: 'Grouping',
+      columns: [3],
+      aggregators: []
+    });
+
+    const ns = op.apply(colombia);
+
+    assert.deepEqual(ns, Dataset(
+      ['Goals Against'],
+      [['0'], ['1'], ['2']]
+    ))
+  });
+
+  it ('applies grouping functions with aggregators to a dataset', function () {
+    const op = Operation.fromDefinition({
+      type: 'Grouping',
+      columns: [3],
+      aggregators: [{
+        type: 'Aggregator',
+        definitionKey: 'Count',
+        inputs: {columnName: 'Count'},
+        id: 1
+      }]
+    });
+
+    const ns = op.apply(colombia);
+
+    assert.deepEqual(ns, Dataset(
+      ['Goals Against', 'Count'],
+      [['0', '2'], ['1', '2'], ['2', '1']]
+    ))
+  });
+
+  it ('applies a column function to a dataset', function () {
+    const op = Operation.fromDefinition({
+      type: 'Columns',
+      inputs: {columns: [0, 1]}
+    });
+
+    const ns = op.apply(colombia);
+
+    assert.deepEqual(ns, Dataset(
+      ['Date', 'Opponent'],
+      [ ['2014-06-14', 'Greece'],
+        ['2014-06-19', 'Ivory Coast'],
+        ['2014-06-24', 'Japan'],
+        ['2014-06-28', 'Uruguay'],
+        ['2014-07-04', 'Brazil']
+      ]
+    ))
+  })
 
 });

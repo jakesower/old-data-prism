@@ -4,6 +4,7 @@ const stream = require('flyd').stream;
 const assert = require('chai').assert;
 
 const OperationComponent = require('../../src/components/operation');
+const GroupOperationComponent = require('../../src/components/group-operation');
 const OperationListComponent = require('../../src/components/operation-list');
 const {DataTypes, Dataset} = require('../../src/types');
 
@@ -24,6 +25,10 @@ const states = {
   withFilter: R.merge(
     init(),
     {uid: 2, operations: [OperationComponent.init('Filter', 1)]}
+  ),
+  withGrouping: R.merge(
+    init(),
+    {uid: 2, operations: [GroupOperationComponent.init('Grouping', 1)]}
   )
 };
 const viewState = view(stream(), southKorea);
@@ -74,10 +79,19 @@ describe('operation list component actions', function () {
         }],
         uid: 2
       },
+
+      { active: 1,
+        uid: 2,
+        operations: [{
+          id: 1,
+          type: 'Columns',
+          inputs: {}
+        }]
+      }
     ]
 
     states.forEach(ns =>
-      assert.doesNotThrow(() => viewState(ns))
+      viewState(ns)
     );
   });
 
