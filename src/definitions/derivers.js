@@ -204,6 +204,15 @@ const Logarithm = {
 }
 
 
+const StringMap = {
+  name: "String Mapping",
+
+  slots: [
+    DataSlot.Column('target', 'Column', DataType.String)
+  ]
+}
+
+
 const transforms = R.pipe(
   R.map(R.merge({createsColumn: true})),
   R.map(makeDeriver),
