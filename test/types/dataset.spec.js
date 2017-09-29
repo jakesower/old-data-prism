@@ -76,7 +76,7 @@ describe ('dataset type', function() {
 
     const invalidOperation = Operation.Filter(
       { fn: R.always(Dataset([], [[]])),
-        slots: [DataSlot.User('b', 'B', DataType.FiniteNumber)]
+        slots: [Slot.Free('b', 'B', DataType.FiniteNumber)]
       },
       { b: "Oh hai, I'm not a number" }
     );

@@ -1,20 +1,21 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 
-const DataType = require('../types/data-type');
-const DataSlot = require('../types/data-slot');
+// const DataType = require('../types/data-type');
+// const DataSlot = require('../types/data-slot');
+const {DataType, DataSlot, Slot} = require('../types');
+const {populateSlots, validateSlots} = require('../lib/definition-utils');
 
-const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
 const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName]));
 
-// Helper function for filters that filter on a simple row-by-row basis
-// (StrMap Inputs -> Boolean) -> (Dataset -> Dataset)
+
 const rowFilter = def => {
   return R.merge(def, {
-    fn: R.nAry(3, (dataset, inputs) => {
+    fn: (dataset, inputs) => {
       const {records, headers} = dataset;
-      const rowN = n => R.map(i => Array.isArray(i) ? i[n] : i, inputs);
+      const populated = populateSlots(dataset, inputs, def.slots);
+      const rowN = n => R.map(i => Array.isArray(i) ? i[n] : i, populated);
 
       return {
         headers,
@@ -32,12 +33,10 @@ const rowFilter = def => {
 
 const Equality = rowFilter({
   name: "Equality",
-
   slots: [
     DataSlot.Column('a', 'Column', DataType.String),
-    DataSlot.User('b', 'Equals', DataType.String),
+    Slot.Free('b', 'Equals', DataType.String),
   ],
-
   fn: inputs => inputs.a === inputs.b,
   display: (inputs, dataset) =>
     h('div', {}, [
@@ -51,7 +50,7 @@ const LT = rowFilter({
   name: "Less Than",
   slots: [
     DataSlot.Column('base', 'Column', DataType.FiniteNumber),
-    DataSlot.User('target', 'is less than', DataType.FiniteNumber),
+    Slot.Free('target', 'is less than', DataType.FiniteNumber),
   ],
   fn: inputs => inputs.base < inputs.target,
   display: (inputs, dataset) =>
@@ -67,7 +66,7 @@ const LTE = rowFilter({
   fn: inputs => inputs.base <= inputs.target,
   slots: [
     DataSlot.Column('base', 'Column', DataType.FiniteNumber),
-    DataSlot.User('target', 'is less than or equal to', DataType.FiniteNumber),
+    Slot.Free('target', 'is less than or equal to', DataType.FiniteNumber),
   ],
   display: (inputs, dataset) =>
     h('div', {}, [
@@ -82,7 +81,7 @@ const GT = rowFilter({
   fn: inputs => inputs.base > inputs.target,
   slots: [
     DataSlot.Column('base', 'Column', DataType.FiniteNumber),
-    DataSlot.User('target', 'is greater than', DataType.FiniteNumber),
+    Slot.Free('target', 'is greater than', DataType.FiniteNumber),
   ],
   display: (inputs, dataset) =>
     h('div', {}, [
@@ -97,7 +96,7 @@ const GTE = rowFilter({
   fn: inputs => inputs.base >= inputs.target,
   slots: [
     DataSlot.Column('base', 'Column', DataType.FiniteNumber),
-    DataSlot.User('target', 'is greater than or equal to', DataType.FiniteNumber),
+    Slot.Free('target', 'is greater than or equal to', DataType.FiniteNumber),
   ],
   display: (inputs, dataset) =>
     h('div', {}, [
@@ -106,16 +105,10 @@ const GTE = rowFilter({
     ])
 });
 
-
-const transforms = R.pipe(
-  withKeys,
-  R.map(R.merge({createsColumn: false}))
-);
-
-module.exports = transforms({
+module.exports = {
   Equality,
   LT,
   LTE,
   GT,
   GTE,
-});
+};

@@ -8,7 +8,7 @@ const {paddedBasis, paddedSvg, toSvgTag} = require('./utils');
 const slots = [
   DataSlot.Column('rowAxis', 'Row Axis', DataType.String),
   DataSlot.Multicolumn('colAxes', 'Column Axes', DataType.FiniteNumber),
-  DataSlot.User('invert', 'Invert', DataType.Boolean)
+  Slot.Free('invert', 'Invert', DataType.Boolean)
 ];
 
 

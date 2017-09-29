@@ -9,7 +9,6 @@ const DataType = require('./data-type');
  * usually converting them into generic Slots.
 */
 const DataSlot = daggy.taggedSum('DataSlot', {
-  User: ['id', 'display', 'dataType'],
   Column: ['id', 'display', 'dataType'],
   Multicolumn: ['id', 'display', 'dataType'],
 });
@@ -23,7 +22,6 @@ DataSlot.prototype.toSlot = function (dataset) {
   );
 
   return this.cata({
-    User: Slot.Free,
     Column: (id, display, dataType) =>
       Slot.Pool(id, display, DataType.FiniteNumber, colPool),
     Multicolumn: (id, display, dataType) =>
@@ -35,7 +33,6 @@ DataSlot.prototype.toSlot = function (dataset) {
 // DataSlot ~> Dataset -> String -> Boolean
 DataSlot.prototype.valid = function (dataset, value) {
   return this.cata({
-    User: (id, _, dataType) => dataType.test(value),
     Column: (id, _, dataType) => {
       const col = dataset.columns()[value];
       return col && col.valid(dataType);
@@ -52,7 +49,6 @@ DataSlot.prototype.valid = function (dataset, value) {
 // DataSlot ~> Dataset -> Any -> Any
 DataSlot.prototype.populate = function (dataset, value) {
   return this.cata({
-    User: (id, _, dataType) => dataType.cast(value),
     Column: (id, _, dataType) => {
       const col = dataset.columns()[value];
       return R.map(v => dataType.cast(v), col.values);
@@ -68,7 +64,6 @@ DataSlot.prototype.populate = function (dataset, value) {
 // DataSlot ~> a
 DataSlot.prototype.defaultValue = function () {
   return this.cata({
-    User: () => '',
     Column: () => null,
     Multicolumn: () => []
   });

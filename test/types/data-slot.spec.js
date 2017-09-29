@@ -12,7 +12,7 @@ const iran = Dataset(
   ]
 );
 
-const gameQuality = DataSlot.User('quality', 'Quality of Game', DataType.PositiveFiniteNumber);
+const gameQuality = Slot.Free('quality', 'Quality of Game', DataType.PositiveFiniteNumber);
 const date = DataSlot.Column('date', 'Date of Play', DataType.Date);
 const scores = DataSlot.Multicolumn('scores', 'Scores', DataType.FiniteNumber);
 

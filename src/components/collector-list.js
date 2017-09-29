@@ -121,7 +121,7 @@ const view = R.curry((action$, dataset, model) => {
       renderCollectors(action$, dataset, model)
     ),
 
-    h('div', {class: {"remix-controls": true}, key: 'prepare-controls'}, [
+    h('div', {class: {"remix-controls": true}, key: "prepare-controls"}, [
       h('div', {}, "New Operation"),
       h('div', {class: {"operation-navigator": true}}, [
         h('div', {}, 'Hi')

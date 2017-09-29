@@ -2,18 +2,18 @@ const R = require('ramda');
 const DataType = require('../types/data-type');
 const DataSlot = require('../types/data-slot');
 
-const withKeys = R.mapObjIndexed((v, key) => R.merge({key}, v));
 const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName]));
 
+/*
+ * Aggregators are NOT operations. Rather they are functions that reduce
+ * datasets to a single value.
+ */
 
 const Count = {
   name: "Count",
-
   slots: [],
-
   fn: (group, inputs) => group.records.length,
-  // display: (us, cs, dataset) => `<span class="column-name">${dataset.headers[cs.date]}</span> with format ${us.format}`
   display: () => 'Count'
 };
 
@@ -35,7 +35,6 @@ const Median = {
   ],
   fn: (group, inputs) => R.median(inputs.a),
   display: (inputs, group) => 'Median'
-  // display: (inputs, group) => JSON.stringify({inputs, group})
 };
 
 
@@ -80,12 +79,7 @@ const Product = {
 
 
 
-const transforms = R.pipe(
-  R.map(R.merge({createsColumn: true})),
-  withKeys
-);
-
-module.exports = transforms({
+module.exports = {
   Count,
   Mean,
   Median,
@@ -93,4 +87,4 @@ module.exports = transforms({
   Minimum,
   Sum,
   Product,
-});
+};
