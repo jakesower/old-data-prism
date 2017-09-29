@@ -10,7 +10,7 @@ const select = (currentValue, options, change$) => {
   const option = item => {
     return h('option', {
       attrs: {
-        selected: (item.value === currentValue),
+        selected: (item.value.toString() === currentValue),
         value: item.value
       }},
       item.display);
@@ -37,7 +37,7 @@ const checkbox = (currentValue, change$) => {
 const text = (currentValue, change$) => {
   return h(
     'input',
-    { attrs: {type: 'text'}
+    { attrs: {type: 'text', value: currentValue}
     , on: {keyup: R.compose(change$, targetValue)}
     }
   )

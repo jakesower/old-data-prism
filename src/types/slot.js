@@ -9,6 +9,10 @@ const Slot = daggy.taggedSum('Slot', {
 });
 
 
+// Slot ~> Slot
+Slot.prototype.toSlot = function () { return this; }
+
+
 // Slot ~> StrMap -> Boolean
 Slot.prototype.valid = function (value) {
   const inPool = R.curry((pool, v) => R.contains(v, R.map(R.prop('value'), pool)));
@@ -32,6 +36,16 @@ Slot.prototype.defaultValue = function () {
     Pool: () => ({display: '', value: ''}),
     Multipool: () => []
   });
+}
+
+// Slot ~> Any -> Any
+Slot.prototype.populate = function (value) {
+  return this.cata({
+    Anonymous: () => value,
+    Free: (_, _1, dataType) => dataType.cast(value),
+    Pool: (_, _1, dataType, _2) => dataType.cast(value),
+    Multipool: (_, _1, dataType, _2) => R.map(v => dataType.cast(v), value)
+  })
 }
 
 

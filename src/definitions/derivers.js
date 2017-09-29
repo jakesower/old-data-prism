@@ -1,9 +1,12 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 
+const Slot = require('../types/slot');
 const DataType = require('../types/data-type');
 const DataSlot = require('../types/data-slot');
 const Column = require('../types/column');
+
+const SlotCollector = require('../components/slot-collector');
 
 const notEmpty = R.complement(R.empty);
 
@@ -22,210 +25,69 @@ const makeDeriver = def =>
   })
 
 
-const FormattedDate = {
-  name: "Formatted Date",
+const Floor = (function() {
+  const slots = [
+    Slot.Free('columnName', 'Column Name', DataType.String),
+    DataSlot.Column('num', 'Column', DataType.FiniteNumber),
+    DataSlot.User('precision', 'Precision', DataType.Integer)
+  ];
 
-  slots: [
-    DataSlot.Column('date', 'Date', DataType.Date),
-    DataSlot.User('format', 'Format', DataType.NonEmptyString)
-  ],
+  return {
+    name: "Floor",
 
-  fn: (args) => {return R.map(d => d.format(args.format), args.date)},
-  display: (args, dataset) => `<span class="column-name">${dataset.headers[args.date]}</span> with format ${args.format}`
-};
+    collector: SlotCollector(slots),
 
+    fn: (dataset, inputs) => {
+      const f = ({num, precision}) => {
+        const m = Math.pow(10, precision * -1);
+        return R.map(n => Math.floor(m*n) / m, num);
+      }
 
-const Quantile = {
-  name: "Quantile",
+      const populated = R.pipe(
+        R.map(slot => ({
+          [slot.id]: DataSlot.is(slot) ?
+            slot.populate(dataset, inputs[slot.id]) :
+            slot.populate(inputs[slot.id]),
+        })),
+        R.mergeAll
+      )(slots);
 
-  slots: [
-    DataSlot.Column('n', 'n', DataType.FiniteNumber),
-    DataSlot.User('order', 'order', DataType.PositiveInteger)
-  ],
+      return dataset.appendColumn(Column(
+        inputs.columnName,
+        R.map(x => x.toString(), f(populated))
+      ))
+    },
 
-  fn: (args) => {
-    const sorted = R.pipe(
-      R.map(parseFloat),
-      R.sort((a, b) => a - b)
-    )(args.n);
-    const frac = parseFloat(sorted.length) / parseFloat(args.order);
-    const cutoffs = R.map(
-      n => R.nth(Math.ceil(n*frac), sorted),
-      R.range(0, parseInt(args.order)));
+    display: (dataset, inputs) =>
+      h('div', {}, [
+        'Floor ',
+        col(dataset, inputs.num)
+      ]),
 
-    return R.map(n =>
-      R.findLastIndex(m => parseFloat(n) >= m, cutoffs) + 1
-      , args.n);
-  },
-  display: (args, dataset) => {
-    const quartileNames = {
-      '2': "median groups",
-      '3': "terciles",
-      '4': "quartiles",
-      '5': "quintiles",
-      '6': "sextiles",
-      '7': "septiles",
-      '8': "octiles",
-      '10': "deciles",
-      '12': "duo-deciles",
-      '16': "hexadeciles",
-      '20': "ventiles",
-      '100': "percentiles",
-      '1000': "permilles"
-    };
-
-    const name = quartileNames[args.order] || `${args.order}-quantile`;
-    return h('div', {}, [
-      `${name} on `,
-      col(dataset, args.n)
-    ]);
+    valid: (dataset, inputs) => R.all(
+      slot => Slot.is(slot) ?
+        slot.valid(inputs[slot.id]) :
+        slot.valid(dataset, inputs[slot.id]),
+      slots
+    )
   }
-};
+}());
 
 
-const Sum = {
-  name: "Summation",
-
-  userInputs: [],
-  slots: [
-    DataSlot.Multicolumn('addends', 'Addends', DataType.FiniteNumber)
-  ],
-
-  fn: args => R.map(R.sum, args.addends),
-  display: (args, dataset) => {
-    const colSpans = R.map(col(dataset), args.addends);
-    return h('div', {}, R.flatten([
-      "Sum of ",
-      R.intersperse(', ', colSpans)
-    ]))
-  }
-}
-
-
-const Difference = {
-  name: "Difference",
-
-  slots: [
-    DataSlot.Column('minuend', 'Minuend', DataType.FiniteNumber),
-    DataSlot.Column('subtrahend', 'Subtrahend', DataType.FiniteNumber)
-  ],
-
-  fn: args => R.zipWith(R.subtract, args.minuend, args.subtrahend),
-  display: (args, dataset) =>
-    h('div', {}, [
-      col(dataset, args.minuend),
-      ' - ',
-      col(dataset, args.subtrahend),
-    ])
-};
-
-
-const Round = {
-  name: "Round",
-
-  slots: [
-    DataSlot.Column('num', 'Column', DataType.FiniteNumber),
-    DataSlot.User('precision', 'Precision', DataType.Integer)
-  ],
-
-  fn: ({num, precision}) => {
-    const m = Math.pow(10, precision * -1);
-    return R.map(n => Math.round(m*n) / m, num);
-  },
-  display: (args, dataset) =>
-    h('div', {}, [
-      'Round ',
-      col(dataset, args.num)
-    ])
-}
-
-
-const Floor = {
-  name: "Floor",
-
-  slots: [
-    DataSlot.Column('num', 'Column', DataType.FiniteNumber),
-    DataSlot.User('precision', 'Precision', DataType.Integer)
-
-  ],
-
-  fn: ({num, precision}) => {
-    const m = Math.pow(10, precision * -1);
-    return R.map(n => Math.floor(m*n) / m, num);
-  },
-  display: (args, dataset) =>
-    h('div', {}, [
-      'Floor ',
-      col(dataset, args.num)
-    ])
-}
-
-
-const Ceiling = {
-  name: "Ceiling",
-
-  slots: [
-    DataSlot.Column('num', 'Column', DataType.FiniteNumber),
-    DataSlot.User('precision', 'Precision', DataType.Integer)
-  ],
-
-  fn: ({num, precision}) => {
-    const m = Math.pow(10, precision * -1);
-    return R.map(n => Math.ceil(m*n) / m, num);
-  },
-  display: (args, dataset) =>
-    h('div', {}, [
-      'Ceiling ',
-      col(dataset, args.num)
-    ])
-}
-
-
-const Logarithm = {
-  name: "Logarithm",
-
-  slots: [
-    DataSlot.Column('num', 'Column', DataType.PositiveFiniteNumber),
-    DataSlot.User('base', 'Base', DataType.PositiveFiniteNumber)
-  ],
-
-  // NOTE: this could benefit from "exit" checking to ensure the result is
-  // actually a number and not NaN
-  fn: ({num, base}) => {
-    const den = Math.log(base);
-    return R.map(n => Math.log(n) / den, num);
-  },
-
-  display: ({base, num}, dataset) =>
-    h('div', {}, [
-      `Log base ${base} of `,
-      col(dataset, num)
-    ])
-}
-
-
-const StringMap = {
-  name: "String Mapping",
-
-  slots: [
-    DataSlot.Column('target', 'Column', DataType.String)
-  ]
-}
-
-
-const transforms = R.pipe(
-  R.map(R.merge({createsColumn: true})),
-  R.map(makeDeriver),
-  withKeys
-);
+// const transforms = R.pipe(
+//   R.map(R.merge({createsColumn: true})),
+//   R.map(makeDeriver),
+//   withKeys
+// );
+const transforms = R.identity;
 
 module.exports = transforms({
-  FormattedDate,
-  Quantile,
-  Sum,
-  Difference,
-  Round,
   Floor,
-  Ceiling,
-  Logarithm,
+  // FormattedDate,
+  // Quantile,
+  // Sum,
+  // Difference,
+  // Round,
+  // Ceiling,
+  // Logarithm,
 });

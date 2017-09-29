@@ -58,7 +58,8 @@ body {
 div.body-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 
   &.uploaddata { @include page-colors($red); }
 
@@ -180,12 +181,28 @@ div.main-container {
 
   aside {
     flex: 0 0 19em;
-    padding: 1em;
+    padding: 1em 1em 0 1em;
+    display: flex;
+    flex-direction: column;
+
+    .collector-list {
+      flex: 1 1 auto;
+      overflow: auto;
+    }
+
+    .remix-controls {
+      padding-top: 1em;
+      flex: 0 1 2em;
+      font-size: 120%;
+      cursor: pointer;
+      text-align: center;
+      border-top: 1px solid black;
+    }
 
     .slot {
       // border-top: 2px dashed black;
       padding: 4px 0;
-      margin: 4px 0;
+      margin-bottom: 4px;
       z-index: 1;
 
       .multiselect {
@@ -199,12 +216,12 @@ div.main-container {
       }
     }
 
-    .operation-form {
+    .collector-form {
       border: 1px black dotted;
       padding: 5px 5px 1px 5px;
       width: 100%;
 
-      .operation-header .remove {
+      .collector-header .remove {
         cursor: pointer;
         height: 1.2em;
         width: 1.2em;
@@ -237,7 +254,7 @@ div.main-container {
       .aggregator {
         padding: 5px 0;
 
-        .operation-form {
+        .collector-form {
           border-left: 0;
           border-right: 0;
 
@@ -250,7 +267,7 @@ div.main-container {
   }
 
   main {
-    margin: 1em;
+    padding: 1em;
     flex: 1;
     overflow-x: auto;
     position: relative;
@@ -394,7 +411,7 @@ nav {
   }
 }
 
-.operation {
+.collector {
   display: flex;
   padding: 5px 0;
   width: 100%;
@@ -526,37 +543,37 @@ nav {
   }
 }
 
-.operation-filter::before {
+.collector-filter::before {
   content: "\f0b0";
   font: normal normal normal 14px/1 FontAwesome;
 }
 
-.operation-deriver::before {
+.collector-deriver::before {
   content: "\f1ec";
   font: normal normal normal 14px/1 FontAwesome;
 }
 
-.operation-aggregator::before {
+.collector-aggregator::before {
   content: "\f013";
   font: normal normal normal 14px/1 FontAwesome;
 }
 
-.operation-grouping::before {
+.collector-grouping::before {
   content: "\f247";
   font: normal normal normal 14px/1 FontAwesome;
 }
 
-.operation-save::before {
+.collector-save::before {
   content: "\f0c7";
   font: normal normal normal 14px/1 FontAwesome;
 }
 
-.operation-download::before {
+.collector-download::before {
   content: "\f019";
   font: normal normal normal 14px/1 FontAwesome;
 }
 
-.operation-columns::before {
+.collector-columns::before {
   content: "\f0db";
   font: normal normal normal 14px/1 FontAwesome;
 }

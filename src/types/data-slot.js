@@ -32,19 +32,16 @@ DataSlot.prototype.toSlot = function (dataset) {
 }
 
 
-// DataSlot ~> Dataset -> StrMap -> Boolean
-DataSlot.prototype.valid = function (dataset, inputs) {
-  const v = id => inputs[id];
-
-  // TODO: Ensure that Column values are always integers or null (or Maybe)
+// DataSlot ~> Dataset -> String -> Boolean
+DataSlot.prototype.valid = function (dataset, value) {
   return this.cata({
-    User: (id, _, dataType) => dataType.test(v(id)),
+    User: (id, _, dataType) => dataType.test(value),
     Column: (id, _, dataType) => {
-      const col = dataset.columns()[v(id)];
+      const col = dataset.columns()[value];
       return col && col.valid(dataType);
     },
     Multicolumn: (id, _, dataType) => {
-      const cols = R.map(c => dataset.columns()[c], v(id));
+      const cols = R.map(c => dataset.columns()[c], value);
       return R.all(col => col.valid(dataType), cols);
     }
   });
@@ -52,20 +49,18 @@ DataSlot.prototype.valid = function (dataset, inputs) {
 
 
 // Assumes valid inputs
-// DataSlot ~> Dataset -> StrMap -> StrMap
-DataSlot.prototype.populate = function (dataset, inputs) {
+// DataSlot ~> Dataset -> Any -> Any
+DataSlot.prototype.populate = function (dataset, value) {
   return this.cata({
-    User: (id, _, dataType) => ({[id]: dataType.cast(inputs[id])}),
+    User: (id, _, dataType) => dataType.cast(value),
     Column: (id, _, dataType) => {
-      const col = dataset.columns()[inputs[id]];
-      const vals = R.map(v => dataType.cast(v), col.values);
-      return {[id]: vals};
+      const col = dataset.columns()[value];
+      return R.map(v => dataType.cast(v), col.values);
     },
     Multicolumn: (id, _, dataType) => {
-      const cols = R.map(i => dataset.columns()[i], inputs[id]);
+      const cols = R.map(i => dataset.columns()[i], value);
       const expanded = R.map(col => R.map(v => dataType.cast(v), col.values), cols);
-      const vals = R.transpose(expanded);
-      return {[id]: vals};
+      return R.transpose(expanded);
     }
   })
 }

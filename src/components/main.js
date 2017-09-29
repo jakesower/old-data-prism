@@ -4,7 +4,7 @@ const parseCsv = require('csv-parse');
 
 const {Dataset} = require('../types/index');
 
-const OperationListComponent = require('./operation-list');
+const CollectorListComponent = require('./collector-list');
 const GridComponent = require('./grid');
 const ChartComponent = require('./chart');
 
@@ -15,7 +15,7 @@ const update = Action.caseOn({
   SetData: (newData, model) =>
     R.merge(model, {
       dataLoading: false,
-      dataset: Dataset(newData.headers, newData.records),
+      dataset: newData,
       page: 'Remix'
     }),
 
@@ -23,9 +23,9 @@ const update = Action.caseOn({
   ToggleHelp: model => R.assoc('help', !model.help, model),
   ToggleWalkthrough: model => R.assoc('walkthrough', !model.walkthrough, model),
 
-  SetOperations: (act, mod) => R.over(
-    R.lensProp('operations'),
-    OperationListComponent.update(act),
+  SetCollectors: (act, mod) => R.over(
+    R.lensProp('collectors'),
+    CollectorListComponent.update(act),
     mod
   ),
 
@@ -48,7 +48,7 @@ const firstInit = {
   help: false,
   walkthrough: false,
   uid: 1,
-  operations: OperationListComponent.init(),
+  collectors: CollectorListComponent.init(),
   grids: {
     prepareData: GridComponent.init(),
   },

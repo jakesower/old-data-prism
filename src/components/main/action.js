@@ -12,8 +12,8 @@ module.exports = Type({
   LoadURI: [String],
   SetData: [Object],
 
-  // Prepare
-  SetOperations: [Object],
+  // Remix
+  SetCollectors: [Object],
   SetGridState: [String, Object],
 
   // Chart

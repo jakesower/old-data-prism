@@ -3,28 +3,30 @@ const S = require('sanctuary');
 const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 
-const Operation = require('../../../types/operation');
+const {Dataset, Operation} = require('../../../types')
 const Action = require('../action');
 
-const OperationListComponent = require('../../operation-list');
+const CollectorListComponent = require('../../collector-list');
 const GridComponent = require('../../grid');
 
 module.exports = R.curry((action$, model) => {
   if (!model.dataset) return h('div', {}, '');
 
-  const {dataset, operations: operationsList, activeOperation, grids} = model;
-  const operations = R.map(o => Operation.fromDefinition(o), operationsList.operations);
-  const operations$ = forwardTo(action$, Action.SetOperations);
+  const {collectors, grids} = model;
+  const dataset = Dataset(model.dataset.headers, model.dataset.records);
 
+  const collector$ = forwardTo(action$, Action.SetCollectors);
   const ctrlAttrs = action => ({class: {control: true}, on: {click: [action$, action]}});
   const iconed = name => {
-    const i = `operation-${name.toLowerCase()}`;
+    const i = `collector-${name.toLowerCase()}`;
     return h('span', {class: {[i]: true}}, ` ${name}`);
   }
 
+  const operations = R.map(c => Operation.fromCollector(c.key, c.inputs), collectors.collectors);
+
   return h('div', {class: {"main-container": true}}, R.flatten([
     h('aside', {},
-      OperationListComponent.view(operations$, dataset, operationsList)
+      CollectorListComponent.view(collector$, dataset, collectors)
     ),
 
     h('main', {}, [
