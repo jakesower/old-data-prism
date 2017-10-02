@@ -97,34 +97,9 @@ div.body-container {
         }
       }
 
-      hr {
-        border: 0;
-        border-top: 1px solid #222;
-      }
-
-      .prepare-controls {
-        display: flex;
-        flex-wrap: wrap;
-        width: 100%;
-        margin-top: 4px;
-
-        .control {
-          flex: 1;
-          opacity: 0.6;
-          cursor: pointer;
-          border: 2px solid #222;
-          padding: 4px;
-          margin-right: 4px;
-          font-weight: bold;
-          font-size: 90%;
-
-          &:last-child {
-            margin-right: 0;
-          }
-
-          &:hover {
-            opacity: 1;
-          }
+      .menu .item {
+        &:hover {
+          background-color: $light-orange;
         }
       }
     }
@@ -188,15 +163,6 @@ div.main-container {
     .collector-list {
       flex: 1 1 auto;
       overflow: auto;
-    }
-
-    .remix-controls {
-      padding-top: 1em;
-      flex: 0 1 2em;
-      font-size: 120%;
-      cursor: pointer;
-      text-align: center;
-      border-top: 1px solid black;
     }
 
     .slot {
@@ -539,6 +505,43 @@ nav {
 
     .options {
       display: block;
+    }
+  }
+}
+
+
+.remix-controls {
+  flex: 0 1 2em;
+  font-size: 120%;
+  border-bottom: 1px solid black;
+
+  .operations-menu {
+    &.active {
+      .menu { display: block; }
+      .new-operation-button::after { transform: rotate(0.25turn);}
+    }
+
+    .new-operation-button {
+      width: 100%;
+      cursor: pointer;
+      padding: 1em 0;
+      text-transform: uppercase;
+
+      &::after {
+        transition: transform 0.2s;
+        content: "\f054";
+        float: right;
+      }
+    }
+
+    .menu {
+      display: none;
+
+      .item {
+        font-size: 80%;
+        padding: 0.5rem;
+        cursor: pointer;
+      }
     }
   }
 }

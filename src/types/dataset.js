@@ -8,9 +8,12 @@ const mapWithIndex = R.addIndex(R.map);
 
 const Dataset = daggy.tagged('Dataset', ['headers', 'records']);
 
+Dataset.prototype.fromCSV = function (csv) {
+
+}
+
 Dataset.prototype.columns = function () {
   const {headers, records} = this;
-  const mapWithIndex = R.addIndex(R.map);
 
   return mapWithIndex((col, idx) =>
     Column(col, R.map(R.nth(idx))(records)),

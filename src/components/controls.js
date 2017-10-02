@@ -7,10 +7,12 @@ const withBlank = R.prepend(h('option', {}, ''));
 
 
 const select = (currentValue, options, change$) => {
+  const selectedTest = i => currentValue ? i === currentValue : i === "";
+
   const option = item => {
     return h('option', {
       attrs: {
-        selected: (item.value.toString() === currentValue),
+        selected: selectedTest(item.value.toString()),
         value: item.value
       }},
       item.display);

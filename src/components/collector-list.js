@@ -3,6 +3,7 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 const Type = require('union-type');
 
+const {select, text} = require('./controls');
 const operationPool = require('../definitions');
 
 
@@ -10,7 +11,8 @@ const Action = Type({
   CreateCollector: [String], // Key
   SetCollector: [Number, Object], // id, operation
   DeleteCollector: [Number], // id
-  SetActive: [R.T] // id
+  SetActive: [R.T], // id
+  SetMenuOpen: [Boolean]
 });
 
 
@@ -18,7 +20,8 @@ const init = () => ({
   uid: 1,
   collectors: [],
   active: null,
-  picking: false,
+  menuOpen: false,
+  search: ""
 });
 
 
@@ -28,10 +31,12 @@ const update = Action.caseOn({
       collectors: R.append({
         id: model.uid,
         key,
-        inputs: operationPool[key].collector.init()
+        inputs: operationPool[key].collector.init(),
+        search: ""
       }),
       uid: R.inc,
-      active: R.always(model.uid)
+      active: R.always(model.uid),
+      menuOpen: R.always(false)
     }, model);
   },
   SetCollector: (id, act, mod) => {
@@ -52,6 +57,7 @@ const update = Action.caseOn({
     mod
   ),
   SetActive: R.assoc('active'),
+  SetMenuOpen: R.assoc('menuOpen')
 });
 
 
@@ -117,18 +123,37 @@ const view = R.curry((action$, dataset, model) => {
   }
 
   return R.flatten([
+    h('div', {class: {"remix-controls": true}, key: 'remix-controls'}, [
+      renderMenu(action$, dataset, model)
+    ]),
+
     h('div', {class: {"collector-list": true}},
       renderCollectors(action$, dataset, model)
     ),
-
-    h('div', {class: {"remix-controls": true}, key: "prepare-controls"}, [
-      h('div', {}, "New Operation"),
-      h('div', {class: {"operation-navigator": true}}, [
-        h('div', {}, 'Hi')
-      ])
-    ]),
   ]);
 });
+
+
+function renderMenu(action$, dataset, model) {
+  return h('div', {class: {"operations-menu": true, active: model.menuOpen}}, [
+    h('div',
+      { class: {"new-operation-button": true},
+        on: {click: [action$, Action.SetMenuOpen(!model.menuOpen)]}
+      }, "New Operation"),
+
+    h('div', {class: {menu: true}},
+      R.values(R.mapObjIndexed(
+        (op, i) => h('div',
+          { class: {item: true},
+            on: {click: [action$, Action.CreateCollector(i)]}
+          },
+          op.name
+        ),
+        operationPool
+      ))
+    )
+  ])
+}
 
 
 module.exports = {Action, update, init, view};

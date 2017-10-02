@@ -1,6 +1,6 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
-const {DataType, DataSlot} = require('../../types');
+const {DataType, DataSlot, Slot} = require('../../types');
 
 const {Shape, Range, Point} = require('./types');
 const {paddedBasis, paddedSvg, toSvgTag} = require('./utils');

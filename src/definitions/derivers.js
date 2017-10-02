@@ -173,7 +173,7 @@ const Round = makeDeriver({
 const Sum = makeDeriver({
   name: "Summation",
   slots: [
-    Slot.Multicolumn('addends', 'Addends', DataType.FiniteNumber)
+    DataSlot.Multicolumn('addends', 'Addends', DataType.FiniteNumber)
   ],
   fn: args => R.map(R.sum, args.addends),
   display: (args, dataset) => {

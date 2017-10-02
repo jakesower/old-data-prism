@@ -5,6 +5,8 @@ const Type = require('union-type');
 const FileSaver = require('file-saver');
 const stringify = require('csv-stringify');
 
+const {DataType} = require('../types');
+
 const perPage = 25;
 
 const init = () => ({
@@ -32,8 +34,14 @@ const view = (dataset, action$, model) => {
   const {headers} = dataset;
   const {sorting} = model;
 
+  const sortCol = dataset.columns()[sorting.col];
+  const numericSort = sortCol.valid(DataType.Number);
+  const caster = numericSort ? v => DataType.Number.cast(v) : R.identity;
   const sorter = sorting.dir === 'asc' ? R.ascend : R.descend;
-  const records = R.sort(sorter(R.nth(sorting.col)), dataset.records);
+  const records = R.sort(
+    sorter(R.pipe(R.nth(sorting.col), caster)),
+    dataset.records
+  );
 
   if(records.length === 0) return h('div', {}, '');
 

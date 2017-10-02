@@ -22,30 +22,6 @@ const saveState = (model) => {
   localStorage.setItem('state', JSON.stringify(model));
 };
 
-// const rehydrateOperations = (model) => {
-//   const rehydrateOperation = item => {
-//     const pool = Operations[item.type];
-//     const key = R.path(['definition', 'key'], item);
-//
-//     return R.reduce(R.mergeDeepRight, item, [
-//       key ? {definition: pool[key]} : {},
-//     ]);
-//   };
-//
-//   const rehydrateGrouping = (grouping) => {
-//     return R.reduce(R.mergeDeepRight, grouping, [
-//       {aggregators: R.map(rehydrateOperation, grouping.aggregators)},
-//     ]);
-//   }
-//
-//   const operations = R.map(item =>
-//     (item.type === 'Grouping' ? rehydrateGrouping : rehydrateOperation)(item),
-//     model.operations
-//   )
-//
-//   return R.merge(model, {operations});
-// }
-
 const restoreState = () => {
   // return Main.init(null);
   try {
@@ -98,7 +74,7 @@ const vnode$ = flyd.map(
 // const vnode$ = flyd.map(() => errorVdom, model$)
 
 flyd.map(saveState, model$);
-// flyd.map(console.log, action$);
+flyd.map(console.log, action$);
 flyd.map(console.log, model$);
 
 

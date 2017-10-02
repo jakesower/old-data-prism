@@ -1,7 +1,13 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 
+const Dataset = require('../types/dataset');
+const DataType = require('../types/data-type');
+const DataSlot = require('../types/data-slot');
+const Column = require('../types/column');
 const {populateSlots} = require('../lib/definition-utils');
+
+const SlotCollector = require('../components/slot-collector');
 
 const SoccerRanking = (function() {
   const slots = [
@@ -35,8 +41,10 @@ const SoccerRanking = (function() {
       const outcomes = R.pipe(
         toLines,
         R.groupBy(R.prop('team')),
-        outcomeReducer,
-        R.sortBy((a, b) => (a.points - b.points) === 0 ? (a.goalDiff - b.goalDiff) : (a.points - b.points)),
+        R.map(outcomeReducer),
+        R.mapObjIndexed((v, k) => R.merge({team: k}, v)),
+        R.values,
+        R.sortWith([R.descend(R.prop('points')), R.descend(R.prop('goalDiff'))]),
         R.addIndex(R.map)((t, i) => [(i+1).toString(), t.team, t.points.toString(), t.goalDiff.toString()])
       )(rows);
 
@@ -52,10 +60,12 @@ const SoccerRanking = (function() {
       ]),
 
     valid: (dataset, inputs) => R.all(
-      slot => Slot.is(slot) ?
-        slot.valid(inputs[slot.id]) :
-        slot.valid(dataset, inputs[slot.id]),
+      slot => slot.valid(dataset, inputs[slot.id]),
       slots
     )
   }
 }());
+
+module.exports = {
+  SoccerRanking
+}

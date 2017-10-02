@@ -10,6 +10,7 @@ const moment = require('moment');
 const DataType = daggy.taggedSum('DataType', {
   String: [],
   NonEmptyString: [],
+  Number: [],
   FiniteNumber: [],
   PositiveFiniteNumber: [],
   Integer: [],
@@ -26,7 +27,7 @@ DataType.prototype.test = function (val) {
   return this.cata({
     String: () => true,
     NonEmptyString: () => val !== "",
-    Number: () => !isNaN(parseFloat(x)),
+    Number: () => !isNaN(parseFloat(val)),
     FiniteNumber: () => finiteNum(val),
     PositiveFiniteNumber: () => finiteNum(val) && val > 0,
     Integer: () => finiteNum(val) && val % 1 === 0,

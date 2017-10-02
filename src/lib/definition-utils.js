@@ -1,6 +1,7 @@
 const R = require('ramda');
 
-const {DataSlot, Slot} = require('../types');
+const Slot = require('../types/slot');
+const DataSlot = require('../types/data-slot');
 
 
 const populateSlots = (dataset, inputs, slots) => R.pipe(
@@ -19,4 +20,4 @@ const validateSlots = (dataset, inputs, slots) => R.all(
   slots
 );
 
-module.exports = {populateSlots};
+module.exports = {populateSlots, validateSlots};
