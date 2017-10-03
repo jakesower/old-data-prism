@@ -101,6 +101,11 @@ div.body-container {
         &:hover {
           background-color: $light-orange;
         }
+
+        .sub-menu {
+          background-color: $mid-orange;
+          border-left: 2px solid $light-orange;
+        }
       }
     }
 
@@ -155,6 +160,7 @@ div.main-container {
   flex-direction: row;
 
   aside {
+    position: relative;
     flex: 0 0 19em;
     padding: 1em 1em 0 1em;
     display: flex;
@@ -379,11 +385,14 @@ nav {
 
 .collector {
   display: flex;
-  padding: 5px 0;
+  padding: 0.5em 0;
   width: 100%;
+  font-size: 110%;
+  border-bottom: 1px black dashed;
 
   .definition {
     flex: 1;
+    padding: 0 1em;
 
     &::before {
       float: left;
@@ -512,8 +521,7 @@ nav {
 
 .remix-controls {
   flex: 0 1 2em;
-  font-size: 120%;
-  border-bottom: 1px solid black;
+  border-bottom: 3px solid black;
 
   .operations-menu {
     &.active {
@@ -538,10 +546,40 @@ nav {
       display: none;
 
       .item {
-        font-size: 80%;
         padding: 0.5rem;
         cursor: pointer;
+        z-index: 3000;
+
+        &:hover {
+          & > .sub-menu {
+            display: block;
+            left: 21em;
+            width: 20em;
+            // transition: width 0.1s;
+          }
+        }
       }
+
+      .has-submenu {
+        margin-right: -1em;
+
+        &::after {
+          padding-right: 1.1em;
+          transition: transform 0.2s;
+          float: right;
+          content: "\f054";
+        }
+      }
+    }
+
+    .sub-menu {
+      width: 0;
+      z-index: 40;
+      position: absolute;
+      height: 100%;
+      top: 0;
+      left: -100000px;
+      padding: 1em 0 1em 1em;
     }
   }
 }
@@ -557,6 +595,11 @@ nav {
 }
 
 .collector-aggregator::before {
+  content: "\f013";
+  font: normal normal normal 14px/1 FontAwesome;
+}
+
+.collector-generic::before {
   content: "\f013";
   font: normal normal normal 14px/1 FontAwesome;
 }

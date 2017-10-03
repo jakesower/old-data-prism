@@ -13,7 +13,7 @@ module.exports = R.curry((action$, model) => {
   if (!model.dataset) return h('div', {}, '');
 
   const {collectors, grids} = model;
-  const dataset = Dataset(model.dataset.headers, model.dataset.records);
+  const dataset = Dataset.fromCSV(model.dataset);
 
   const collector$ = forwardTo(action$, Action.SetCollectors);
   const ctrlAttrs = action => ({class: {control: true}, on: {click: [action$, action]}});

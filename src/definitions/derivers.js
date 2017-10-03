@@ -12,18 +12,21 @@ const {populateSlots, validateSlots} = require('../lib/definition-utils');
 const withColNameSlot = R.prepend(Slot.Free('columnName', 'Column Name', DataType.String));
 
 const col = R.curry((dataset, cName) =>
-  h('span', {class: {"column-name": true}}, dataset.headers[cName]));
-
+  h('span', {class: {"column-name": true}}, dataset.headers[cName])
+)
 
 const makeDeriver = def =>
   R.merge(def, {
     fn: (dataset, inputs) => {
       const populated = populateSlots(dataset, inputs, withColNameSlot(def.slots));
+      const vals = R.map(x => x.toString(), def.fn(populated));
       return dataset.appendColumn(Column(
         inputs.columnName,
-        R.map(x => x.toString(), def.fn(populated))
+        vals,
+        Column.detectSchema(vals)
       ));
     },
+    help: 'help text',
     tags: ["deriver"],
     collector: SlotCollector(withColNameSlot(def.slots)),
     valid: (dataset, inputs) => validateSlots(dataset, inputs, withColNameSlot(def.slots))
@@ -40,10 +43,10 @@ const Ceiling = makeDeriver({
     const m = Math.pow(10, precision * -1);
     return R.map(n => Math.ceil(m*n) / m, num);
   },
-  display: (args, dataset) =>
+  display: (dataset, inputs) =>
     h('div', {}, [
       'Ceiling ',
-      col(dataset, args.num)
+      col(dataset, inputs.num)
     ])
 });
 
@@ -54,12 +57,12 @@ const Difference = makeDeriver({
     DataSlot.Column('minuend', 'Minuend', DataType.FiniteNumber),
     DataSlot.Column('subtrahend', 'Subtrahend', DataType.FiniteNumber)
   ],
-  fn: args => R.zipWith(R.subtract, args.minuend, args.subtrahend),
-  display: (args, dataset) =>
+  fn: inputs => R.zipWith(R.subtract, inputs.minuend, inputs.subtrahend),
+  display: (dataset, inputs) =>
     h('div', {}, [
-      col(dataset, args.minuend),
+      col(dataset, inputs.minuend),
       ' - ',
-      col(dataset, args.subtrahend),
+      col(dataset, inputs.subtrahend),
     ])
 });
 
@@ -84,8 +87,8 @@ const FormattedDate = makeDeriver({
     DataSlot.Column('date', 'Date', DataType.Date),
     Slot.Free('format', 'Format', DataType.NonEmptyString)
   ],
-  fn: (args) => {return R.map(d => d.format(args.format), args.date)},
-  display: (args, dataset) => `<span class="column-name">${dataset.headers[args.date]}</span> with format ${args.format}`
+  fn: (inputs) => {return R.map(d => d.format(inputs.format), inputs.date)},
+  display: (dataset, inputs) => `<span class="column-name">${dataset.headers[inputs.date]}</span> with format ${inputs.format}`
 });
 
 
@@ -112,22 +115,22 @@ const Quantile = makeDeriver({
     Slot.Free('order', 'order', DataType.PositiveInteger)
   ],
 
-  fn: (args) => {
+  fn: (inputs) => {
     const sorted = R.pipe(
       R.map(parseFloat),
       R.sort((a, b) => a - b)
-    )(args.n);
-    const frac = parseFloat(sorted.length) / parseFloat(args.order);
+    )(inputs.n);
+    const frac = parseFloat(sorted.length) / parseFloat(inputs.order);
     const cutoffs = R.map(
       n => R.nth(Math.ceil(n*frac), sorted),
-      R.range(0, parseInt(args.order)));
+      R.range(0, parseInt(inputs.order)));
 
     return R.map(n =>
       R.findLastIndex(m => parseFloat(n) >= m, cutoffs) + 1
-      , args.n);
+      , inputs.n);
   },
 
-  display: (args, dataset) => {
+  display: (dataset, inputs) => {
     const quartileNames = {
       '2': "median groups",
       '3': "terciles",
@@ -144,10 +147,10 @@ const Quantile = makeDeriver({
       '1000': "permilles"
     };
 
-    const name = quartileNames[args.order] || `${args.order}-quantile`;
+    const name = quartileNames[inputs.order] || `${inputs.order}-quantile`;
     return h('div', {}, [
       `${name} on `,
-      col(dataset, args.n)
+      col(dataset, inputs.n)
     ]);
   }
 });
@@ -162,10 +165,10 @@ const Round = makeDeriver({
     const m = Math.pow(10, precision * -1);
     return R.map(n => Math.round(m*n) / m, num);
   },
-  display: (args, dataset) =>
+  display: (dataset, inputs) =>
     h('div', {}, [
       'Round ',
-      col(dataset, args.num)
+      col(dataset, inputs.num)
     ])
 });
 
@@ -175,9 +178,9 @@ const Sum = makeDeriver({
   slots: [
     DataSlot.Multicolumn('addends', 'Addends', DataType.FiniteNumber)
   ],
-  fn: args => R.map(R.sum, args.addends),
-  display: (args, dataset) => {
-    const colSpans = R.map(col(dataset), args.addends);
+  fn: inputs => R.map(R.sum, inputs.addends),
+  display: (dataset, inputs) => {
+    const colSpans = R.map(col(dataset), inputs.addends);
     return h('div', {}, R.flatten([
       "Sum of ",
       R.intersperse(', ', colSpans)

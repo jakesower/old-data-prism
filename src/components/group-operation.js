@@ -80,7 +80,7 @@ const view = ({set$, delete$, setActive$}, {dataset, editing}, model) => {
     // column groupings
     const columnsVdom = h('div', {class: {columns: true}}, (() => {
       const optionPair = (col, idx) => ({value: idx, display: col.header});
-      const pool = R.addIndex(R.map)(optionPair, dataset.columns());
+      const pool = R.addIndex(R.map)(optionPair, dataset.columns);
 
       return SlotCollector(
         forwardTo(set$, Action.SetColumns),

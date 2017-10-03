@@ -16,7 +16,7 @@ function fn(dataset, inputs, dimensions) {
   const {rowAxis, colAxes, invert} = inputs;
   if (R.isEmpty(rowAxis) || R.isEmpty(colAxes)) return [];
 
-  const columns = dataset.columns();
+  const columns = dataset.columns;
   const rangePipe = R.pipe(
     R.flatten,
     R.map(parseFloat),

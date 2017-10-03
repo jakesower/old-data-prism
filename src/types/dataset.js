@@ -6,30 +6,39 @@ const Column = require('./column');
 const mapWithIndex = R.addIndex(R.map);
 
 
-const Dataset = daggy.tagged('Dataset', ['headers', 'records']);
+const Dataset = daggy.tagged('Dataset', ['columns']);
 
-Dataset.prototype.fromCSV = function (csv) {
+Dataset.fromCSV = function (csv) {
+  const {headers, records} = csv;
+  const pairs = R.zip(headers, R.transpose(records));
 
-}
-
-Dataset.prototype.columns = function () {
-  const {headers, records} = this;
-
-  return mapWithIndex((col, idx) =>
-    Column(col, R.map(R.nth(idx))(records)),
-    headers
+  const columns = R.map(
+    pair => Column(pair[0], pair[1], Column.detectSchema(pair[1])),
+    pairs
   );
+
+  return Dataset(columns);
 }
+
+Object.defineProperty(Dataset.prototype, 'records', {
+  get: function () {
+    const colVals = R.map(R.prop('values'), this.columns);
+    const grid = R.reduce(R.flip(R.append), [], colVals);
+
+    return R.transpose(grid);
+  }
+});
+
+Object.defineProperty(Dataset.prototype, 'headers', {
+  get: function () { return R.map(R.prop('name'), this.columns)}
+});
 
 Dataset.prototype.appendColumn = function (column) {
-  return Dataset(
-    R.append(column.header, this.headers),
-    R.zipWith(R.append, R.map(x => x.toString(), column.values), this.records)
-  );
+  return Dataset(R.append(column, this.columns));
 }
 
 Dataset.prototype.validColumns = function (dataType) {
-  return R.filter(col => col.valid(dataType), this.columns());
+  return R.filter(col => col.valid(dataType), this.columns);
 }
 
 Dataset.prototype.applyOperation = function (operation) {

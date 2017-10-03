@@ -9,7 +9,7 @@ module.exports = R.curry((action$, model) => {
 
     h('main', {}, R.map(
       col => h('div', {}, col.header),
-      model.dataset.columns()
+      model.dataset.columns
     )
   ])
 });

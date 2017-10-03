@@ -16,10 +16,11 @@ const DataSlot = daggy.taggedSum('DataSlot', {
 
 // DataSlot ~> Dataset -> Slot
 DataSlot.prototype.toSlot = function (dataset) {
-  const colPool = R.addIndex(R.map)(
-    (c, idx) => ({display: c.header, value: idx}),
-    dataset.columns()
-  );
+  const colPool = R.pipe(
+    R.zip(R.range(0, R.length(dataset.columns))),
+    R.filter(pair => pair[1].hasType(this.dataType)),
+    R.map(pair => ({display: pair[1].name, value: pair[0]}))
+  )(dataset.columns);
 
   return this.cata({
     Column: (id, display, dataType) =>
@@ -34,12 +35,12 @@ DataSlot.prototype.toSlot = function (dataset) {
 DataSlot.prototype.valid = function (dataset, value) {
   return this.cata({
     Column: (id, _, dataType) => {
-      const col = dataset.columns()[value];
-      return col && col.valid(dataType);
+      const col = dataset.columns[value];
+      return col && col.hasType(dataType);
     },
     Multicolumn: (id, _, dataType) => {
-      const cols = R.map(c => dataset.columns()[c], value);
-      return R.all(col => col.valid(dataType), cols);
+      const cols = R.map(c => dataset.columns[c], value);
+      return R.all(col => col.hasType(dataType), cols);
     }
   });
 }
@@ -50,11 +51,11 @@ DataSlot.prototype.valid = function (dataset, value) {
 DataSlot.prototype.populate = function (dataset, value) {
   return this.cata({
     Column: (id, _, dataType) => {
-      const col = dataset.columns()[value];
+      const col = dataset.columns[value];
       return R.map(v => dataType.cast(v), col.values);
     },
     Multicolumn: (id, _, dataType) => {
-      const cols = R.map(i => dataset.columns()[i], value);
+      const cols = R.map(i => dataset.columns[i], value);
       const expanded = R.map(col => R.map(v => dataType.cast(v), col.values), cols);
       return R.transpose(expanded);
     }

@@ -48,10 +48,10 @@ const SoccerRanking = (function() {
         R.addIndex(R.map)((t, i) => [(i+1).toString(), t.team, t.points.toString(), t.goalDiff.toString()])
       )(rows);
 
-      return Dataset(
-        ['Rank', 'Team', 'Points', 'Goal Difference'],
-        outcomes
-      );
+      return Dataset.fromCSV({
+        headers: ['Rank', 'Team', 'Points', 'Goal Difference'],
+        records: outcomes
+      });
     },
 
     display: (dataset, inputs) =>

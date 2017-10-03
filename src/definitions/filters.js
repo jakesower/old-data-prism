@@ -11,21 +11,24 @@ const col = R.curry((dataset, cName) =>
 
 
 const rowFilter = def => {
-  return R.merge(def, {
-    fn: (dataset, inputs) => {
-      const {records, headers} = dataset;
-      const populated = populateSlots(dataset, inputs, def.slots);
-      const rowN = n => R.map(i => Array.isArray(i) ? i[n] : i, populated);
+  return R.merge(def,
+    { fn: (dataset, inputs) => {
+        const {records, headers} = dataset;
+        const populated = populateSlots(dataset, inputs, def.slots);
+        const rowN = n => R.map(i => Array.isArray(i) ? i[n] : i, populated);
 
-      return {
-        headers,
-        records: R.addIndex(R.filter)(
-          (rec, idx) => def.fn(rowN(idx)),
-          records
-        )
-      };
-    })
-  });
+        return {
+          headers,
+          records: R.addIndex(R.filter)(
+            (rec, idx) => def.fn(rowN(idx)),
+            records
+          )
+        };
+      },
+      tags: R.append('deriver', def.tags)
+    },
+
+  );
 }
 
 

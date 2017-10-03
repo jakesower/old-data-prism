@@ -17,7 +17,7 @@ const germany = Dataset(
 
 describe ('dataset type', function() {
   it ('calculates columns correctly', function() {
-    const cols = germany.columns();
+    const cols = germany.columns;
 
     assert.equal(cols.length, 4);
     assert.deepEqual(cols[2], Column('Goals For', ['4', '2', '1', '2', '1', '7', '1']));

@@ -13,6 +13,7 @@ const populateSlots = (dataset, inputs, slots) => R.pipe(
   R.mergeAll
 )(slots);
 
+
 const validateSlots = (dataset, inputs, slots) => R.all(
   slot => Slot.is(slot) ?
     slot.valid(inputs[slot.id]) :

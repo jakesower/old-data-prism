@@ -7,7 +7,7 @@ const moment = require('moment');
  * a string and attempts to deal with it.
  */
 
-const DataType = daggy.taggedSum('DataType', {
+const sumTypes = {
   String: [],
   NonEmptyString: [],
   Number: [],
@@ -18,8 +18,12 @@ const DataType = daggy.taggedSum('DataType', {
   Date: [],
   Boolean: [],
   Enumerated: ['values']
-});
+};
 
+const DataType = daggy.taggedSum('DataType', sumTypes);
+
+DataType.types = R.map(k => DataType[k], R.keys(sumTypes));
+DataType.unitTypes = R.filter(t => DataType.is(t), DataType.types);
 
 // DataType ~> String -> Boolean
 const finiteNum = x => !isNaN(parseFloat(x)) && isFinite(x)
@@ -53,6 +57,27 @@ DataType.prototype.cast = function (val) {
     Boolean: () => val === 'true',
     Enumerated: (values) => val,
   })
+}
+
+
+DataType.prototype.impliedTypes = function () {
+  const inherit = R.pipe( // array of types come in
+    R.chain(t => R.append(t, t.impliedTypes)),
+    R.uniq
+  )
+
+  return this.cata({
+    String: () => [],
+    NonEmptyString: () => [DataType.String],
+    Number: () => inherit([DataType.NonEmptyString]),
+    FiniteNumber: () => inherit([DataType.Number]),
+    PositiveFiniteNumber: () => inherit([DataType.FiniteNumber]),
+    Integer: () => inherit([DataType.Number]),
+    PositiveInteger: () => inherit([DataType.Integer, DataType.PositiveFiniteNumber]),
+    Date: () => [DataType.String],
+    Boolean: () => inherit([DataType.NonEmptyString]),
+    Enumerated: (values) => []
+  });
 }
 
 module.exports = DataType;
