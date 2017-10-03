@@ -121,16 +121,6 @@ const renderCollectors = R.curry((action$, dataset, model) => {
 
 
 const view = R.curry((action$, dataset, model) => {
-  const ctrlAttrs = action => ({
-    class: {control: true},
-    on: {click: [action$, action]}
-  });
-
-  const iconed = name => {
-    const i = `operation-${name.toLowerCase()}`;
-    return h('span', {class: {[i]: true}}, ` ${name}`);
-  }
-
   return R.flatten([
     h('div', {class: {"remix-controls": true}, key: 'remix-controls'}, [
       renderMenu(action$, dataset, model)

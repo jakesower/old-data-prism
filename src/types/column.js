@@ -6,6 +6,10 @@ const DataType = require('./data-type');
 
 const Column = daggy.tagged('Column', ['name', 'values', 'schema']);
 
+Column.autoSchema = function (name, values) {
+  return Column(name, values, Column.detectSchema(values));
+}
+
 Column.detectSchema = function (values) {
   // TODO: this could be traversed more efficiently using impliedTypes
   const types = R.filter(

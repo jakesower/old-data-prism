@@ -7,7 +7,7 @@ const DataSlot = require('../types/data-slot');
 const Column = require('../types/column');
 const {populateSlots} = require('../lib/definition-utils');
 
-const SlotCollector = require('../components/slot-collector');
+const SlotCollector = require('../components/collectors/slot-collector');
 
 const SoccerRanking = (function() {
   const slots = [

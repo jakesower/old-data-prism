@@ -6,7 +6,7 @@ const DataType = require('../types/data-type');
 const DataSlot = require('../types/data-slot');
 const Column = require('../types/column');
 
-const SlotCollector = require('../components/slot-collector');
+const SlotCollector = require('../components/collectors/slot-collector');
 const {populateSlots, validateSlots} = require('../lib/definition-utils');
 
 const withColNameSlot = R.prepend(Slot.Free('columnName', 'Column Name', DataType.String));
