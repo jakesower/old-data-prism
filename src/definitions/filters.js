@@ -1,9 +1,10 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 
-// const DataType = require('../types/data-type');
-// const DataSlot = require('../types/data-slot');
-const {DataType, DataSlot, Slot} = require('../types');
+const DataType = require('../../types/data-type');
+const DataSlot = require('../../types/data-slot');
+const Slot = require('../../types/slot');
+
 const {populateSlots, validateSlots} = require('../lib/definition-utils');
 
 const col = R.curry((dataset, cName) =>
@@ -11,24 +12,26 @@ const col = R.curry((dataset, cName) =>
 
 
 const rowFilter = def => {
-  return R.merge(def,
-    { fn: (dataset, inputs) => {
-        const {records, headers} = dataset;
-        const populated = populateSlots(dataset, inputs, def.slots);
-        const rowN = n => R.map(i => Array.isArray(i) ? i[n] : i, populated);
+  return R.merge(def, {
+    fn: (dataset, inputs) => {
+      const {records, headers} = dataset;
+      const populated = populateSlots(dataset, inputs, def.slots);
+      const rowN = n => R.map(i => Array.isArray(i) ? i[n] : i, populated);
 
-        return {
-          headers,
-          records: R.addIndex(R.filter)(
-            (rec, idx) => def.fn(rowN(idx)),
-            records
-          )
-        };
-      },
-      tags: R.append('deriver', def.tags)
+      return {
+        headers,
+        records: R.addIndex(R.filter)(
+          (rec, idx) => def.fn(rowN(idx)),
+          records
+        )
+      };
     },
 
-  );
+    help: def.help || 'TODO',
+    collector: SlotCollector(def.slots),
+    valid: (dataset, inputs) => validateSlots(dataset, inputs, def.slots),
+    tags: R.append('filter', def.tags)
+  });
 }
 
 

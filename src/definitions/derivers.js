@@ -15,10 +15,13 @@ const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName])
 )
 
-const makeDeriver = def =>
-  R.merge(def, {
+const makeDeriver = def => {
+  const colNameSlot = Slot.Free('columnName', 'Column Name', DataType.String);
+  const slots = R.prepend(colNameSlot, def.slots);
+
+  return R.merge(def, {
     fn: (dataset, inputs) => {
-      const populated = populateSlots(dataset, inputs, withColNameSlot(def.slots));
+      const populated = populateSlots(dataset, inputs, slots);
       const vals = R.map(x => x.toString(), def.fn(populated));
       return dataset.appendColumn(Column(
         inputs.columnName,
@@ -28,9 +31,10 @@ const makeDeriver = def =>
     },
     help: 'help text',
     tags: ["deriver"],
-    collector: SlotCollector(withColNameSlot(def.slots)),
-    valid: (dataset, inputs) => validateSlots(dataset, inputs, withColNameSlot(def.slots))
+    collector: SlotCollector(slots),
+    valid: (dataset, inputs) => validateSlots(dataset, inputs, slots)
   });
+}
 
 
 const Ceiling = makeDeriver({
@@ -131,7 +135,7 @@ const Quantile = makeDeriver({
   },
 
   display: (dataset, inputs) => {
-    const quartileNames = {
+    const quantileNames = {
       '2': "median groups",
       '3': "terciles",
       '4': "quartiles",
@@ -147,7 +151,7 @@ const Quantile = makeDeriver({
       '1000': "permilles"
     };
 
-    const name = quartileNames[inputs.order] || `${inputs.order}-quantile`;
+    const name = quantileNames[inputs.order] || `${inputs.order}-quantile`;
     return h('div', {}, [
       `${name} on `,
       col(dataset, inputs.n)
