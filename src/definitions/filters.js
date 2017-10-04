@@ -1,10 +1,11 @@
 const R = require('ramda');
 const h = require('snabbdom/h').default;
 
-const DataType = require('../../types/data-type');
-const DataSlot = require('../../types/data-slot');
-const Slot = require('../../types/slot');
+const DataType = require('../types/data-type');
+const DataSlot = require('../types/data-slot');
+const Slot = require('../types/slot');
 
+const SlotCollector = require('../components/collectors/slot-collector');
 const {populateSlots, validateSlots} = require('../lib/definition-utils');
 
 const col = R.curry((dataset, cName) =>

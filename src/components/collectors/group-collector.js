@@ -4,11 +4,11 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 const Type = require('union-type');
 
-const ColumnSelector = require('./column-selector');
-const OperationComponent = require('./operation');
-const {Slot, DataType} = require('../types');
-const slotDom = require('./helpers/slot-dom');
-const aggregatorPool = require('../definitions/helpers/aggregators');
+const ColumnSelector = require('../column-selector');
+const OperationComponent = require('../operation');
+const {Slot, DataType} = require('../../types');
+const slotDom = require('../helpers/slot-dom');
+const aggregatorPool = require('../../definitions/helpers/aggregators');
 
 
 const Action = Type({
@@ -88,7 +88,7 @@ function renderActiveAggregator(action$, dataset, {inputs, key, id}) {
 
       h('div', {class: {controls: true}}, [
         h('button',
-          { on: {click: [action$, Action.SetActive(null)]},
+          { on: {click: [action$, Action.SetActive(null)]}},
           'Done'
         )
       ])

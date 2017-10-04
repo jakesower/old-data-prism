@@ -2,7 +2,7 @@ const R = require('ramda');
 const forwardTo = require('flyd-forwardto');
 
 const {Slot, DataType} = require('../types');
-const SlotCollector = require('./slot-collector');
+const SlotCollector = require('./collectors/slot-collector');
 const Type = require('union-type');
 const h = require('snabbdom/h').default;
 
@@ -49,7 +49,7 @@ const update = Action.caseOn({
 
 const view = R.curry((action$, {dimensions, dataset}, model) => {
   const slots = R.pathOr([], [model.type, 'slots'], CHARTS);
-  
+
   const action = slot => forwardTo(action$, Action.SetInput(slot.id));
   const typePool = R.map(t => ({ value: t, display: t }), R.keys(CHARTS));
   const toCollector = s => SlotCollector(

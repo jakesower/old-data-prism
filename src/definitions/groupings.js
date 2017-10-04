@@ -19,14 +19,14 @@ const Grouping = {
     const aggsValid = R.all(inputs.aggregators.valid(dataset));
 
     return colsValid && aggsValid;
-  }
+  },
 
   fn: (dataset, inputs) => {
     const {columns, aggregators} = inputs;
 
     const headers = R.map(R.nth(R.__, dataset.headers), columns);
     const groups = R.pipe(
-      R.groupBy(record => JSON.stringify(R.map(R.nth(R.__, record), columns)),
+      R.groupBy(record => JSON.stringify(R.map(R.nth(R.__, record), columns))),
       R.toPairs
     )(dataset.records);
 
@@ -44,7 +44,7 @@ const Grouping = {
     return Dataset(R.concat(groupingCols, groupedRows));
   },
 
-  collector: GroupingCollector,
+  collector: GroupCollector,
 }
 
 const BucketGrouper = {

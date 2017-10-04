@@ -1,7 +1,9 @@
+const h = require('snabbdom/h').default;
+
 const {select, checkbox, text, multiselect} = require('../controls');
 const daggySwitch = require('../../lib/daggy-switch');
 
-module.exports = (action$, slot, value) {
+module.exports = (action$, slot, value) => {
   const switcher = daggySwitch({
     Free: () => daggySwitch({
       _: () => text(value, action$),

@@ -8,9 +8,9 @@ const {Slot, DataType, Operation} = require('../types');
 
 const filterPool = require('../definitions/filters');
 const deriverPool = require('../definitions/derivers');
-const aggregatorPool = require('../definitions/aggregators');
+const aggregatorPool = require('../definitions/helpers/aggregators');
 
-const SlotCollector = require('./slot-collector');
+const SlotCollector = require('./collectors/slot-collector');
 
 const toOperation = switchcase({
   Filter: (definition, inputs) => Operation.Filter(definition, inputs),

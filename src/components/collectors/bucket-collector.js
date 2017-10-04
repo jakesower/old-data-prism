@@ -3,7 +3,7 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 const Type = require('union-type');
 
-const slotDom = require('./helpers/slot-dom');
+const slotDom = require('../helpers/slot-dom');
 
 
 const Action = Type({

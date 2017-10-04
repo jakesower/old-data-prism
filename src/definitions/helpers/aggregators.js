@@ -4,8 +4,8 @@ const Slot = require('../../types/slot');
 const DataType = require('../../types/data-type');
 const DataSlot = require('../../types/data-slot');
 
-const SlotCollector = require('../components/collectors/slot-collector');
-const {populateSlots, validateSlots} = require('../lib/definition-utils');
+const SlotCollector = require('../../components/collectors/slot-collector');
+const {populateSlots, validateSlots} = require('../../lib/definition-utils');
 
 const col = R.curry((dataset, cName) =>
   h('span', {class: {"column-name": true}}, dataset.headers[cName]));
@@ -37,7 +37,7 @@ const Count = makeSlotAggregator({
   fn: (group, inputs) => Column.autoSchema(
     inputs.columnName,
     group.records.length
-  )
+  ),
   display: () => 'Count'
 });
 
