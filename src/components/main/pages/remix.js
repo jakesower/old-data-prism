@@ -12,17 +12,19 @@ const GridComponent = require('../../grid');
 module.exports = R.curry((action$, model) => {
   if (!model.dataset) return h('div', {}, '');
 
-  const {collectors, grids} = model;
-  const dataset = Dataset.fromCSV(model.dataset);
+  const {grid} = model.pageData.remix;
+  const {collectorList} = model;
+  const source = Source.load(R.find(s => R.equals(model.activeSource, s.id), model.sources));
+  const dataset = source.dataset;
 
-  const collector$ = forwardTo(action$, Action.SetCollectors);
+  const collector$ = forwardTo(action$, Action.SetCollectorList);
   const ctrlAttrs = action => ({class: {control: true}, on: {click: [action$, action]}});
   const iconed = name => {
     const i = `collector-${name.toLowerCase()}`;
     return h('span', {class: {[i]: true}}, ` ${name}`);
   }
 
-  const operations = R.map(c => Operation.fromCollector(c.key, c.inputs), collectors.collectors);
+  const operations = R.map(c => Operation.fromCollector(c.key, c.inputs), collectorList.collectors);
 
   return h('div', {class: {"main-container": true}}, R.flatten([
     h('aside', {},
@@ -32,8 +34,8 @@ module.exports = R.curry((action$, model) => {
     h('main', {}, [
       GridComponent.view(
         dataset.applyValidOperations(operations),
-        forwardTo(action$, Action.SetGridState('prepareData')),
-        grids.prepareData
+        forwardTo(action$, Action.SetGridState),
+        grid
       )
     ])
   ]))

@@ -25,5 +25,9 @@ Column.prototype.hasType = function (dataType) {
   return R.contains(dataType.toString(), this.schema.types.toString());
 }
 
+Column.prototype.length = function () {
+  return R.length(this.values);
+}
+
 
 module.exports = Column;

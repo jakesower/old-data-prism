@@ -45,6 +45,10 @@ Dataset.prototype.applyOperation = function (operation) {
   return operation.apply(this);
 }
 
+Dataset.prototype.length = function () {
+  return this.columns[0].length;
+}
+
 // Dataset ~> List Operation -> Dataset
 // Applies a list of operations, so long as they are all valid. If an invalid
 // operation is encountered, it returns the last result.

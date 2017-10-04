@@ -584,6 +584,11 @@ nav {
   }
 }
 
+.source::before {
+  content: "\f1c0";
+  font: normal normal normal 14px/1 FontAwesome;
+}
+
 .collector-filter::before {
   content: "\f0b0";
   font: normal normal normal 14px/1 FontAwesome;

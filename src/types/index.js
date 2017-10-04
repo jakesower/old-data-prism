@@ -4,6 +4,7 @@ const Dataset = require('./dataset');
 const Operation = require('./operation');
 const Slot = require('./slot');
 const DataSlot = require('./data-slot');
+const Source = require('./source');
 
 module.exports = {
   Column,
@@ -12,4 +13,5 @@ module.exports = {
   Operation,
   Slot,
   DataSlot,
+  Source,
 }

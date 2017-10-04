@@ -13,24 +13,29 @@ const Action = require('./main/action');
 
 const update = Action.caseOn({
   SetData: (newData, model) =>
-    R.merge(model, {
-      dataLoading: false,
-      dataset: newData,
-      page: 'Remix'
-    }),
+    R.evolve({
+      dataLoading: () => false,
+      sources: R.append({id: model.uid, name: model.sourceName, data: newData, schema: {}}),
+      activeSource: () => model.uid,
+      sourceName: () => '',
+      uid: R.inc
+    }, model),
 
+  SetSourceName: R.assoc('sourceName'),
+  SetActiveSource: R.assoc('activeSource'),
   SetPage: R.assoc('page'),
+
   ToggleHelp: model => R.assoc('help', !model.help, model),
   ToggleWalkthrough: model => R.assoc('walkthrough', !model.walkthrough, model),
 
-  SetCollectors: (act, mod) => R.over(
-    R.lensProp('collectors'),
+  SetCollectorList: (act, mod) => R.over(
+    R.lensPath(['pageData', 'remix', 'collectorList']),
     CollectorListComponent.update(act),
     mod
   ),
 
-  SetGridState: (gridId, action, model) =>
-    R.over(R.lensPath(['grids', gridId]), GridComponent.update(action), model),
+  SetGridState: (action, model) =>
+    R.over(R.lensPath(['pageData', 'remix', 'grid']), GridComponent.update(action), model),
 
   SetMainDimensions: R.assoc('mainDimensions'),
   SetChart: (action, model) =>
@@ -43,17 +48,28 @@ const update = Action.caseOn({
 
 const firstInit = {
   page: 'UploadData',
+
+  pageData: {
+    sources: {
+      sourceName: "",
+    },
+    remix: {
+      grid: GridComponent.init(),
+    },
+    chart: ChartComponent.init(),
+    annotate: {}
+  },
+
+  sources: [],  // source is {name: x, dataset: y, schema: z, id: w}
+  collectorList: CollectorListComponent.init(),
+  activeSource: null,
+
   dataLoading: false,
-  dataset: null,
   help: false,
   walkthrough: false,
+
   uid: 1,
-  collectors: CollectorListComponent.init(),
-  grids: {
-    prepareData: GridComponent.init(),
-  },
   mainDimensions: {}, // used for chart sizing, should depend on DOM externally
-  chart: ChartComponent.init()
 };
 
 const init = state => state || firstInit;

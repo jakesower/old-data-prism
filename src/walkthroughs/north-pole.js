@@ -15,7 +15,7 @@ module.exports = () => {
       },
       { text: 'Wait for the data to load.',
         action: MainAction
-      }
+      },
       { text: 'Click the "Remix" tab at the top.',
         action: MainAction.SetPage('Remix')
       }

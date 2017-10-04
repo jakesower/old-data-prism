@@ -7,13 +7,15 @@ module.exports = Type({
   ToggleHelp: [],
   ToggleWalkthrough: [],
 
-  // Import
+  // Source
   LoadLocalFile: [() => true],
   LoadURI: [String],
+  SetSourceName: [String],
   SetData: [Object],
+  SetActiveSource: [Number],
 
   // Remix
-  SetCollectors: [Object],
+  SetCollectorList: [Object],
   SetGridState: [String, Object],
 
   // Chart
