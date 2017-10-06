@@ -69,7 +69,7 @@ const update = Action.caseOn({
 });
 
 
-const renderActiveCollector = (action$, dataset, {inputs, key, id}) => {
+const renderActiveCollector = (action$, modelVars, {inputs, key, id}) => {
   const collector$ = forwardTo(action$, Action.SetCollector(id));
   const collector = operationPool[key].collector;
 
@@ -80,12 +80,12 @@ const renderActiveCollector = (action$, dataset, {inputs, key, id}) => {
         h('h2', {}, `Edit ${operationPool[key].name}`),
       ]),
 
-      collector.view(collector$, dataset, inputs),
+      collector.view(collector$, modelVars, inputs),
 
       h('div', {class: {controls: true}}, [
         h('button',
           { on: {click: [action$, Action.SetActive(null)]}
-          // , attrs: {disabled: !operation.valid(dataset)}
+          // , attrs: {disabled: !operation.valid(modelVars)}
           },
           'Done'
         )
@@ -95,12 +95,12 @@ const renderActiveCollector = (action$, dataset, {inputs, key, id}) => {
 };
 
 
-const renderInactiveCollector = (action$, dataset, {inputs, key, id}) => {
+const renderInactiveCollector = (action$, modelVars, {inputs, key, id}) => {
   const op = operationPool[key];
   const icon = `collector-${R.find(R.contains(op.tags), iconTags) || 'generic'}`;
 
   return h('div', {class: {collector: true, [icon]: true}}, [
-    h('div', {class: {definition: true}}, op.display(dataset, inputs)),
+    h('div', {class: {definition: true}}, op.display(modelVars, inputs)),
     h('div', {class: {controls: true}}, [
       h('span', {class: {edit: true}, on: {click: [action$, Action.SetActive(id)]}}),
       h('span', {class: {remove: true}, on: {click: [action$, Action.DeleteCollector(id)]}})
@@ -109,31 +109,32 @@ const renderInactiveCollector = (action$, dataset, {inputs, key, id}) => {
 };
 
 
-const renderCollectors = R.curry((action$, dataset, model) => {
+const renderCollectors = R.curry((action$, modelVars, model) => {
   const {active, collectors} = model;
   return R.map(
     collector => active === collector.id ?
-      renderActiveCollector(action$, dataset, collector) :
-      renderInactiveCollector(action$, dataset, collector),
+      renderActiveCollector(action$, modelVars, collector) :
+      renderInactiveCollector(action$, modelVars, collector),
     collectors
   );
 });
 
 
-const view = R.curry((action$, dataset, model) => {
+// modelVars contains a list of all sources and the active modelVars
+const view = R.curry((action$, modelVars, model) => {
   return R.flatten([
     h('div', {class: {"remix-controls": true}, key: 'remix-controls'}, [
-      renderMenu(action$, dataset, model)
+      renderMenu(action$, modelVars, model)
     ]),
 
     h('div', {class: {"collector-list": true}},
-      renderCollectors(action$, dataset, model)
+      renderCollectors(action$, modelVars, model)
     ),
   ]);
 });
 
 
-function renderMenu(action$, dataset, model) {
+function renderMenu(action$, modelVars, model) {
   return h('div', {class: {"operations-menu": true, active: model.menuOpen}}, [
     h('div',
       { class: {"new-operation-button": true},

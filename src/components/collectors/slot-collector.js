@@ -3,7 +3,6 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 const Type = require('union-type');
 
-const {select, checkbox, text, multiselect} = require('../controls');
 const slotDom = require('../helpers/slot-dom');
 const daggySwitch = require('../../lib/daggy-switch');
 

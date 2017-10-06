@@ -14,14 +14,14 @@ const Grouping = {
   display: "Grouping",
   help: "Well hai",
 
-  valid: (dataset, inputs) => {
+  valid: ({dataset}, inputs) => {
     const colsValid = R.length(inputs.columns) > 0;
     const aggsValid = R.all(inputs.aggregators.valid(dataset));
 
     return colsValid && aggsValid;
   },
 
-  fn: (dataset, inputs) => {
+  fn: ({dataset}, inputs) => {
     const {columns, aggregators} = inputs;
 
     const headers = R.map(R.nth(R.__, dataset.headers), columns);

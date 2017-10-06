@@ -22,7 +22,7 @@ const SoccerRanking = (function() {
     collector: SlotCollector(slots),
     tags: ["soccer"],
 
-    fn: (dataset, inputs) => {
+    fn: ({dataset}, inputs) => {
       const {homeTeam, homeScore, awayTeam, awayScore} = populateSlots(dataset, inputs, slots);
       const rows = R.transpose([homeTeam, homeScore, awayTeam, awayScore]);
 
@@ -54,12 +54,12 @@ const SoccerRanking = (function() {
       });
     },
 
-    display: (dataset, inputs) =>
+    display: ({dataset}, inputs) =>
       h('div', {}, [
         'Soccer Rankings'
       ]),
 
-    valid: (dataset, inputs) => R.all(
+    valid: ({dataset}, inputs) => R.all(
       slot => slot.valid(dataset, inputs[slot.id]),
       slots
     )

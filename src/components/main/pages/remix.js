@@ -13,8 +13,8 @@ module.exports = R.curry((action$, model) => {
   if (!model.dataset) return h('div', {}, '');
 
   const {grid} = model.pageData.remix;
-  const {collectorList} = model;
-  const source = Source.load(R.find(s => R.equals(model.activeSource, s.id), model.sources));
+  const {collectorList, sources} = model;
+  const source = Source.load(R.find(s => R.equals(model.activeSource, s.id), sources));
   const dataset = source.dataset;
 
   const collector$ = forwardTo(action$, Action.SetCollectorList);
@@ -28,7 +28,7 @@ module.exports = R.curry((action$, model) => {
 
   return h('div', {class: {"main-container": true}}, R.flatten([
     h('aside', {},
-      CollectorListComponent.view(collector$, dataset, collectors)
+      CollectorListComponent.view(collector$, {sources, dataset}, collectors)
     ),
 
     h('main', {}, [
