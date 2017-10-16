@@ -4,7 +4,6 @@ const h = require('snabbdom/h').default;
 const forwardTo = require('flyd-forwardto');
 const Type = require('union-type');
 
-const ColumnSelector = require('../column-selector');
 const OperationComponent = require('../operation');
 const {Slot, DataType} = require('../../types');
 const slotDom = require('../helpers/slot-dom');

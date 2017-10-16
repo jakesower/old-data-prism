@@ -8,9 +8,11 @@ const Samples = require('../../../samples/index');
 const emptyOption = h('option', {}, '');
 
 module.exports = R.curry((action$, model) => {
+  const activeSource = R.find(s => s.id === model.activeSource, model.sources);
+
   return h('div', {class: {"main-container": true}}, [
     h('aside', {class: {source: true}}, [
-      h('h2', {}, "Sources"),
+      h('h2', {}, "+ Add Source"),
       R.length(model.sources) > 0 ?
         sourceList(action$, model.sources, model.activeSource) :
         h('p', {}, [
@@ -18,40 +20,57 @@ module.exports = R.curry((action$, model) => {
         ])
     ]),
 
-    h('main', {class: {source: true}}, [
-      h('h1', {}, 'Load New Source'),
-
-      h('div', {}, [
-        h('div', {class: {colgroup: true}}, [
-          h('div', {class: {"upload-type": true}}, [
-            h('h2', {}, 'Upload CSV'),
-            h('label', {}, 'Name'),
-            h('input', {
-              on: {keyup: [action$, Action.SetSourceName, targetValue]},
-              value: model.sourceName
-            }),
-            h('input', {
-              attrs: {type: 'file', id: 'data-file'},
-              on: {change: [action$, Action.LoadLocalFile('data-file')]}
-            }, [])
-          ]),
-
-          h('div', {class: {"upload-type": true}}, [
-            h('h2', {}, 'Load Sample Data'),
-            h('select',
-              { on: {change: R.compose(action$, Action.LoadURI, targetValue)}
-              },
-              R.prepend(emptyOption, R.map(({name, uri}) =>
-                h('option', {attrs: {value: uri}}, name),
-                Samples.catalog
-              ))
-            )
-          ]),
-        ]),
-      ]),
-    ])
+    h('main', {class: {source: true}},
+      model.activeSource ?
+        activeSourceVdom(action$, activeSource) :
+        newSourceVdom(action$)
+    )
   ])
 });
+
+
+function activeSourceVdom(action$, source) {
+  return h('div', {}, [
+    h('h1', {}, source.name),
+    
+  ])
+}
+
+
+function newSourceVdom(action$) {
+  return h('div', {}, [
+    h('h1', {}, 'Load New Source'),
+
+    h('div', {}, [
+      h('div', {class: {colgroup: true}}, [
+        h('div', {class: {"upload-type": true}}, [
+          h('h2', {}, 'Upload CSV'),
+          h('label', {}, 'Name'),
+          h('input', {
+            on: {keyup: [action$, Action.SetSourceName, targetValue]},
+            value: model.sourceName
+          }),
+          h('input', {
+            attrs: {type: 'file', id: 'data-file'},
+            on: {change: [action$, Action.LoadLocalFile('data-file')]}
+          }, [])
+        ]),
+
+        h('div', {class: {"upload-type": true}}, [
+          h('h2', {}, 'Load Sample Data'),
+          h('select',
+            { on: {change: R.compose(action$, Action.LoadURI, targetValue)}
+            },
+            R.prepend(emptyOption, R.map(({name, uri}) =>
+              h('option', {attrs: {value: uri}}, name),
+              Samples.catalog
+            ))
+          )
+        ])
+      ])
+    ])
+  ]);
+}
 
 
 function sourceList(action$, sources, activeSource) {

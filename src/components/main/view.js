@@ -32,7 +32,7 @@ module.exports = R.curry(function(action$, model) {
       tab('Purple')
     ]),
     h('div', {class: {'help-bar': true}}, [
-      h('div', {class: {'help-text': true}}, "Hi, I'm the most helpful message in the whole goddamn world. You're not totally fucking this up, I promise!"),
+      h('div', {class: {'help-text': true}}, "Hi, I'm a help message!"),
     ]),
     pages[model.page](action$, model)
   ]);

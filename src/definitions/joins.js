@@ -26,7 +26,9 @@ const InnerJoin = {
       (acc, l) => {
         const lk = R.nth(inputs.localKey, l);
         const fks = fKeyed[lk];
-        const rows = R.chain(f => R.concat(l, f), fks);
+        const rows = fks ?
+          R.chain(f => R.concat(l, f), fks) :
+          [];
 
         return R.concat(acc, rows);
       },
@@ -39,6 +41,36 @@ const InnerJoin = {
 }
 
 
+const LeftOuterJoin = {
+  name: 'Left Outer Join',
+  collector: JoinCollector,
+  tags: ['join'],
+  fn: ({sources, dataset: local}, inputs) => {
+    const foreignSource = R.find(s => s.id === inputs.foreignSource, sources);
+    const foreign = foreignSource.dataset;
+    const emptyForeign = R.map(R.always(''), R.range(0, foreign.headers));
+    const fKeyed = R.groupBy(R.nth(inputs.foreignKey), foreign.records);
+
+    return R.reduce(
+      (acc, l) => {
+        const lk = R.nth(inputs.localKey, l);
+        const fks = fKeyed[lk];
+        const rows = fks ?
+          R.chain(f => R.concat(l, f), fks) :
+          R.concat(l, emptyForeign);
+
+        return R.concat(acc, rows);
+      },
+      [],
+      local
+    );
+  },
+  display: () => 'Left Outer Join',
+  valid: ({sources}, inputs) => R.none(R.isNil, R.values(inputs))
+}
+
+
 module.exports = {
-  InnerJoin
+  InnerJoin,
+  LeftOuterJoin
 };
