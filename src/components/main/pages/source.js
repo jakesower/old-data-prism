@@ -20,18 +20,16 @@ module.exports = R.curry((action$, model) => {
 
     h('main', {class: {source: true}}, [
       h('h1', {}, 'Load New Source'),
-      h('div', {}, [
-        h('h2', {}, 'Source Name'),
-        h('input', {
-          on: {keyup: [action$, Action.SetSourceName]},
-          value: model.sourceName
-        })
-      ]),
 
       h('div', {}, [
         h('div', {class: {colgroup: true}}, [
           h('div', {class: {"upload-type": true}}, [
             h('h2', {}, 'Upload CSV'),
+            h('label', {}, 'Name'),
+            h('input', {
+              on: {keyup: [action$, Action.SetSourceName, targetValue]},
+              value: model.sourceName
+            }),
             h('input', {
               attrs: {type: 'file', id: 'data-file'},
               on: {change: [action$, Action.LoadLocalFile('data-file')]}
@@ -57,10 +55,11 @@ module.exports = R.curry((action$, model) => {
 
 
 function sourceList(action$, sources, activeSource) {
+  console.log(sources)
   return h('div', {class: {"source-list": true}}, R.map(
     source => h('div', {class: {source: true, active: source.id === activeSource}}, [
-      h('h2', source.name),
-      h('div', {class: "source-stat": true}, `Records: ${source.dataset.length()}`),
+      h('h2', R.isEmpty(source.name) ? '<no name>' : source.name),
+      h('div', {class: {"source-stat": true}}, `Records: ${source.data.records.length}`),
       source.id === activeSource ? '' :
         h('div',
           { class: {"control-button": true},

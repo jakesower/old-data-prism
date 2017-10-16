@@ -1,4 +1,18 @@
 aside.source {
+  .source {
+    margin-top: 1em;
+
+    &::before {
+      content: "\f1c0";
+      font: normal normal normal 14px/1 FontAwesome;
+      display: inline-block;
+      font-size: 200%;
+      min-height: 2em;
+      padding-right: 0.5em;
+      float: left;
+    }
+  }
+
   h2 {
     font-size: 120%;
     text-transform: uppercase;
@@ -19,6 +33,8 @@ main.source {
 
   h1 {
     font-size: 140%;
+    font-weight: bold;
+    margin-bottom: 1em;
   }
 
   h2 {

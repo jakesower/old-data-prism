@@ -15,13 +15,13 @@ const update = Action.caseOn({
   SetData: (newData, model) =>
     R.evolve({
       dataLoading: () => false,
-      sources: R.append({id: model.uid, name: model.sourceName, data: newData, schema: {}}),
+      sources: R.append({id: model.uid, name: "model.sourceName", data: newData, schema: {}}),
       activeSource: () => model.uid,
       sourceName: () => '',
       uid: R.inc
     }, model),
 
-  SetSourceName: R.assoc('sourceName'),
+  SetSourceName: (a, m) => R.set(R.lensPath(['pageData', 'sources', 'sourceName']), a, m),
   SetActiveSource: R.assoc('activeSource'),
   SetPage: R.assoc('page'),
 
@@ -47,7 +47,7 @@ const update = Action.caseOn({
 
 
 const firstInit = {
-  page: 'UploadData',
+  page: 'Source',
 
   pageData: {
     sources: {
