@@ -44,7 +44,7 @@ const LeftOuterJoin = {
 
 
 const RightOuterJoin = {
-  name: 'Left Outer Join',
+  name: 'Right Outer Join',
   collector: JoinCollector,
   tags: ['join'],
   fn: ({sources, dataset: local}, inputs) => {
