@@ -21,7 +21,7 @@ module.exports = slots => {
     SetInput: (key, val, model) => R.assoc(key, val, model)
   });
 
-  const view = (action$, dataset, model) => {
+  const view = (action$, {dataset}, model) => {
     const slotStream = slot => forwardTo(action$, Action.SetInput(slot.id));
 
     return h('div', {},

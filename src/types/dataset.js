@@ -9,6 +9,7 @@ const mapWithIndex = R.addIndex(R.map);
 const Dataset = daggy.tagged('Dataset', ['columns']);
 
 Dataset.fromCSV = function (csv) {
+  // console.log(csv)
   const {headers, records} = csv;
   const pairs = R.zip(headers, R.transpose(records));
 
@@ -49,12 +50,12 @@ Dataset.prototype.length = function () {
   return this.columns[0].length;
 }
 
-// Dataset ~> List Operation -> Dataset
+// Dataset ~> List Operation -> List Source -> Dataset
 // Applies a list of operations, so long as they are all valid. If an invalid
 // operation is encountered, it returns the last result.
-Dataset.prototype.applyValidOperations = function (operations) {
+Dataset.prototype.applyValidOperations = function (operations, sources) {
   return R.reduce(
-    (acc, op) => op.valid(acc) ? op.apply(acc) : R.reduced(acc),
+    (acc, op) => op.valid(acc, sources) ? op.apply(acc, sources) : R.reduced(acc),
     this,
     operations
   );

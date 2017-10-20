@@ -34,7 +34,7 @@ const view = (dataset, action$, model) => {
   const {headers} = dataset;
   const {sorting} = model;
 
-  const sortCol = dataset.columns[sorting.col];
+  const sortCol = dataset.columns[sorting.col] || dataset.columns[0];
   const numericSort = sortCol.hasType(DataType.Number);
   const caster = numericSort ? v => DataType.Number.cast(v) : R.identity;
   const sorter = sorting.dir === 'asc' ? R.ascend : R.descend;

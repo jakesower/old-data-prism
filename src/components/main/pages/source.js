@@ -12,7 +12,12 @@ module.exports = R.curry((action$, model) => {
 
   return h('div', {class: {"main-container": true}}, [
     h('aside', {class: {source: true}}, [
-      h('h2', {}, "+ Add Source"),
+      h('div',
+        { class: {"new-source": true, active: R.isNil(model.activeSource)},
+          on: {click: [action$, Action.SetActiveSource(null)]}
+        },
+        "New Source"
+      ),
       R.length(model.sources) > 0 ?
         sourceList(action$, model.sources, model.activeSource) :
         h('p', {}, [
@@ -23,7 +28,7 @@ module.exports = R.curry((action$, model) => {
     h('main', {class: {source: true}},
       model.activeSource ?
         activeSourceVdom(action$, activeSource) :
-        newSourceVdom(action$)
+        newSourceVdom(action$, model)
     )
   ])
 });
@@ -32,12 +37,12 @@ module.exports = R.curry((action$, model) => {
 function activeSourceVdom(action$, source) {
   return h('div', {}, [
     h('h1', {}, source.name),
-    
+
   ])
 }
 
 
-function newSourceVdom(action$) {
+function newSourceVdom(action$, model) {
   return h('div', {}, [
     h('h1', {}, 'Load New Source'),
 
@@ -45,11 +50,6 @@ function newSourceVdom(action$) {
       h('div', {class: {colgroup: true}}, [
         h('div', {class: {"upload-type": true}}, [
           h('h2', {}, 'Upload CSV'),
-          h('label', {}, 'Name'),
-          h('input', {
-            on: {keyup: [action$, Action.SetSourceName, targetValue]},
-            value: model.sourceName
-          }),
           h('input', {
             attrs: {type: 'file', id: 'data-file'},
             on: {change: [action$, Action.LoadLocalFile('data-file')]}
@@ -74,16 +74,13 @@ function newSourceVdom(action$) {
 
 
 function sourceList(action$, sources, activeSource) {
-  console.log(sources)
   return h('div', {class: {"source-list": true}}, R.map(
-    source => h('div', {class: {source: true, active: source.id === activeSource}}, [
+    source => h('div',
+      { class: {source: true, active: source.id === activeSource},
+        on: {click: [action$, Action.SetActiveSource(source.id)]}
+      }, [
       h('h2', R.isEmpty(source.name) ? '<no name>' : source.name),
-      h('div', {class: {"source-stat": true}}, `Records: ${source.data.records.length}`),
-      source.id === activeSource ? '' :
-        h('div',
-          { class: {"control-button": true},
-            on: {click: [action$, Action.SetActiveSource(source.id)]}
-          }, 'Activate')
+      h('div', {class: {"source-stat": true}}, `Records: ${source.data.records.length}`)
     ]),
     sources
   ));

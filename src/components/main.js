@@ -12,16 +12,14 @@ const view = require('./main/view');
 const Action = require('./main/action');
 
 const update = Action.caseOn({
-  SetData: (newData, model) =>
+  CreateSource: (name, data, model) =>
     R.evolve({
       dataLoading: () => false,
-      sources: R.append({id: model.uid, name: "model.sourceName", data: newData, schema: {}}),
+      sources: R.append({id: model.uid, name, data, schema: {}}),
       activeSource: () => model.uid,
-      sourceName: () => '',
       uid: R.inc
     }, model),
 
-  SetSourceName: (a, m) => R.set(R.lensPath(['pageData', 'sources', 'sourceName']), a, m),
   SetActiveSource: R.assoc('activeSource'),
   SetPage: R.assoc('page'),
 
@@ -29,7 +27,7 @@ const update = Action.caseOn({
   ToggleWalkthrough: model => R.assoc('walkthrough', !model.walkthrough, model),
 
   SetCollectorList: (act, mod) => R.over(
-    R.lensPath(['pageData', 'remix', 'collectorList']),
+    R.lensPath(['collectorList']),
     CollectorListComponent.update(act),
     mod
   ),

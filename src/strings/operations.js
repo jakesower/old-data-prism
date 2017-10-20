@@ -18,5 +18,5 @@ LeftOuterJoin: ``
 }
 
 module.exports = {
-  groupingHelp: markdown(groupingHelp)
+  groupingHelp: markdown(helpText.Grouping)
 }

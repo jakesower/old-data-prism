@@ -11,13 +11,15 @@ const Action = require('../components/main/action');
 function readCsv(action$, fileDomId) {
   var input = document.getElementById(fileDomId);
   var file = input.files[0];
+  var fileName = file.name.replace(/\.csv$/, '').replace(/_/g, ' ');
 
   var r = new FileReader();
   // r.onerror = function(e){error(e.target.error.name);};
   r.onload = function(e) {
+    console.log(fileName);
     const result = e.target.result;
     const handleData = (err, data) => {
-      action$(Action.SetData({
+      action$(Action.CreateSource(fileName, {
         headers: data[0],
         records: R.slice(1, Infinity, data)
       }));

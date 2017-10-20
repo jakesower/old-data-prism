@@ -11,14 +11,14 @@ Operation.fromCollector = (key, inputs) => {
   return Operation(def, inputs);
 }
 
-// Operation ~> Dataset -> Boolean
-Operation.prototype.valid = function (dataset) {
-  return this.definition.valid(dataset, this.inputs);
+// Operation ~> Dataset -> List Source -> Boolean
+Operation.prototype.valid = function (dataset, sources) {
+  return this.definition.valid({dataset, sources}, this.inputs);
 }
 
-// Operation ~> Dataset -> Dataset
-Operation.prototype.apply = function (dataset) {
-  return this.definition.fn(dataset, this.inputs);
+// Operation ~> Dataset -> List Source -> Dataset
+Operation.prototype.apply = function (dataset, sources) {
+  return this.definition.fn({dataset, sources}, this.inputs);
 }
 
 

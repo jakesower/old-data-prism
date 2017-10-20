@@ -34,6 +34,17 @@ module.exports = R.curry(function(action$, model) {
     h('div', {class: {'help-bar': true}}, [
       h('div', {class: {'help-text': true}}, "Hi, I'm a help message!"),
     ]),
-    pages[model.page](action$, model)
+
+    model.page === 'Source' || !R.isNil(model.activeSource) ?
+      pages[model.page](action$, model) :
+      h('div', {class: {"main-container": true}}, [
+        h('aside', {}, [
+          h('p', {}, "Placeholder")
+        ]),
+
+        h('main', {}, [
+          h('div', {}, 'Hi'),
+        ])
+      ])
   ]);
 });

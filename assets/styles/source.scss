@@ -1,6 +1,15 @@
 aside.source {
+  .new-source {
+    width: 100%;
+    cursor: pointer;
+    padding: 1em 0;
+    text-transform: uppercase;
+  }
+
   .source {
-    margin-top: 1em;
+    padding: 1em 0;
+    cursor: pointer;
+    clear: both;
 
     &::before {
       content: "\f1c0";
@@ -10,6 +19,24 @@ aside.source {
       min-height: 2em;
       padding-right: 0.5em;
       float: left;
+    }
+  }
+
+  .active {
+    // background: linear-gradient(90deg, #f66, white);
+    background-color: white;
+    margin-left: -1em;
+    padding-left: 1em;
+    position: relative;
+
+    &::after {
+      content: ' ';
+      width: 1em;
+      background-color: white;
+      position: absolute;
+      right: -1em;
+      top: 0;
+      bottom: 0;
     }
   }
 

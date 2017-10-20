@@ -10,13 +10,12 @@ module.exports = Type({
   // Source
   LoadLocalFile: [() => true],
   LoadURI: [String],
-  SetSourceName: [String],
-  SetData: [Object],
-  SetActiveSource: [Number],
+  CreateSource: [String, Object],
+  SetActiveSource: [() => true],
 
   // Remix
   SetCollectorList: [Object],
-  SetGridState: [String, Object],
+  SetGridState: [Object],
 
   // Chart
   SetChart: [Object],
