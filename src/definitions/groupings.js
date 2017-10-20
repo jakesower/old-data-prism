@@ -47,8 +47,17 @@ const Grouping = {
   collector: GroupCollector,
 }
 
-const BucketGrouper = {
 
+const BucketGrouper = {
+  /*
+    Things to consider:
+
+    1. Can the type be restricted?
+    2. Is there a case that a "default" won't be needed?
+    3. Will there be space to allow math.eval() clauses?
+    4. Separately, is there a more specific case for heterogenous comparators?
+    5. Can a fn be derived from above scenarios automatically?
+  */
 }
 
 

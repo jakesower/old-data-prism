@@ -37,8 +37,25 @@ const makeDeriver = def => {
 }
 
 
+const AbsoluteValue = makeDeriver({
+  name: "Absolute Value",
+  tags: ["math"],
+  slots: [
+    DataSlot.Column('num', 'Column', DataType.FiniteNumber)
+  ],
+  fn: ({num}) => Math.abs(num),
+  display: ({dataset}, inputs) =>
+    h('div', {}, [
+      'Absolute Value of ',
+      col(dataset, inputs.num)
+    ])
+});
+
+
+
 const Ceiling = makeDeriver({
   name: "Ceiling",
+  tags: ["math"],
   slots: [
     DataSlot.Column('num', 'Column', DataType.FiniteNumber),
     Slot.Free('precision', 'Precision', DataType.Integer)
@@ -55,8 +72,25 @@ const Ceiling = makeDeriver({
 });
 
 
+const Exponent = makeDeriver({
+  name: "Exponent",
+  tags: ["math"],
+  slots: [
+    DataSlot.Column('base', 'Base', DataType.FiniteNumber),
+    Slot.Free('exponent', 'Exponent', DataType.FiniteNumber)
+  ],
+  fn: ({base, exponent}) => Math.pow(base, exponent),
+  display: ({dataset}, inputs) =>
+    h('div', {}, [
+      col(dataset, inputs.base),
+      h('sup', {}, inputs.exponent)
+    ])
+});
+
+
 const Difference = makeDeriver({
   name: "Difference",
+  tags: ["math"],
   slots: [
     DataSlot.Column('minuend', 'Minuend', DataType.FiniteNumber),
     DataSlot.Column('subtrahend', 'Subtrahend', DataType.FiniteNumber)
@@ -73,6 +107,7 @@ const Difference = makeDeriver({
 
 const Floor = makeDeriver({
   name: "Floor",
+  tags: ["math"],
   display: () => "Floor",
   slots: [
     DataSlot.Column('num', 'Column', DataType.FiniteNumber),
@@ -87,6 +122,7 @@ const Floor = makeDeriver({
 
 const FormattedDate = makeDeriver({
   name: "Formatted Date",
+  tags: ["time"],
   slots: [
     DataSlot.Column('date', 'Date', DataType.Date),
     Slot.Free('format', 'Format', DataType.NonEmptyString)
@@ -98,6 +134,7 @@ const FormattedDate = makeDeriver({
 
 const Logarithm = makeDeriver({
   name: "Logarithm",
+  tags: ["math"],
   slots: [
     DataSlot.Column('num', 'Column', DataType.PositiveFiniteNumber),
     Slot.Free('base', 'Base', DataType.PositiveFiniteNumber)
@@ -113,6 +150,7 @@ const Logarithm = makeDeriver({
 
 const Quantile = makeDeriver({
   name: "Quantile",
+  tags: ["math", "bucketers"],
 
   slots: [
     DataSlot.Column('n', 'n', DataType.FiniteNumber),
@@ -161,6 +199,7 @@ const Quantile = makeDeriver({
 
 const Round = makeDeriver({
   name: "Round",
+  tags: ["math"],
   slots: [
     DataSlot.Column('num', 'Column', DataType.FiniteNumber),
     Slot.Free('precision', 'Precision', DataType.Integer)
@@ -179,6 +218,7 @@ const Round = makeDeriver({
 
 const Sum = makeDeriver({
   name: "Summation",
+  tags: ["math"],
   slots: [
     DataSlot.Multicolumn('addends', 'Addends', DataType.FiniteNumber)
   ],
@@ -194,8 +234,10 @@ const Sum = makeDeriver({
 
 
 module.exports = {
+  AbsoluteValue,
   Ceiling,
   Difference,
+  Exponent,
   Floor,
   FormattedDate,
   Logarithm,

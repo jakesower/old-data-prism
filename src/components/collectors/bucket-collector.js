@@ -7,41 +7,60 @@ const slotDom = require('../helpers/slot-dom');
 
 
 const Action = Type({
-  SetPoint: [Number, String]
+  SetComparator: [String],
+  SetPoint: [Number, String],
+  SetDefault: [String]
 });
 
 
 const init = () => ({
-  points: []
+  points: [],
+  comparator: '<',
+  default: ''
 });
 
 
 const update = Action.caseOn({
-  SetPoint: (key, val, model) => R.assoc(key, val, model)
+  SetComparator: R.assoc('comparator'),
+  SetPoint: (key, val, model) => R.assoc(key, val, model),
+  SetDefault: R.assoc('default')
 });
 
 
 const view = (action$, dataset, model) => {
   const {points} = model;
   const point$ = i => forwardTo(action$, Action.SetPoint(i));
+  const default$ = forwardTo(action$, Action.SetDefault);
+  const comparator$ = forwardTo(action$, Action.SetComparator);
 
-  const existing = R.addIndex(R.map)(
-    (point, idx) => h('tr', {}, [
-      h('td', {}, idx === 0 ? "less than" : points[idx-1]),
-      h('td', {}, 'to'),
-      h('td', {}, slotDom(point$(idx), Slot.Anonymous(DataType.Number), point))
-    ]),
-    points
+  const comparatorSlot = Slot.Pool('comparator', 'Comparator', DataType.String,
+    R.map(o => {display: o, value: o}, ['<', '≤', '>', '≥'])
   );
 
-  const n = R.length(points);
-  const newPoint = h('tr', {}, [
-    h('td', {}, n === 0 ? "" : points[n-1]),
-    h('td', {}, n === 0 ? "" : "to"),
-    h('td', {}, slotDom(point$(n), Slot.Anonymous(DataType.Number), ""))
-  ]);
+  return h('table', {}, R.reduce(R.concat, [],
+    h('tr', {}, [
+      h('td', {}, 'Comparator'),
+      h('td', {}, slotDom(comparator$, comparatorSlot))
+    ]),
 
-  return h('table', {}, R.append(newPoint, existing));
+    R.addIndex(R.map)(
+      (point, idx) => h('tr', {}, [
+        h('td', {}, idx === 0 ? model.comparator : points[idx-1]),
+        h('td', {}, slotDom(point$(idx), Slot.Anonymous(DataType.Number), point))
+      ]),
+      points
+    ),
+
+    h('tr', {}, [
+      h('td', {}, model.comparator),
+      h('td', {}, slotDom(point$(n), Slot.Anonymous(DataType.Number), ""))
+    ]),
+
+    h('tr', {}, [
+      h('td', {}, ''),
+      h('td', {}, slotDom(default$, Slot.Anonymous(DataType.Number), ""))
+    ])
+  ));
 }
 
 
