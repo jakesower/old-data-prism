@@ -12,7 +12,8 @@ const GridComponent = require('../../grid');
 module.exports = R.curry((action$, model) => {
   const {grid} = model.pageData.remix;
   const {collectorList, sources} = model;
-  const source = Source.load(R.find(s => R.equals(model.activeSource, s.id), sources));
+  const rawSource = R.find(s => R.equals(collectorList.source, s.id), sources);
+  const source = rawSource ? Source.load(rawSource) : Source.empty;
   const dataset = source.dataset;
 
   const collector$ = forwardTo(action$, Action.SetCollectorList);
@@ -23,8 +24,6 @@ module.exports = R.curry((action$, model) => {
   }
 
   const operations = R.map(c => Operation.fromCollector(c.key, c.inputs), collectorList.collectors);
-  // console.log(dataset)
-  // console.log(dataset.applyValidOperations(operations))
 
   return h('div', {class: {"main-container": true}}, R.flatten([
     h('aside', {},

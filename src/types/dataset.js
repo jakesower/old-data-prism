@@ -8,6 +8,8 @@ const mapWithIndex = R.addIndex(R.map);
 
 const Dataset = daggy.tagged('Dataset', ['columns']);
 
+Dataset.empty = Dataset([]);
+
 Dataset.fromCSV = function (csv) {
   // console.log(csv)
   const {headers, records} = csv;
@@ -48,6 +50,10 @@ Dataset.prototype.applyOperation = function (operation) {
 
 Dataset.prototype.length = function () {
   return this.columns[0].length;
+}
+
+Dataset.prototype.empty = function () {
+  return this.columns.length === 0;
 }
 
 // Dataset ~> List Operation -> List Source -> Dataset

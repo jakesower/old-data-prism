@@ -171,6 +171,25 @@ div.main-container {
       flex: 1 1 auto;
       overflow: auto;
     }
+    //
+    // .source {
+    //   &::before {
+    //     content: "\f1c0";
+    //     font: normal normal normal 14px/1 FontAwesome;
+    //     display: inline-block;
+    //     font-size: 150%;
+    //     padding-right: 0.5em;
+    //     float: left;
+    //   }
+    //
+    //   select {
+    //     width: calc(100% - 3em);
+    //   }
+    // }
+    h2 {
+      font-size: 120%;
+      text-transform: uppercase;
+    }
 
     .slot {
       // border-top: 2px dashed black;
@@ -213,11 +232,6 @@ div.main-container {
     }
 
     .form {
-      h2 {
-        font-size: 120%;
-        text-transform: uppercase;
-      }
-
       h3 {
         padding: 0;
         text-transform: uppercase;
@@ -523,6 +537,8 @@ nav {
 .remix-controls {
   flex: 0 1 2em;
   border-bottom: 3px solid black;
+  border-top: 3px solid black;
+
 
   .operations-menu {
     &.active {

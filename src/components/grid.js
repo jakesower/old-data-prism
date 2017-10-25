@@ -31,6 +31,8 @@ const update = Action.caseOn({
 
 // TODO: sort by type (numbers and not just strings)
 const view = (dataset, action$, model) => {
+  if (dataset.empty()) return null;
+
   const {headers} = dataset;
   const {sorting} = model;
 

@@ -20,6 +20,7 @@ const Action = Type({
   SetCollector: [Number, Object], // id, operation
   DeleteCollector: [Number], // id
   SetActive: [R.T], // id
+  SetSource: [R.T],
   SetMenuOpen: [Boolean]
 });
 
@@ -28,6 +29,7 @@ const init = () => ({
   uid: 1,
   collectors: [],
   active: null,
+  source: null,
   menuOpen: false,
   search: ""
 });
@@ -64,6 +66,7 @@ const update = Action.caseOn({
     R.filter(c => c.id !== id),
     mod
   ),
+  SetSource: R.assoc('source'),
   SetActive: R.assoc('active'),
   SetMenuOpen: R.assoc('menuOpen')
 });
@@ -77,7 +80,7 @@ const renderActiveCollector = (action$, modelVars, {inputs, key, id}) => {
     h('div', {class: {"collector-form": true, form: true}}, [
       h('div', {class: {"collector-header": true}}, [
         h('span', {class: {remove: true}, on: {click: [action$, Action.DeleteCollector(id)]}}),
-        h('h2', {}, `Edit ${operationPool[key].name}`),
+        h('h2', {}, operationPool[key].name),
       ]),
 
       collector.view(collector$, modelVars, inputs),
@@ -122,7 +125,15 @@ const renderCollectors = R.curry((action$, modelVars, model) => {
 
 // modelVars contains a list of all sources and the active modelVars
 const view = R.curry((action$, modelVars, model) => {
+  const sourceOpts = R.map(s => ({display: s.name, value: s.id}), modelVars.sources);
+
   return R.flatten([
+    h('div', {class: {slot: true}}, [
+      h('h2', {}, 'Source'),
+      // Dogshit strings everywhere @_@
+      select(model.source, sourceOpts, forwardTo(action$, R.compose(Action.SetSource, parseInt)))
+    ]),
+
     h('div', {class: {"remix-controls": true}, key: 'remix-controls'}, [
       renderMenu(action$, modelVars, model)
     ]),

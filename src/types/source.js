@@ -5,6 +5,8 @@ const Dataset = require('./dataset');
 const Source = daggy.tagged('Source', ['name', 'dataset', 'schema']);
 
 
+Source.empty = Source('', Dataset.empty, {});
+
 Source.load = function ({id, name, data, schema}) {
   return Source(name, Dataset.fromCSV(data), schema);
 }
