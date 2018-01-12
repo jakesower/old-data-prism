@@ -1,6 +1,7 @@
 import * as R from 'ramda';
-import { runNow, time, fromPromise, snapshot, sample, Now, perform } from '@funkia/hareactive';
+import { loop } from 'most';
 import * as snabbdom from 'snabbdom';
+import Counter from './components/counter';
 
 import snabClass = require('snabbdom/modules/class');
 import snabELs = require('snabbdom/modules/eventlisteners');
@@ -16,11 +17,14 @@ const patch = snabbdom.init([
   snabProps.default,
 ]);
 
-const root = document.body;
+const root = document.querySelector('#app');
 
-const three = Promise.resolve(3);
-const f = fromPromise(three);
-perform(console.log('hi'))
+function pairwise(prev: any, current: any): any {
+  return { seed: current, value: [prev, current] };
+}
 
-// runNow()
-patch(root, h('div', 'oh hai'));
+const view$ = Counter;
+
+view$
+  .loop(pairwise, (document.querySelector('#main') as Element))
+  .observe(([a, b]) => patch(a, b));
