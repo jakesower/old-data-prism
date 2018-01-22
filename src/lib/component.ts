@@ -17,12 +17,12 @@ interface View {
   (state: {}, actions: ActionMap): VNode
 }
 
-interface IComponent {
+interface Component<A> {
   (init: Initializer): Stream<VNode>
 }
 
-const Component = ((init: Initializer, view: View, actionStreams: StreamMap): Stream<VNode> => {
+const makeComponent = ((init: Initializer, view: View, actionStreams: StreamMap): Stream<VNode> => {
   return just(view(init, {}));
 });
 
-export { Component, View };
+export { Component, makeComponent, View };
