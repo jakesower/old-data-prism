@@ -27,11 +27,9 @@ export interface DataTable {
 
 export type Action<A> = (...args: any[]) => (model: A) => A;
 
-export interface Component<A, B> {
-  init: (...args: any[]) => A,
-  action: B,
-  view: (action$: Stream<Action<B>>, dataTable: DataTable, model: A) => VNode,
-  update: (action: B, model: A) => A
+export interface Component<A> {
+  output: A,
+  view: Stream<VNode>,
 }
 
 export interface OperationDefinition<A> {

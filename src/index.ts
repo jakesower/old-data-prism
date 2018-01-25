@@ -14,17 +14,6 @@ const patch = snabbdom.init([
   snabProps.default,
 ]);
 
-interface Model {
-  page: string,
-  sources: Source[],
-  activeSource: Source,
-  dataLoading: boolean,
-  help: boolean,
-  walkthrough: boolean,
-  uid: number,
-  mainDimensions: { width: number, height: number },
-}
-
 const root = document.querySelector('#app');
 
 function pairwise(prev: any, current: any): any {
