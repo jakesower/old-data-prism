@@ -1,9 +1,10 @@
 import { evolve, assoc, over, lensPath, lensProp, append, inc } from 'ramda';
-import { Component, DataTable, Source, Action } from '../types';
-import GridComponent from './grid';
-import CollectorListComponent from './collector-list';
-import ChartComponent from './chart';
-import view from './main/view';
+import { DataTable, Source, Action } from '../types';
+import { Component, makeComponent, extractView } from '../lib/component';
+// import GridComponent from './grid';
+// import CollectorListComponent from './collector-list';
+// import ChartComponent from './chart';
+// import view from './main/view';
 import { SetPage, SetMainDimensions, ToggleHelp, ToggleWalkthrough, CreateSource } from './main/action';
 import { Stream } from 'most';
 import { VNode } from 'snabbdom/vnode';
@@ -26,7 +27,7 @@ interface StreamMap {
   loadURI$: Stream<string>,
 }
 
-type View = (streams: StreamMap, state: Model) => VNode;
+type View = (state: Model) => Component<any>;
 
 
 const firstInit = {
@@ -36,15 +37,15 @@ const firstInit = {
     sources: {
       sourceName: "",
     },
-    remix: {
-      grid: GridComponent.init(),
-    },
-    chart: ChartComponent.init(),
+    // remix: {
+    //   grid: GridComponent.init(),
+    // },
+    // chart: ChartComponent.init(),
     annotate: {}
   },
 
   sources: [],
-  collectorList: CollectorListComponent.init(),
+  // collectorList: CollectorListComponent.init(),
   activeSource: null,
 
   dataLoading: false,
@@ -57,8 +58,6 @@ const firstInit = {
 
 const init = (state: any): Model => state || firstInit;
 
-const view = ((handlers: StreamMap, state: Model): VNode => {
-  return h('div', 'hi');
-});
-
-export makeComponent(actions, model, view);
+const c1 = makeComponent(h('div', 'oh howdy3'), {});
+const c2 = makeComponent(h('b', 'YO!'), {});
+export const view = c1.chain(x => c2);

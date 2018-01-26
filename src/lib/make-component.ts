@@ -1,20 +1,20 @@
-import { concat } from 'ramda';
+import { concat, keys, map, mergeAll, pipe } from 'ramda';
 import { VNode } from "snabbdom/vnode";
-import { Stream, empty } from "most";
+import { Stream, empty, fromEvent } from "most";
 
 export interface Component<A> {
   output: A,
-  view: Stream<VNode>[],
+  view: VNode[],
 }
 
-function of<A> (x: A): Component<A> {
+export function of<A> (x: A): Component<A> {
   return {
     view: [],
     output: x,
   };
 }
 
-function chain<A, B>(comp: Component<A>, fn: (x: A) => Component<B>): Component<B> {
+export function chain<A, B>(comp: Component<A>, fn: (x: A) => Component<B>): Component<B> {
   // ignore the error about output for now
   const newOutput = fn(comp.output);
 
@@ -24,42 +24,6 @@ function chain<A, B>(comp: Component<A>, fn: (x: A) => Component<B>): Component<
   };
 }
 
-function view(comp: Component<any>): VNode {
-  // TODO: for lists, wrap them invisibly into one VNode; this `div` thing is BS
-  return div(comp.view);
-}
-
-/**
- * Sample pool slot collector:
- *
- * Inputs: Slot pool
- * Outputs: A value from the pool or undefined (view implicit)
- *
- *
- * Operation List:
- *
- * Inputs: A DataTable
- * Outputs: A list of operations (view implicit)
-*/
-type Handler = (ev: Event) => Stream<any>;
-
-interface HandlerMap {
-  [prop: string]: Handler
-}
-
-interface StreamMap {
-  [prop: string]: Stream<any>
-}
-
-type Model = ((ss: StreamMap, ...args: any[] ) => Component<any>);
-type View = ((handlers: HandlerMap, state: any, ...args: any[] ) => VNode);
-
-function makeComponent(model: Model, view: View) {
-  // const fakeStreamMap: StreamMap = new Proxy({}, { get: empty });
-
-  // return (function () {
-  //   const modelStreams = model(fakeStreamMap).output;
-
-  //   const model_ = model(viewStreams);
-  // }());
+export function makeComponent<A> (view: VNode[], output: A): Component<A> {
+  return { view, output };
 }

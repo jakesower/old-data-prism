@@ -5,9 +5,9 @@ import { is, map } from 'ramda';
 import { VNodeData, VNode, vnode } from 'snabbdom/vnode';
 import { h, VNodesSparse } from 'snabbdom/h';
 import { fromEvent } from 'most';
-import { Component } from '../types';
+import { Component } from './component';
 
-export type ElementNodesSparse<A, B> = VNode | Component | Array<VNode | Component | undefined | null>;
+export type ElementNodesSparse = VNode | Component<any> | Array<VNode | Component<any> | undefined | null>;
 
 interface hCall {
   (): VNode

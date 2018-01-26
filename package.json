@@ -6,12 +6,7 @@
   "author": "Jake Sower",
   "license": "CC-BY-NC-4.0",
   "scripts": {
-    "build": "browserify ./src/index.js -o dist/data-prism.js -t brfs -v",
-    "build-sass": "mkdirp dist/styles && node-sass -r assets/styles/main.scss --output-style=compressed -o dist/styles",
-    "watch-sass": "mkdirp dist/styles && node-sass -wr assets/styles/main.scss --output-style=compressed -o dist/styles",
-    "watch": "mkdirp dist && watchify ./src/index.js -o dist/data-prism.js -t brfs -v",
-    "test": "find ./test -name '*.spec.js' | CHECK_TYPES=true xargs mocha -R spec --reporter nyan",
-    "test-check": "find ./test -name '*.spec.js' | CHECK_TYPES=true TESTCHECK=true xargs mocha -t 50000 -R spec --reporter nyan"
+    "watch": "webpack --watch"
   },
   "devDependencies": {
     "@types/ramda": "^0.25.16"
