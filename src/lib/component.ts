@@ -4,6 +4,7 @@ import { Stream, empty, fromEvent, of as streamOf } from "most";
 import { h, VNodesSparse } from 'snabbdom/h';
 
 export interface Component<A> {
+  readonly isComponent: true,
   readonly output: A,
   readonly view: VNodesSparse,
   readonly view$: () => Stream<VNodesSparse>,
@@ -15,6 +16,7 @@ function ComponentObj<A> (view: VNodesSparse, output: A): void {
   this.output = output;
 }
 
+ComponentObj.prototype.isComponent = true;
 ComponentObj.prototype.extractView = function() { return this.view };
 ComponentObj.prototype.view$ = function() { return streamOf(this.view); }
 ComponentObj.prototype.chain = function(fn) { return chain(this, fn); }

@@ -1,6 +1,6 @@
 import { evolve, assoc, over, lensPath, lensProp, append, inc } from 'ramda';
 import { DataTable, Source, Action } from '../types';
-import { Component, makeComponent, extractView } from '../lib/component';
+import { Component, makeComponent } from '../lib/component';
 // import GridComponent from './grid';
 // import CollectorListComponent from './collector-list';
 // import ChartComponent from './chart';
@@ -9,6 +9,7 @@ import { SetPage, SetMainDimensions, ToggleHelp, ToggleWalkthrough, CreateSource
 import { Stream } from 'most';
 import { VNode } from 'snabbdom/vnode';
 import { h } from 'snabbdom/h';
+import { div } from '../lib/element';
 
 interface Model {
   page: string,
@@ -58,6 +59,9 @@ const firstInit = {
 
 const init = (state: any): Model => state || firstInit;
 
-const c1 = makeComponent(h('div', 'oh howdy3'), {});
-const c2 = makeComponent(h('b', 'YO!'), {});
-export const view = c1.chain(x => c2);
+// const c1 = makeComponent(h('input'), {output: {click: 'clickstream'}});
+// const c2 = makeComponent(h('b', 'YO!'), {that: 'ui'});
+// export const view = c1.chain(c1State => makeComponent(h('b', 'YOzzz'), Object.assign(c1State, {oh: 'hai'})));
+// export const view = div({output: 'hai'}, 'there');
+
+export const view = makeComponent(h('input'), { output: { change: 'something' }});

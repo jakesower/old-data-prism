@@ -15,6 +15,7 @@ const patch = snabbdom.init([
 ]);
 
 const root = document.querySelector('#app');
+console.log(view);
 
 const view$ = view.view$().map(a => Array.isArray(a) ? h('div', a) : a);
 console.log(view$)

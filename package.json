@@ -9,9 +9,13 @@
     "watch": "webpack --watch"
   },
   "devDependencies": {
-    "@types/ramda": "^0.25.16"
+    "@types/ramda": "^0.25.16",
+    "ts-loader": "^3.3.1",
+    "typescript": "^2.6.2",
+    "webpack": "^3.10.0"
   },
   "dependencies": {
+    "@most/create": "^2.0.1",
     "csv-parse": "^1.2.0",
     "csv-stringify": "^1.0.4",
     "most": "^1.7.2",
