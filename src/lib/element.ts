@@ -1,10 +1,10 @@
 // Acts much like a VNode, except it can figure out which children are
 // components and turn them into VNodes.
 
-import { is, map } from 'ramda';
+import { is, map, merge } from 'ramda';
 import { VNodeData, VNode, vnode } from 'snabbdom/vnode';
 import { h, VNodesSparse } from 'snabbdom/h';
-import { create } from '@most/create';
+import { fromEvent } from 'most';
 import { Component, makeComponent } from './component';
 
 export type ElementNodesSparse = VNode | Component<any> | Array<VNode | Component<any> | undefined | null>;
@@ -17,6 +17,7 @@ interface hCall {
   (data: VNodeData, text: string): VNode
   (data: VNodeData, children: ElementNodesSparse): VNode
 }
+
 
 function hh(sel: string) {
   const expand = c => map(c.isComponent ? c.view : c);
@@ -33,18 +34,48 @@ function hh(sel: string) {
   }
 }
 
-function hhh(sel: string, outputs: string[]): Component<any> {
+
+const eventMap = {
+  change: 'keyup',
+};
+
+
+function eventHooks(oldVnode: VNode, vnode: VNode): void {
+  const oldOutput = (oldVnode.data as VNodeData).output;
+  const oldElm: Element = oldVnode.elm as Element;
+  const output = vnode && (vnode.data as VNodeData).output;
+  const elm: Element = (vnode && vnode.elm) as Element;
+
+  if (oldOutput === output) {
+    return;
+  }
+
+  // if (oldOutput && !output) {
+
+  // }
+
+  if (output && !oldOutput) {
+    fromEvent('keyup', elm);
+  }
+}
+
+function hhh(sel: string, outputs?: string[]) {
   // GOAL: return an object of streams that map to dom actions
   // Add the proper hooks on insert, remove them and end streams on destroy
 
-  // 🎁
-  // wut imperative?!
-  // const streams = map(o => ({[o]: }))
-  // const handler =
-  // signature: create((add, end, error) => { ... }) no touchie the function args outside the closure
-  // might need to add a general event listener(s) and dispatch by hand
-  // see: https://github.com/snabbdom/snabbdom/blob/master/src/modules/eventlisteners.ts
-  // see: https://github.com/mostjs/create
+  return <hCall>(b?: any, c?: any) => {
+    if (outputs) {
+      const b_ = is(Object, b) ? merge({output: outputs}, b) : b;
+
+      const vnode = h(sel, b_, c);
+      const output = vnode.data.output || {};
+
+      return makeComponent(vnode, output);
+    } else {
+      return h(sel, b, c);
+    }
+
+  }
 }
 
 export const input = hhh('input', ['change']);
