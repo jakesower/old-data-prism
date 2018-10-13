@@ -1,6 +1,7 @@
 import { aside, div, input, main as main_, p, h1, h2 } from '@cycle/dom';
 import { prepend, targetValue } from '../../lib/utils';
 import { empty, combineArray } from 'most';
+import { numRecords } from '../../lib/data-functions';
 
 export default function main(sources) {
   const actions = intent({ DOM: sources.DOM });
@@ -43,7 +44,7 @@ function view(state) {
     ]),
 
     main_({class: {source: true}},
-      activeSource ?
+      (activeSource !== null) ?
         activeSourceVdom(activeSource) :
         newSourceVdom()
     )
@@ -52,12 +53,13 @@ function view(state) {
 
 
 function sourceList(sources, activeSource) {
+  console.log({ sources })
   return div({class: {"source-list": true}}, sources.map(
-    source => div(
-      { class: {source: true, active: source.id === activeSource}},
+    (source, idx) => div(
+      { class: {source: true, active: idx === activeSource}},
       [
         h2(source.name.length === 0 ? '<no name>' : source.name),
-        div({class: {"source-stat": true}}, `Records: ${source.data.records.length}`)
+        div({class: {"source-stat": true}}, `Records: ${numRecords(source)}`)
       ])
   ));
 }

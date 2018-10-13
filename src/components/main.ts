@@ -10,6 +10,7 @@ interface State {
   page: "sources" | "remix" | "chart" | "annotate" | "export" | "purple",
   help: Boolean,
   sources: Source[],
+  activeSource: number | null,
 }
 
 
@@ -17,6 +18,7 @@ const initState: State = {
   page: "sources",
   help: false,
   sources: [],
+  activeSource: null,
 };
 
 
@@ -36,7 +38,10 @@ function main(cycleSources) {
 
   const stateModifiers$: StateModifier<State>[] = [
     selectedPage$.map(page => prev => ({ ...prev, page })),
-    cycleSources.csvLoader.map(source => prev => ({ ...prev, sources: prev.sources.concat(source)})),
+    cycleSources.csvLoader.map(source => prev => ({ ...prev,
+      sources: prev.sources.concat(source),
+      activeSource: prev.sources.length,
+    })),
   ];
   const state$ = mergeArray(stateModifiers$).scan((state, fn) => fn(state), initState);
 

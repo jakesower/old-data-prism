@@ -1,6 +1,11 @@
 import dataTypes from './data-types';
-import { filterObj } from './utils';
+import { DataType, Source } from '../types';
 
-export function discoverTypes(vals) {
-  return filterObj(dataTypes, type => vals.every(type.test));
+export function discoverTypes(vals: string[]): DataType<any>[] {
+  return Object.values(dataTypes).filter(type => vals.every(type.test));
+}
+
+
+export function numRecords(s: Source): number {
+  return s.data.columns[0].values.length;
 }

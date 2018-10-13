@@ -1,8 +1,8 @@
 import { Stream } from 'most';
 
 export interface Source {
-  id: String,
-  name: String,
+  id: string,
+  name: string,
   data: DataSource,
   schema?: any
 }
@@ -12,14 +12,14 @@ export interface DataSource {
 }
 
 export interface DataColumn {
-  name: String,
-  values: String[],
+  name: string,
+  values: string[],
   types: DataType<any>[]
 }
 
 export interface DataType<T> {
   name: string,
-  test: (s: string) => Boolean,
+  test: (s: string) => boolean,
   cast: (s: string) => T
 }
 

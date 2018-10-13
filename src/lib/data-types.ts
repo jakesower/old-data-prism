@@ -1,4 +1,4 @@
-import moment, { Moment } from "moment";
+import * as moment from "moment";
 import { DataType } from '../types';
 
 const finiteNum = x => !isNaN(parseFloat(x)) && isFinite(x);
@@ -46,7 +46,7 @@ const PositiveInteger: DataType<number> = {
   cast: parseFloat
 }
 
-const _Date: DataType<Moment> = {
+const _Date: DataType<moment.Moment> = {
   name: "Date",
   test: x => !isNaN(Date.parse(x)),
   cast: x => moment(x)
