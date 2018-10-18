@@ -1,20 +1,49 @@
-import { aside, div, input, main as main_, p, h1, h2 } from '@cycle/dom';
-import { prepend, targetValue } from '../../lib/utils';
-import { empty, combineArray } from 'most';
-import { numRecords } from '../../lib/data-functions';
+import { aside, div, input, main as main_, p, h1, h2, DOMSource } from '@cycle/dom';
+import { combineArray, Stream, mergeArray, combine } from 'most';
+import { Source, StateModifier } from '../../types';
+import Grid from './grid';
+import { scopedEvent } from '../../lib/dom-utils';
+import { merge, eq } from '../../lib/utils';
 
-export default function main(sources) {
-  const actions = intent({ DOM: sources.DOM });
-  actions.addSource$.observe(() => {})
+interface LocalState {
+  activeSource: number | null,
+}
 
-  const state$ = combineArray(
-    (props) => props,
-    [sources.props]
-  );
+interface Props {
+  sources: Source[]
+}
+
+interface State extends LocalState, Props {};
+
+const initState: LocalState = { activeSource: null };
+
+export default function main(cycleSources: { DOM: DOMSource, props: Stream<Props> }) {
+  const { props: props$, DOM } = cycleSources;
+  const { addSource$, newSource$, changeSource$ } = intent({ DOM });
+
+  const stateModifiers$: StateModifier<LocalState> = mergeArray([
+    newSource$.constant(state => ({ ...state, activeSource: null })),
+    changeSource$.map((id: number) => state => ({ ...state, activeSource: id })),
+    props$.map(ps => ps.sources.length)
+      .skipRepeats()
+      .filter(l => l > 0)
+      .map(l => state => ({ ...state, activeSource: l-1 })),
+    props$.map(ps => ps.sources.length)
+      .skipRepeats()
+      .filter(l => l === 0)
+      .map(l => state => ({ ...state, activeSource: null }))
+  ]);
+
+  const localState$: Stream<LocalState> = stateModifiers$.scan((state, mod) => mod(state), initState);
+  const state$ = combine<Props, LocalState, State>(merge, props$, localState$).skipRepeatsWith(eq);
+
+  const sourceOrNull = s => ({ source: (s.activeSource === null) ? null : s.sources[s.activeSource] });
+  const grid = Grid({ DOM: DOM, props: state$.map(sourceOrNull) });
+  const gridDom$ = grid.DOM;
 
   return {
-    DOM: state$.map(view),
-    csvLoader: actions.addSource$.map(e => ({ source: 'upload-csv', element: e })),
+    DOM: combineArray(view, [state$, gridDom$]),
+    csvLoader: addSource$.map(e => ({ source: 'upload-csv', element: e })),
   }
 }
 
@@ -23,11 +52,14 @@ function intent({ DOM }) {
   return {
     addSource$: DOM.select('#data-file').events('change')
       .map(ev => ev.target),
+    newSource$: DOM.select('.new-source').events('click'),
+    changeSource$: scopedEvent(DOM.select('.source-list .source'), 'click')
+      .map(t => parseFloat(t.dataset.sourceId)),
   }
 }
 
 
-function view(state) {
+function view(state: State, gridDom) {
   const { activeSource, sources } = state;
 
   return div({class: {"main-container": true}}, [
@@ -45,7 +77,7 @@ function view(state) {
 
     main_({class: {source: true}},
       (activeSource !== null) ?
-        activeSourceVdom(activeSource) :
+        activeSourceVdom(sources[activeSource], gridDom) :
         newSourceVdom()
     )
   ]);
@@ -53,21 +85,20 @@ function view(state) {
 
 
 function sourceList(sources, activeSource) {
-  console.log({ sources })
   return div({class: {"source-list": true}}, sources.map(
     (source, idx) => div(
-      { class: {source: true, active: idx === activeSource}},
+      { class: {source: true, active: idx === activeSource }, dataset: { sourceId: idx.toString() }},
       [
         h2(source.name.length === 0 ? '<no name>' : source.name),
-        div({class: {"source-stat": true}}, `Records: ${numRecords(source)}`)
+        div({class: {"source-stat": true}}, `Records: ${source.numRecords}`)
       ])
   ));
 }
 
-function activeSourceVdom(source) {
+function activeSourceVdom(source: Source, grid) {
   return div({}, [
     h1({}, source.name),
-
+    grid
   ])
 }
 

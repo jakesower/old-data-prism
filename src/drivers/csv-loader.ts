@@ -2,7 +2,7 @@ import { adapt } from '@cycle/run/lib/adapt';
 import xs, { Stream as XStream } from 'xstream';
 import * as parseCsv from 'csv-parse';
 import { Stream } from 'most';
-import { Source, DataColumn } from '../types';
+import { Source, DataColumn, makeSource, makeDataColumn } from '../types';
 import { transpose, zip } from '../lib/utils';
 import { discoverTypes } from '../lib/data-functions';
 
@@ -34,17 +34,17 @@ export default function fileLoaderDriver(request$: XStream<Request>): Stream<Sou
             const records = data.slice(1);
             const pairs = zip(headers, transpose(records));
 
-            const columns: DataColumn[] = pairs.map(pair => ({
+            const columns = pairs.map(pair => makeDataColumn({
               name: pair[0],
               values: pair[1],
               types: discoverTypes(pair[1]),
             }));
 
-            const s: Source = {
+            const s: Source = makeSource({
               id: source,
               name: fileName,
               data: { columns },
-            }
+            });
 
             loaded$.shamefullySendNext(s);
           }

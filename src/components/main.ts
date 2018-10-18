@@ -1,4 +1,3 @@
-import isolate from "@cycle/isolate";
 import { a, aside, div, h1, main as mainT, nav, p } from "@cycle/dom";
 import { combineArray, of, never, switchLatest, mergeArray } from "most";
 import { proxy } from "most-proxy";
@@ -8,9 +7,8 @@ import { Source, StateModifier } from "../types";
 
 interface State {
   page: "sources" | "remix" | "chart" | "annotate" | "export" | "purple",
-  help: Boolean,
+  help: boolean,
   sources: Source[],
-  activeSource: number | null,
 }
 
 
@@ -18,12 +16,10 @@ const initState: State = {
   page: "sources",
   help: false,
   sources: [],
-  activeSource: null,
 };
 
 
 function main(cycleSources) {
-  cycleSources.csvLoader.observe(console.log);
   const { attach, stream } = proxy();
 
   const actions = intent(cycleSources);
@@ -40,7 +36,6 @@ function main(cycleSources) {
     selectedPage$.map(page => prev => ({ ...prev, page })),
     cycleSources.csvLoader.map(source => prev => ({ ...prev,
       sources: prev.sources.concat(source),
-      activeSource: prev.sources.length,
     })),
   ];
   const state$ = mergeArray(stateModifiers$).scan((state, fn) => fn(state), initState);
@@ -77,7 +72,6 @@ function intent({ DOM }) {
 
 
 function view(state, page) {
-  console.log({ state, page });
   const tab = n => a({
     class: {selected: state.page === n, tab: true}, dataset: { tab: n.toLowerCase() },
   }, n);

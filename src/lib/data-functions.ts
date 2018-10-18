@@ -6,6 +6,6 @@ export function discoverTypes(vals: string[]): DataType<any>[] {
 }
 
 
-export function numRecords(s: Source): number {
-  return s.data.columns[0].values.length;
+export function modifyStateAttr<T>(attr: keyof T, fn: (x: T[keyof T]) => T[keyof T]): (obj: T) => T {
+  return obj => Object.assign({}, obj, {[attr]: fn(obj[attr]) });
 }

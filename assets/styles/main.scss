@@ -62,7 +62,13 @@ div.body-container {
   height: 100vh;
   overflow: hidden;
 
-  &.sources { @include page-colors($red); }
+  &.sources {
+    @include page-colors($red);
+
+    tr:nth-child(2n) {
+      background-color: lighten($red, 40%);
+    }
+  }
 
   &.remix {
     @include page-colors($orange);
@@ -264,6 +270,7 @@ div.main-container {
     font-weight: bold;
     text-align: left;
     padding: 0.4em;
+    white-space: nowrap;
 
     .header {
       margin-right: 0.7em;
@@ -277,7 +284,6 @@ div.main-container {
       opacity: 0.3;
       font-size: 80%;
       padding-top: 3px;
-      float: right;
     }
 
     &.asc .asc {
@@ -370,11 +376,14 @@ nav {
 .page-controls {
   padding-top: 4px;
 
-  .button {
+  button, .button {
     padding: 3px 7px;
     margin: 0 3px;
+    border: 1px solid transparent;
     border-radius: 5px;
+    background-color: transparent;
     cursor: pointer;
+    outline: none;
 
     user-select: none;
     -moz-user-select: none;
@@ -386,14 +395,12 @@ nav {
     }
 
     &.selected {
-      margin: 0 2px;
-      border: thin solid #999;
+      border: 1px solid #999;
     }
 
     &:not(.selected) {
       &:hover {
-        margin: 0 2px;
-        border: thin solid #333;
+        border: 1px solid #333;
       }
     }
   }

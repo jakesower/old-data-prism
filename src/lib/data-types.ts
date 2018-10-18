@@ -59,7 +59,18 @@ const _Boolean: DataType<boolean> = {
 }
 
 
-const dataTypes: {[index: string]: DataType<any>} = {
+interface AllDataTypes {
+  String: DataType<string>,
+  NonEmptyString: DataType<string>,
+  Number: DataType<number>,
+  FiniteNumber: DataType<number>,
+  PositiveFiniteNumber: DataType<number>,
+  Integer: DataType<number>,
+  PositiveInteger: DataType<number>,
+  Date: DataType<moment.Moment>,
+  Boolean: DataType<boolean>
+}
+const dataTypes: AllDataTypes = {
   String: _String,
   NonEmptyString,
   Number: _Number,

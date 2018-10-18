@@ -7,7 +7,7 @@ const {Source, Dataset, Operation} = require('../../../types')
 const Action = require('../action');
 
 const CollectorListComponent = require('../../collector-list');
-const GridComponent = require('../../grid');
+const GridComponent = require('../../components/grid');
 
 module.exports = R.curry((action$, model) => {
   const {grid} = model.pageData.remix;
