@@ -1,6 +1,6 @@
 import { aside, div, input, main as main_, p, h1, h2, DOMSource } from '@cycle/dom';
 import { combineArray, Stream, mergeArray, combine } from 'most';
-import { Source, StateModifier } from '../../types';
+import { DataSource, StateModifier } from '../../types';
 import Grid from './grid';
 import { scopedEvent } from '../../lib/dom-utils';
 import { merge, eq } from '../../lib/utils';
@@ -10,7 +10,7 @@ interface LocalState {
 }
 
 interface Props {
-  sources: Source[]
+  sources: DataSource[]
 }
 
 interface State extends LocalState, Props {};
@@ -66,7 +66,7 @@ function view(state: State, gridDom) {
     aside({class: {source: true}}, [
       div(
         { class: {"new-source": true, active: (activeSource == null) }},
-        "New Source"
+        "New DataSource"
       ),
       sources.length > 0 ?
         sourceList(sources, activeSource) :
@@ -95,7 +95,7 @@ function sourceList(sources, activeSource) {
   ));
 }
 
-function activeSourceVdom(source: Source, grid) {
+function activeSourceVdom(source: DataSource, grid) {
   return div({}, [
     h1({}, source.name),
     grid
@@ -105,7 +105,7 @@ function activeSourceVdom(source: Source, grid) {
 
 function newSourceVdom() {
   return div({}, [
-    h1({}, 'Load New Source'),
+    h1({}, 'Load New DataSource'),
 
     div({}, [
       div({class: {colgroup: true}}, [
@@ -150,7 +150,7 @@ function newSourceVdom() {
 //         { class: {"new-source": true, active: R.isNil(model.activeSource)},
 //           on: {click: [action$, Action.SetActiveSource(null)]}
 //         },
-//         "New Source"
+//         "New DataSource"
 //       ),
 //       R.length(model.sources) > 0 ?
 //         sourceList(action$, model.sources, model.activeSource) :
@@ -178,7 +178,7 @@ function newSourceVdom() {
 
 // function newSourceVdom(action$, model) {
 //   return h('div', {}, [
-//     h('h1', {}, 'Load New Source'),
+//     h('h1', {}, 'Load New DataSource'),
 
 //     h('div', {}, [
 //       h('div', {class: {colgroup: true}}, [

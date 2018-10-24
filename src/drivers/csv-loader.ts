@@ -2,7 +2,7 @@ import { adapt } from '@cycle/run/lib/adapt';
 import xs, { Stream as XStream } from 'xstream';
 import * as parseCsv from 'csv-parse';
 import { Stream } from 'most';
-import { Source, DataColumn, makeSource, makeDataColumn } from '../types';
+import { DataSource, makeDataSource, makeDataColumn } from '../types';
 import { transpose, zip } from '../lib/utils';
 import { discoverTypes } from '../lib/data-functions';
 
@@ -11,7 +11,7 @@ interface Request {
   element: HTMLInputElement
 }
 
-export default function fileLoaderDriver(request$: XStream<Request>): Stream<Source> {
+export default function fileLoaderDriver(request$: XStream<Request>): Stream<DataSource> {
   const loaded$ = xs.create({
     start: () => {},
     stop: () => {}
@@ -40,10 +40,10 @@ export default function fileLoaderDriver(request$: XStream<Request>): Stream<Sou
               types: discoverTypes(pair[1]),
             }));
 
-            const s: Source = makeSource({
+            const s: DataSource = makeDataSource({
               id: source,
               name: fileName,
-              data: { columns },
+              columns,
             });
 
             loaded$.shamefullySendNext(s);

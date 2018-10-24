@@ -1,8 +1,6 @@
-import * as FileSaver from "file-saver";
-import * as stringify from "csv-stringify";
-import { a, div, span, strong, table, td, th, tr, button, VNode } from "@cycle/dom";
+import { div, span, strong, table, td, th, tr, button, VNode } from "@cycle/dom";
 import { Stream, combine, mergeArray } from "most";
-import { DataColumn, Source, StateModifier } from "../../types";
+import { DataColumn, DataSource, StateModifier } from "../../types";
 import dataTypes from "../../lib/data-types";
 import { ascend, descend, sortBy, merge, pipe, clamp } from "../../lib/utils";
 
@@ -12,7 +10,7 @@ interface LocalState {
 }
 
 interface Props {
-  source: Source | null,
+  source: DataSource | null,
 }
 
 interface State extends LocalState, Props {}
@@ -137,7 +135,7 @@ const view = (state: State) => {
 }
 
 
-function numPages(source: Source | null) {
+function numPages(source: DataSource | null) {
   return (source === null) ? 0 : Math.ceil(source.numRecords / perPage);
 }
 

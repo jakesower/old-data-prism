@@ -2,13 +2,14 @@ import { a, aside, div, h1, main as mainT, nav, p } from "@cycle/dom";
 import { combineArray, of, never, switchLatest, mergeArray } from "most";
 import { proxy } from "most-proxy";
 import Sources from "./components/sources";
+import Remix from "./components/remix";
 import { objectStream } from "../lib/utils";
-import { Source, StateModifier } from "../types";
+import { DataSource, StateModifier } from "../types";
 
 interface State {
   page: "sources" | "remix" | "chart" | "annotate" | "export" | "purple",
   help: boolean,
-  sources: Source[],
+  sources: DataSource[],
 }
 
 
@@ -27,9 +28,11 @@ function main(cycleSources) {
 
   const componentSources = { ...cycleSources, props: stream };
   const sources = Sources(componentSources);
+  const remix = Remix(componentSources);
 
   const pageDoms$ = objectStream({
     sources: sources.DOM,
+    remix: remix.DOM,
   });
 
   const stateModifiers$: StateModifier<State>[] = [
@@ -44,14 +47,6 @@ function main(cycleSources) {
 
 
   const view$ = combineArray(view, [state$, pageDoms$]);
-  // const view$ = state$.combine(view, pageSwitch$);
-  // const view$ = state$.sample(view, state$, pageSwitch$);
-  // (state$.merge(of("hi"))).sample(console.log, state$);
-
-  // activePageStream$.observe(console.log);
-  // pageSwitch$.observe(console.log);
-  // state$.observe(console.log);
-  // view$.observe(console.log);
 
   return {
     DOM: view$,

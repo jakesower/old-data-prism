@@ -1,4 +1,7 @@
 import { Stream, combineArray } from "most";
+import { over, set, lensPath } from "ramda";
+
+type Ord = number | string | boolean | Date;
 
 export function ascend<T>(fn: ((x: T) => any)): (a: T, b: T) => number {
   return function(a, b) {
@@ -39,12 +42,31 @@ export function filterObj<T>(obj: {[k: string]: T}, predicate: (item: T) => bool
   return objFromPairs(passed);
 }
 
+export function flatten<T>(list: T | Array<T> | Array<T[]>): T[] {
+  return makeFlat(list, true);
+}
+
+// e.g. {a: {inner: 'thing'}, b: {other: 'item'}} => [{key: 'a', inner: 'thing'}, {key: 'b', other: 'item'}]
+export function inlineKey<T, K extends keyof T>(obj: T): (T[K] & { key: string })[] {
+  let result = <(T[K] & { key: string })[]>[];
+  const keys = Object.keys(obj);
+  for (let key of keys) {
+    result.push(Object.assign({}, obj[key], { key }));
+  }
+  return result;
+}
+
 export function isPojo(obj): boolean {
   return obj !== null && typeof obj === "object" && Object.getPrototypeOf(obj) === Object.prototype;
 }
 
+export function mapObj<T,U>(obj: {[k in string]: T}, fn: (x: T, idx: string) => U): ({[k in string]: U}) {
+  const [keys, vals] = [Object.keys(obj), Object.values(obj)];
+  const mappedVals = vals.map((v, idx) => fn(v, keys[idx]));
+  return zipObj(keys, mappedVals);
+}
+
 export function merge<T1, T2>(a: T1, b: T2): T1 & T2 {
-  console.log({a, b, c: Object.assign({}, a, b)})
   return Object.assign({}, a, b);
 }
 
@@ -77,15 +99,23 @@ export function prepend<T>(elt: T, ary: T[]): T[] {
   return [elt].concat(ary);
 }
 
+export function setIn(path) {
+  return set(lensPath(path));
+}
 
-export function setIn<T extends U, K extends keyof T, U>(fn: (obj: T) => {[P in K]: T[P]}, obj: T): U {
-  return Object.assign({}, obj, fn(obj));
+export function setOver(path) {
+  return over(lensPath(path));
 }
 
 
-export function setInC<T extends U, K extends keyof T, U>(fn: (obj: T) => {[P in K]: T[P]}): (obj: T) => U {
-  return obj => Object.assign({}, obj, fn(obj));
-}
+// export function setIn<T extends U, K extends keyof T, U>(fn: (obj: T) => {[P in K]: T[P]}, obj: T): U {
+//   return Object.assign({}, obj, fn(obj));
+// }
+
+
+// export function setInC<T extends U, K extends keyof T, U>(fn: (obj: T) => {[P in K]: T[P]}): (obj: T) => U {
+//   return obj => Object.assign({}, obj, fn(obj));
+// }
 
 
 export function sort<T>(xs: T[]): T[] {
@@ -124,8 +154,31 @@ export function sortBy<T>(fn: (a: T, b: T) => number, xs: T[]): T[] {
   return sortBy(fn, lts).concat(eqs).concat(sortBy(fn, gts));
 }
 
+export function sortWith<T>(fn: (a: T) => Ord, xs: T[]): T[] {
+  if (xs.length === 0) { return []; }
+  const first = xs[0];
+  const fx = fn(first);
+  const rest = xs.slice(1);
+  let lts: T[] = [];
+  let gts: T[] = [];
+  let eqs: T[] = [first];
+  for (let i = 0; i < rest.length; i += 1) {
+    const fy = fn(rest[i]);
+
+    if (fy > fx) { gts.push(rest[i]); }
+    else if (fy < fx) { lts.push(rest[i]); }
+    else { eqs.push(rest[i]) }
+  }
+
+  return sortWith(fn, lts).concat(eqs).concat(sortWith(fn, gts));
+}
+
 export function transpose<T>(xss: T[][]): T[][] {
   return xss[0].map((_, i) => xss.map(row => row[i]));
+}
+
+export function unnest<T>(list: Array<T> | Array<T[]>): T[] {
+  return makeFlat(list, false);
 }
 
 export function zip<T, U>(l1: T[], l2: U[]): [T, U][] {
@@ -141,4 +194,29 @@ export function zipObj(keys: string[], vals: any[]): {} {
     const o = {[key]: vals[idx]};
     return { ...out, ...o };
   }, {});
+}
+
+
+function makeFlat<T>(list, recursive): T[] {
+  let result: T[] = [];
+  let idx = 0;
+  let ilen = list.length;
+
+  while (idx < ilen) {
+    if (Array.isArray(list[idx])) {
+      let item = list[idx];
+      let value = recursive ? makeFlat(list[idx], true) : list[idx];
+      let j = 0;
+      let jlen = value.length;
+      while (j < jlen) {
+        result[result.length] = value[j];
+        j += 1;
+      }
+    } else {
+      result[result.length] = list[idx];
+    }
+    idx += 1;
+  }
+
+  return result;
 }

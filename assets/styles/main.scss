@@ -52,7 +52,7 @@ strong {
   font-weight: bold;
 }
 
-body {
+body, input, select, option {
   font-family: Lato;
 }
 
@@ -173,6 +173,11 @@ div.main-container {
     display: flex;
     flex-direction: column;
 
+    .root-datasource {
+      border: 3px black solid;
+      padding: 0.5em;
+    }
+
     .collector-list {
       flex: 1 1 auto;
       overflow: auto;
@@ -202,6 +207,12 @@ div.main-container {
       padding: 4px 0;
       margin-bottom: 4px;
       z-index: 1;
+      width: 100%;
+
+      h3 {
+        padding: 0;
+        text-transform: uppercase;
+      }
 
       .multiselect {
         width: 100%;
@@ -238,10 +249,7 @@ div.main-container {
     }
 
     .form {
-      h3 {
-        padding: 0;
-        text-transform: uppercase;
-      }
+
 
 
       .aggregator {
@@ -407,14 +415,12 @@ nav {
 }
 
 .collector {
-  display: flex;
   padding: 0.5em 0;
   width: 100%;
   font-size: 110%;
   border-bottom: 1px black dashed;
 
   .definition {
-    flex: 1;
     padding: 0 1em;
 
     &::before {
@@ -544,8 +550,8 @@ nav {
 
 .remix-controls {
   flex: 0 1 2em;
-  border-bottom: 3px solid black;
-  border-top: 3px solid black;
+  // border-bottom: 3px solid black;
+  // border-top: 3px solid black;
 
 
   .operations-menu {
@@ -566,47 +572,6 @@ nav {
         content: "\f054";
         float: right;
       }
-    }
-
-    .menu {
-      display: none;
-
-      .item {
-        padding: 0.5rem;
-        cursor: pointer;
-        z-index: 3000;
-
-        &:hover {
-          & > .sub-menu {
-            display: block;
-            left: 21em;
-            width: 20em;
-            // transition: width 0.1s;
-          }
-        }
-      }
-
-      .has-submenu {
-        margin-right: -1em;
-
-        &::after {
-          padding-right: 1.1em;
-          transition: transform 0.2s;
-          float: right;
-          font: normal normal normal 14px/1 FontAwesome;
-          content: "\f054";
-        }
-      }
-    }
-
-    .sub-menu {
-      width: 0;
-      z-index: 40;
-      position: absolute;
-      height: 100%;
-      top: 0;
-      left: -100000px;
-      padding: 1em 0 1em 1em;
     }
   }
 }

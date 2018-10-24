@@ -29,4 +29,3 @@ export function lensSet<T, U>(lens: Lens<T, U>): (val: U, obj: T) => T {
   return lens.set;
 }
 
-
