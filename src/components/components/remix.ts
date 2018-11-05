@@ -1,16 +1,21 @@
-import { aside, div, main as main_, span, select, h2, button, option, h3, input } from '@cycle/dom';
-import { mergeArray, combine, Stream, combineArray } from 'most';
-import { append, lensPath, lensProp, over, set } from 'ramda';
-import { DataSource, StateModifier, OperationSlot } from '../../types';
-import { merge, eq, sortBy, sortWith, inlineKey, flatten, setIn, mapObj } from '../../lib/utils';
+import { adapt } from '@cycle/run/lib/adapt';
+import { aside, div, main as main_, select, h2 } from '@cycle/dom';
+import { mergeArray, combine, Stream, combineArray, of, never } from 'most';
+import { ChainedCollection, pluck as pl} from '../../lib/chained-collection';
+import { DataSource, StateModifier, Operation } from '../../types';
+import { merge, flatten, go } from '../../lib/utils';
+import { Maybe } from '../../lib/maybe';
 import Grid from './grid';
+import Collector from './collector';
 import { indexedOptions, targetValue } from '../../lib/dom-utils';
 import operationDefs from '../../operations';
+import xs from 'xstream';
+import { applyOperation } from '../../lib/data-functions';
 
 
 interface LocalState {
-  operations: OperationItem[],
-  rootSource: number | null,
+  collectors: any[],
+  rootSource: Maybe<number>,
 }
 
 interface Props {
@@ -19,68 +24,77 @@ interface Props {
 
 interface State extends LocalState, Props {};
 
-interface OperationItem {
-  operation: string | null,
-  slots: {[k in string]: string},
-  editing: boolean,
-}
+const initState: LocalState = { rootSource: Maybe.Nothing<number>(), collectors: [] };
 
-const initOperation: OperationItem = { operation: null, slots: {}, editing: true };
-const initState: LocalState = { rootSource: null, operations: [] };
-
-const slotDispatch = {
-  free: freeSlotMarkup,
-  column: columnSlotMarkup,
-};
 
 export default function main(cycleSources) {
   const { props: props$, DOM } = cycleSources;
-  const { changeRoot$, newOperation$, setOperation$ } = intent(DOM);
+  const { changeRoot$, newOperation$ } = intent(DOM);
+  const activeSourceObj: (state: State) => ({ source: Maybe<DataSource> }) = state =>
+    ({ source: state.rootSource.map(rs => state.sources[rs]) });
 
   const stateModifiers$: StateModifier<LocalState> = mergeArray([
-    changeRoot$.map(setIn(['rootSource'])),
-    newOperation$.constant(over(lensProp('operations'), append(initOperation))),
-    setOperation$.map(({opId, value}) => set(lensPath(['operations', opId, 'operation']), value)),
+    changeRoot$.map(source => state => ({...state,
+      rootSource: Maybe.fromValue(source),
+    })),
   ]);
 
-  const localState$: Stream<LocalState> = stateModifiers$.scan((state, mod) => mod(state), initState).tap(console.log);
-  const state$ = combine<Props, LocalState, State>(merge, props$, localState$).skipRepeatsWith(eq);
+  const localState$: Stream<LocalState> = stateModifiers$.scan((state, mod) => mod(state), initState);
+  const state$ = combine<Props, LocalState, State>(merge, props$, localState$);
 
-  const sourceOrNull = s => ({ source: (s.rootSource === null) ? null : s.sources[s.rootSource] });
-  const grid = Grid({ DOM: DOM, props: state$.map(sourceOrNull) });
-  const gridDom$ = grid.DOM;
+  // YUCK
+  const activeSource$ = adapt(xs.fromObservable(state$.map(activeSourceObj)).remember());
+
+
+  const collectors$ = ChainedCollection(
+    Collector,
+    cycleSources,
+    newOperation$,
+    activeSource$,
+    sink => sink.dataSource
+  );
+
+  const collectorDom$ = pl(collectors$, x => x.DOM);
+  const collectorSources$ = pl(collectors$, x => x.dataSource);
+
+  const gridSource = combine((activeSource, collectorSources) => {
+    console.log({activeSource, collectorSources});
+    return collectorSources.reduce((last, s) => s.isNothing() ? last : s, activeSource);
+  }, activeSource$, collectorSources$);
+
+  const grid = Grid({ DOM: DOM, props: gridSource });
 
   return {
-    DOM: combineArray(view, [state$, gridDom$]),
+    DOM: combineArray(view, [state$, grid.DOM, collectorDom$]),
   };
 }
 
 
 function intent(DOM) {
+  const opId = ev => parseFloat(ev.target.dataset.operationId);
   return {
-    changeRoot$: DOM.select('select.root-source').events('change').map(targetValue).map(parseFloat),
+    changeRoot$: DOM.select('select.root-source').events('change').map(targetValue).map(v => v ? parseFloat(v) : null),
     newOperation$: DOM.select('.new-operation-button').events('click'),
     setOperation$: DOM.select('.operation-id').events('change').map(ev =>
-      ({ value: ev.target.value, opId: parseFloat(ev.target.dataset.operationId) })
+      ({ value: ev.target.value, opId: opId(ev) })
     ),
+    saveOperation$: DOM.select('.collector .save').events('click').map(opId),
+    applyOperation$: DOM.select('.collector .apply').events('click').map(opId),
+    cancelOperation$: DOM.select('.collector .cancel').events('click').map(opId),
   }
 }
 
 
-function view(state: State, gridDom) {
-  const operationsList = state.operations.map((op, idx) =>
-    op.editing ? editingOperation(op, idx) : displayOperation(op)
-  )
-
+function view(state: State, gridDom, collectorDom) {
   return div({class: {"main-container": true}}, [
     aside({}, [
       div('.root-datasource', {}, [
         h2({}, 'Root DataSource'),
-        select({ class: { "root-source": true }}, indexedOptions(state.sources.map(s => s.name), state.rootSource))
+        select({ class: { "root-source": true }}, indexedOptions(state.sources.map(s => s.name), state.rootSource.withDefault(null)))
       ]),
       div('.remix-controls', {}, [
         div('.operations-menu', {}, flatten([
-          operationsList,
+          collectorDom,
           div('.new-operation-button', {}, "New Operation")
         ]))
       ])
@@ -90,50 +104,4 @@ function view(state: State, gridDom) {
       gridDom
     ])
   ]);
-}
-
-
-function editingOperation(op, idx) {
-  const opOpts = sortWith(od => od.name, inlineKey(operationDefs))
-    .map(od => option({ attrs: { value: od.key }}, od.name));
-  const opDef = op.operation ? operationDefs[op.operation] : null;
-  console.log({ op, opDef, operationDefs })
-
-  const opMarkup = div('.slot', {}, [
-    h3({}, "Operation"),
-    select('.operation-id', { dataset: { operationId: idx.toString() }}, [option({}, '')].concat(opOpts))
-  ])
-
-  const slotMarkup = opDef ?
-    Object.values(mapObj(opDef.slots, (s, sid) => {
-      console.log({ s, sid, idx })
-      return slotDispatch[s.slotType](s, sid, idx)
-    })) :
-    [];
-
-  return div('.collector.empty', {}, [opMarkup].concat(slotMarkup));
-}
-
-
-function freeSlotMarkup(slot: OperationSlot<any>, slotId: string, opId: string) {
-  return div('.slot', {}, [
-    h3({}, slot.display),
-    input('.slot-input', { type: 'text', dataset: { slotId, operationId: opId }})
-  ]);
-}
-
-
-function columnSlotMarkup(slot: OperationSlot<any>, slotId: string, opId: string) {
-  return div('.slot', {}, [
-    h3({}, slot.display),
-    select('.slot-input', { dataset: { slotId, operationId: opId }}, [
-
-    ])
-  ]);
-}
-
-
-function displayOperation(op) {
-  console.log({op, operationDefs});
-  return "";
 }

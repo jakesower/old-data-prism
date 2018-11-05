@@ -4,9 +4,12 @@ import { DataSource, StateModifier } from '../../types';
 import Grid from './grid';
 import { scopedEvent } from '../../lib/dom-utils';
 import { merge, eq } from '../../lib/utils';
+import { Maybe } from '../../lib/maybe';
+
+const noNum = Maybe.Nothing<number>();
 
 interface LocalState {
-  activeSource: number | null,
+  activeSource: Maybe<number>,
 }
 
 interface Props {
@@ -15,30 +18,32 @@ interface Props {
 
 interface State extends LocalState, Props {};
 
-const initState: LocalState = { activeSource: null };
+const initState: LocalState = { activeSource: noNum };
 
 export default function main(cycleSources: { DOM: DOMSource, props: Stream<Props> }) {
   const { props: props$, DOM } = cycleSources;
   const { addSource$, newSource$, changeSource$ } = intent({ DOM });
 
   const stateModifiers$: StateModifier<LocalState> = mergeArray([
-    newSource$.constant(state => ({ ...state, activeSource: null })),
-    changeSource$.map((id: number) => state => ({ ...state, activeSource: id })),
+    newSource$.constant(state => ({ ...state, activeSource: noNum })),
+    changeSource$.map((id: number) => state => ({ ...state, activeSource: Maybe.of(id) })),
     props$.map(ps => ps.sources.length)
       .skipRepeats()
       .filter(l => l > 0)
-      .map(l => state => ({ ...state, activeSource: l-1 })),
+      .map(l => state => ({ ...state, activeSource: Maybe.of(l-1) })),
     props$.map(ps => ps.sources.length)
       .skipRepeats()
       .filter(l => l === 0)
-      .map(l => state => ({ ...state, activeSource: null }))
+      .map(l => state => ({ ...state, activeSource: noNum }))
   ]);
 
   const localState$: Stream<LocalState> = stateModifiers$.scan((state, mod) => mod(state), initState);
   const state$ = combine<Props, LocalState, State>(merge, props$, localState$).skipRepeatsWith(eq);
 
-  const sourceOrNull = s => ({ source: (s.activeSource === null) ? null : s.sources[s.activeSource] });
-  const grid = Grid({ DOM: DOM, props: state$.map(sourceOrNull) });
+  const activeSourceObj: (state: State) => ({ source: Maybe<DataSource> }) = state =>
+    ({ source: state.activeSource.map(rs => state.sources[rs]) });
+
+  const grid = Grid({ DOM: DOM, props: state$.map(activeSourceObj) });
   const gridDom$ = grid.DOM;
 
   return {
@@ -65,7 +70,7 @@ function view(state: State, gridDom) {
   return div({class: {"main-container": true}}, [
     aside({class: {source: true}}, [
       div(
-        { class: {"new-source": true, active: (activeSource == null) }},
+        { class: {"new-source": true, active: activeSource.isNothing() }},
         "New DataSource"
       ),
       sources.length > 0 ?
@@ -76,9 +81,8 @@ function view(state: State, gridDom) {
     ]),
 
     main_({class: {source: true}},
-      (activeSource !== null) ?
-        activeSourceVdom(sources[activeSource], gridDom) :
-        newSourceVdom()
+      activeSource.map(active => activeSourceVdom(sources[active], gridDom))
+        .withDefault(newSourceVdom())
     )
   ]);
 }
@@ -87,7 +91,7 @@ function view(state: State, gridDom) {
 function sourceList(sources, activeSource) {
   return div({class: {"source-list": true}}, sources.map(
     (source, idx) => div(
-      { class: {source: true, active: idx === activeSource }, dataset: { sourceId: idx.toString() }},
+      { class: {source: true, active: activeSource.hasValue(idx) }, dataset: { sourceId: idx.toString() }},
       [
         h2(source.name.length === 0 ? '<no name>' : source.name),
         div({class: {"source-stat": true}}, `Records: ${source.numRecords}`)
@@ -129,93 +133,3 @@ function newSourceVdom() {
     ])
   ]);
 }
-
-
-
-// const R = require('ramda');
-// const h = require('snabbdom/h').default;
-// const {targetValue} = require('../../../lib/utils');
-
-// const Action = require('../action');
-// const Samples = require('../../../samples/index');
-
-// const emptyOption = h('option', {}, '');
-
-// module.exports = R.curry((action$, model) => {
-//   const activeSource = R.find(s => s.id === model.activeSource, model.sources);
-
-//   return h('div', {class: {"main-container": true}}, [
-//     h('aside', {class: {source: true}}, [
-//       h('div',
-//         { class: {"new-source": true, active: R.isNil(model.activeSource)},
-//           on: {click: [action$, Action.SetActiveSource(null)]}
-//         },
-//         "New DataSource"
-//       ),
-//       R.length(model.sources) > 0 ?
-//         sourceList(action$, model.sources, model.activeSource) :
-//         h('p', {}, [
-//           'Get started by importing a data source. New to Data Prism? ...'
-//         ])
-//     ]),
-
-//     h('main', {class: {source: true}},
-//       model.activeSource ?
-//         activeSourceVdom(action$, activeSource) :
-//         newSourceVdom(action$, model)
-//     )
-//   ])
-// });
-
-
-// function activeSourceVdom(action$, source) {
-//   return h('div', {}, [
-//     h('h1', {}, source.name),
-
-//   ])
-// }
-
-
-// function newSourceVdom(action$, model) {
-//   return h('div', {}, [
-//     h('h1', {}, 'Load New DataSource'),
-
-//     h('div', {}, [
-//       h('div', {class: {colgroup: true}}, [
-//         h('div', {class: {"upload-type": true}}, [
-//           h('h2', {}, 'Upload CSV'),
-//           h('input', {
-//             attrs: {type: 'file', id: 'data-file'},
-//             on: {change: [action$, Action.LoadLocalFile('data-file')]}
-//           }, [])
-//         ]),
-
-//         h('div', {class: {"upload-type": true}}, [
-//           h('h2', {}, 'Load Sample Data'),
-//           h('select',
-//             { on: {change: R.compose(action$, Action.LoadURI, targetValue)}
-//             },
-//             R.prepend(emptyOption, R.map(({name, uri}) =>
-//               h('option', {attrs: {value: uri}}, name),
-//               Samples.catalog
-//             ))
-//           )
-//         ])
-//       ])
-//     ])
-//   ]);
-// }
-
-
-// function sourceList(action$, sources, activeSource) {
-//   return h('div', {class: {"source-list": true}}, R.map(
-//     source => h('div',
-//       { class: {source: true, active: source.id === activeSource},
-//         on: {click: [action$, Action.SetActiveSource(source.id)]}
-//       }, [
-//       h('h2', R.isEmpty(source.name) ? '<no name>' : source.name),
-//       h('div', {class: {"source-stat": true}}, `Records: ${source.data.records.length}`)
-//     ]),
-//     sources
-//   ));
-// }

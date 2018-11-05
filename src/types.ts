@@ -17,6 +17,7 @@ export interface DataSource {
 }
 
 interface DataColumnAttrs {
+  idx?: number,
   name: string,
   values: string[],
   types: DataType<any>[]
@@ -33,7 +34,6 @@ export interface DataType<T> {
 }
 
 export interface Operation {
-  collector: any,
   display: (source: DataSource, inputs: {[k: string]: any}) => VNode,
   fn: (source: DataSource, inputs: {[k: string]: any}) => DataSource,
   help?: string,
@@ -50,7 +50,8 @@ export interface OperationSlotDefinition<T> {
 
 export interface OperationSlot<T> extends OperationSlotDefinition<T> {
   slotType: string,
-  extract: (dataSource: DataSource, input: string) => any,
+  extract: (dataSource: DataSource, input: string) => T | T[] | T[][],
+  isValid: (dataSource: DataSource, input: string) => boolean,
 }
 
 
@@ -74,13 +75,6 @@ const dataColumnPrototype = Object.create(null, {
   hasType: p(function (this: DataColumn, type: DataType<any>): boolean { return this.types.some(t => t.name === type.name )}),
 });
 
-const operationPrototype = Object.create(null, {
-  apply: p(function (this: Operation, dataSource: DataSource, inputs: {[k in string]: string}): DataSource {
-    return this.fn(dataSource, populateSlots(this.slots, inputs));
-  }),
-});
-
-
 // TODO: consider using immutable js for some stuff
 export function makeDataSource(attrs: { id: string, name: string, columns: DataColumn[], schema?: any }): DataSource {
   return Object.setPrototypeOf(Object.assign({}, attrs), sourcePrototype);
@@ -90,6 +84,16 @@ export function makeDataColumn(attrs): DataColumn {
   return Object.setPrototypeOf(Object.assign({}, attrs), dataColumnPrototype);
 }
 
-export function makeOperation(attrs) {
-  return Object.setPrototypeOf(Object.assign({}, attrs), operationPrototype);
+
+export interface Functor<T> {
+  map<R>(fn: (value: T) => R): Functor<R>,
+  [k: string]: any,
+}
+
+export interface Applicative<T> extends Functor<T> {
+  // ap<R>(fn: Applicative<(t: T) => R>): Applicative<R>
+}
+
+export interface Monad<T> extends Applicative<T> {
+  chain<R>(fn: (value: T) => Monad<R>): Monad<R>
 }

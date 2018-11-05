@@ -46,6 +46,17 @@ export function flatten<T>(list: T | Array<T> | Array<T[]>): T[] {
   return makeFlat(list, true);
 }
 
+export function go(generator: () => IterableIterator<any>, wrapperMonad?: any) {
+  const recur = ({value, done}, gen, monad) => {
+    if (done) { return monad.of(value); }
+    let m = monad ? monad : value.constructor;
+    return value.chain(v => recur(gen.next(v), gen, m));
+  }
+
+  let g = generator();
+  return recur(g.next(), g, wrapperMonad);
+}
+
 // e.g. {a: {inner: 'thing'}, b: {other: 'item'}} => [{key: 'a', inner: 'thing'}, {key: 'b', other: 'item'}]
 export function inlineKey<T, K extends keyof T>(obj: T): (T[K] & { key: string })[] {
   let result = <(T[K] & { key: string })[]>[];

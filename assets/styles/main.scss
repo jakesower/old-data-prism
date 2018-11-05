@@ -56,6 +56,11 @@ body, input, select, option {
   font-family: Lato;
 }
 
+input:invalid {
+  background-color: red;
+  color: green;
+}
+
 div.body-container {
   display: flex;
   flex-direction: column;
@@ -415,10 +420,9 @@ nav {
 }
 
 .collector {
-  padding: 0.5em 0;
-  width: 100%;
+  padding: 0.5em;
   font-size: 110%;
-  border-bottom: 1px black dashed;
+  border: 1px black dashed;
 
   .definition {
     padding: 0 1em;

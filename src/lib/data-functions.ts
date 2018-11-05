@@ -1,6 +1,10 @@
 import dataTypes from './data-types';
-import { DataType, OperationSlot, DataSource } from '../types';
+import { DataType, OperationSlot, DataSource, Operation } from '../types';
 import { mapObj, mergeAll, zipObj } from './utils';
+
+export function applyOperation(dataSource: DataSource, operation: Operation, inputs: {[k in string]: string}): DataSource {
+  return operation.fn(dataSource, populateSlots(operation.slots, inputs));
+}
 
 export function discoverTypes(vals: string[]): DataType<any>[] {
   return Object.values(dataTypes).filter(type => vals.every(type.test));

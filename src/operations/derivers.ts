@@ -1,8 +1,9 @@
 import { div, span, VNode } from '@cycle/dom';
+import { nth, range, findLastIndex } from 'ramda';
 import { Operation, DataSource, makeDataColumn, OperationSlot } from '../types';
 import { discoverTypes, mapRows } from '../lib/data-functions';
 import dataTypes from '../lib/data-types';
-import { merge } from '../lib/utils';
+import { merge, sort } from '../lib/utils';
 import { FreeSlot, ColumnSlot } from '../lib/slots';
 import SlotCollector from '../components/collectors/slot-collector';
 
@@ -34,7 +35,6 @@ const makeDeriver = (def: Deriver): Operation => {
     },
     help: 'help text',
     tags: ["deriver"],
-    collector: SlotCollector,
   });
 }
 
@@ -151,54 +151,55 @@ export const AbsoluteValue = makeDeriver({
 // });
 
 
-// const Quantile = makeDeriver({
-//   name: "Quantile",
-//   tags: ["math", "bucketers"],
+export const Quantile: Operation = {
+  name: "Quantile",
+  tags: ["math", "bucketers"],
 
-//   slots: [
-//     DataSlot.Column('n', 'n', DataType.FiniteNumber),
-//     Slot.Free('order', 'order', DataType.PositiveInteger)
-//   ],
+  slots: {
+    columnName: colNameSlot,
+    column: ColumnSlot({ display: 'Column', type: dataTypes.FiniteNumber }),
+    order: FreeSlot({ display: 'Order', type: dataTypes.PositiveFiniteNumber }),
+  },
 
-//   fn: (inputs) => {
-//     const sorted = R.pipe(
-//       R.map(parseFloat),
-//       R.sort((a, b) => a - b)
-//     )(inputs.n);
-//     const frac = parseFloat(sorted.length) / parseFloat(inputs.order);
-//     const cutoffs = R.map(
-//       n => R.nth(Math.ceil(n*frac), sorted),
-//       R.range(0, parseInt(inputs.order)));
+  fn: (dataSource, inputs) => {
+    const sorted = sort(inputs.column);
+    const frac = sorted.length / inputs.order;
+    const cutoffs = range(0, parseInt(inputs.order)).map(
+      n => nth(Math.ceil(n*frac), sorted)
+    );
 
-//     return R.map(n =>
-//       R.findLastIndex(m => parseFloat(n) >= m, cutoffs) + 1
-//       , inputs.n);
-//   },
+    const qCol = inputs.n.map(n => findLastIndex((m: number) => parseFloat(n) >= m, cutoffs) + 1);
+    return dataSource.appendColumn(makeDataColumn({
+      name: inputs.columnName,
+      values: qCol,
+      types: discoverTypes(qCol) // TODO
+    }))
+  },
 
-//   display: ({dataSource}, inputs) => {
-//     const quantileNames = {
-//       '2': "median groups",
-//       '3': "terciles",
-//       '4': "quartiles",
-//       '5': "quintiles",
-//       '6': "sextiles",
-//       '7': "septiles",
-//       '8': "octiles",
-//       '10': "deciles",
-//       '12': "duo-deciles",
-//       '16': "hexadeciles",
-//       '20': "ventiles",
-//       '100': "percentiles",
-//       '1000': "permilles"
-//     };
+  display: (dataSource, inputs) => {
+    const quantileNames = {
+      '2': "median groups",
+      '3': "terciles",
+      '4': "quartiles",
+      '5': "quintiles",
+      '6': "sextiles",
+      '7': "septiles",
+      '8': "octiles",
+      '10': "deciles",
+      '12': "duo-deciles",
+      '16': "hexadeciles",
+      '20': "ventiles",
+      '100': "percentiles",
+      '1000': "permilles"
+    };
 
-//     const name = quantileNames[inputs.order] || `${inputs.order}-quantile`;
-//     return h('div', {}, [
-//       `${name} on `,
-//       col(dataSource, inputs.n)
-//     ]);
-//   }
-// });
+    const name = quantileNames[inputs.order] || `${inputs.order}-quantile`;
+    return div({}, [
+      `${name} on `,
+      col(dataSource, inputs.n)
+    ]);
+  }
+};
 
 // const Round = makeDeriver({
 //   name: "Round",

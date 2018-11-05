@@ -1,5 +1,6 @@
 import { div, span, strong, table, td, th, tr, button, VNode } from "@cycle/dom";
 import { Stream, combine, mergeArray } from "most";
+import { Maybe } from '../../lib/maybe';
 import { DataColumn, DataSource, StateModifier } from "../../types";
 import dataTypes from "../../lib/data-types";
 import { ascend, descend, sortBy, merge, pipe, clamp } from "../../lib/utils";
@@ -10,7 +11,7 @@ interface LocalState {
 }
 
 interface Props {
-  source: DataSource | null,
+  source: Maybe<DataSource>,
 }
 
 interface State extends LocalState, Props {}
@@ -33,7 +34,9 @@ export default function main(cycleSources: {props: Stream<Props>, DOM: any}): Ou
   const { firstPage$, prevPage$, nextPage$, lastPage$, columnSort$ } = intent({ DOM: cycleSources.DOM });
   const pageChanger = (action$: Stream<any>, pageFn: (page: number) => number): StateModifier<State> => {
     return combine(
-      (_, props) => state => ({ ...state, page: clamp(1, numPages(props.source), pageFn(state.page)) }),
+      (_, props) => state => ({ ...state,
+        page: clamp(1, props.source.map(numPages).withDefault(1), pageFn(state.page))
+      }),
       action$, props$
     ).skipRepeats();
   };
@@ -52,7 +55,7 @@ export default function main(cycleSources: {props: Stream<Props>, DOM: any}): Ou
     ]);
 
   const localState$ = stateModifiers$.scan((state, fn) => fn(state), initState);
-  const state$ = combine(merge, localState$, props$) as Stream<State>;
+  const state$ = combine<Props, LocalState, State>(merge, props$, localState$);
 
   return {
     DOM: state$.map(view),
@@ -73,7 +76,7 @@ function intent(cycleSources): {[k in string]: Stream<any>} {
 
 // TODO: sort by type (numbers and not just strings)
 const view = (state: State) => {
-  const { source } = state;
+  const source = state.source.withDefault(null);
   if (source === null || source.empty()) return null;
 
   const { headers } = source;
