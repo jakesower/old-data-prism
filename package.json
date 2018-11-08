@@ -37,9 +37,10 @@
   },
   "dependencies": {
     "@cycle/collection": "^0.6.0",
+    "@cycle/core": "^7.0.0",
     "@cycle/dom": "^21.1.0",
     "@cycle/isolate": "^3.4.0",
-    "@cycle/most-run": "^8.0.0",
+    "@cycle/run": "^5.1.0",
     "@cycle/storage": "^5.0.3",
     "csv-parse": "^1.2.0",
     "csv-stringify": "^1.0.4",
@@ -47,8 +48,6 @@
     "marked": "^0.3.6",
     "mathjs": "^3.16.3",
     "moment": "^2.22.2",
-    "most": "^1.7.3",
-    "most-proxy": "^3.3.0",
     "ramda": "^0.25.0",
     "xstream": "^11.7.0"
   }

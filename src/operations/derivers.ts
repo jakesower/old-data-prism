@@ -4,7 +4,7 @@ import { Operation, DataSource, makeDataColumn, OperationSlot } from '../types';
 import { discoverTypes, mapRows } from '../lib/data-functions';
 import dataTypes from '../lib/data-types';
 import { merge, sort } from '../lib/utils';
-import { FreeSlot, ColumnSlot } from '../lib/slots';
+import { FreeSlot, ColumnSlot, MultiColumnSlot } from '../lib/slots';
 import SlotCollector from '../components/collectors/slot-collector';
 
 type PartialOperation = {
@@ -19,7 +19,7 @@ interface Deriver extends PartialOperation {
 }
 
 const col = (dataSource, cName) =>
-  span({ class: {"column-name": true }}, dataSource.headers[cName]);
+  span('.column-name', dataSource.headers[cName]);
 
 const colNameSlot = FreeSlot({ display: 'Column Name', type: dataTypes.String });
 
@@ -168,7 +168,7 @@ export const Quantile: Operation = {
       n => nth(Math.ceil(n*frac), sorted)
     );
 
-    const qCol = inputs.n.map(n => findLastIndex((m: number) => parseFloat(n) >= m, cutoffs) + 1);
+    const qCol = inputs.column.map(n => findLastIndex((m: number) => parseFloat(n) >= m, cutoffs) + 1);
     return dataSource.appendColumn(makeDataColumn({
       name: inputs.columnName,
       values: qCol,
@@ -196,7 +196,7 @@ export const Quantile: Operation = {
     const name = quantileNames[inputs.order] || `${inputs.order}-quantile`;
     return div({}, [
       `${name} on `,
-      col(dataSource, inputs.n)
+      col(dataSource, inputs.column)
     ]);
   }
 };
@@ -219,22 +219,35 @@ export const Quantile: Operation = {
 //     ])
 // });
 
+// name: "Absolute Value",
+// tags: ["math"],
+// slots: {
+//   columnName: colNameSlot,
+//   num: ColumnSlot({ display: 'Column', type: dataTypes.FiniteNumber })
+// },
+// deriverFn: mapRows(({num}) => Math.abs(num).toString()),
+// display: (dataSource, inputs) =>
+//   div({}, [
+//     'Absolute Value of ',
+//     col(dataSource, inputs.num)
+//   ])
 
-// const Sum = makeDeriver({
-//   name: "Summation",
-//   tags: ["math"],
-//   slots: [
-//     DataSlot.Multicolumn('addends', 'Addends', DataType.FiniteNumber)
-//   ],
-//   fn: inputs => R.map(R.sum, inputs.addends),
-//   display: ({dataSource}, inputs) => {
-//     const colSpans = R.map(col(dataSource), inputs.addends);
-//     return h('div', {}, R.flatten([
-//       "Sum of ",
-//       R.intersperse(', ', colSpans)
-//     ]))
-//   }
-// });
+const Sum = makeDeriver({
+  name: "Summation",
+  tags: ["math"],
+  slots: {
+    columnName: colNameSlot,
+    addends: MultiColumnSlot({ display: 'Column', type: dataTypes.FiniteNumber }),
+  },
+  deriverFn: mapRows(({addends}) => R.map(R.sum, inputs.addends),
+  display: (dataSource, inputs) => {
+    const colSpans = R.map(col(dataSource), inputs.addends);
+    return h('div', {}, R.flatten([
+      "Sum of ",
+      R.intersperse(', ', colSpans)
+    ]))
+  }
+});
 
 
 // module.exports = {

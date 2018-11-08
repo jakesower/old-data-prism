@@ -1,7 +1,9 @@
-import { Stream } from 'most';
-import { transpose } from './lib/utils';
-import { populateSlots } from './lib/data-functions';
+import { Stream } from 'xstream';
 import { VNode } from '@cycle/dom';
+import { transpose } from './lib/utils';
+import { OperationSlot, OperationSlotDefinition } from './lib/slots';
+
+export { OperationSlot, OperationSlotDefinition };
 
 export interface DataSource {
   id: string,
@@ -43,16 +45,6 @@ export interface Operation {
   valid?: (source: DataSource, inputs: {[k: string]: any}) => boolean,
 }
 
-export interface OperationSlotDefinition<T> {
-  display: string,
-  type: DataType<T>
-}
-
-export interface OperationSlot<T> extends OperationSlotDefinition<T> {
-  slotType: string,
-  extract: (dataSource: DataSource, input: string) => T | T[] | T[][],
-  isValid: (dataSource: DataSource, input: string) => boolean,
-}
 
 
 export type StateModifier<S> = Stream<((prevState: S) => S)>
@@ -67,7 +59,7 @@ const sourcePrototype = Object.create(null, {
   numRecords: g(function (this: DataSource): number { return this.columns[0].values.length; }),
   records: g(function (this: DataSource): string[][] { return transpose(this.columns.map(c => c.values)); }),
   appendColumn: p(function (this: DataSource, column: DataColumn): DataSource {
-    return Object.assign({}, this, { columns: this.columns.concat([column]) });
+    return makeDataSource(Object.assign({}, this, { columns: this.columns.concat([column]) }));
   })
 });
 

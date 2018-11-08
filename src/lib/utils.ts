@@ -1,4 +1,3 @@
-import { Stream, combineArray } from "most";
 import { over, set, lensPath } from "ramda";
 
 type Ord = number | string | boolean | Date;
@@ -84,11 +83,6 @@ export function merge<T1, T2>(a: T1, b: T2): T1 & T2 {
 export function mergeAll<T>(...args: {[k in string]: T}[]): ({[k in string]: T}) {
   const init: ({[k in string]: T}) = {};
   return args.reduce((merged, arg) => ({ ...merged, ...arg }), init);
-}
-
-export function objectStream(obj: {[k: string]: Stream<any>}): Stream<{}> {
-  const [keys, vals] = [Object.keys(obj), Object.values(obj)];
-  return combineArray((...args) => zipObj(keys, args), vals);
 }
 
 export function objFromPairs<T>(pairs: [string, T][]): {[k: string]: T} {
@@ -182,6 +176,12 @@ export function sortWith<T>(fn: (a: T) => Ord, xs: T[]): T[] {
   }
 
   return sortWith(fn, lts).concat(eqs).concat(sortWith(fn, gts));
+}
+
+export function toggle<T>(vals: T[], val: T): T[] {
+  return vals.includes(val) ?
+    vals.filter(v => v !== val) :
+    [...vals, val];
 }
 
 export function transpose<T>(xss: T[][]): T[][] {

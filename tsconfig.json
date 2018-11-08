@@ -9,7 +9,7 @@
         "lib": ["es2018", "dom"]
     },
     "include": [
-        "./src/"
+        "./src/", "test/utils.spec.ts"
     ],
     "exclude": [
       "./node_modules"

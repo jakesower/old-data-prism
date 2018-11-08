@@ -3,10 +3,11 @@ import { mergeAll, mapObj } from '../../lib/utils';
 import { OperationSlot, DataSource } from '../../types';
 
 // A higher order component--takes in slots and returns a component
-export default function (dataSource: DataSource, slots: {[k in string]: OperationSlot<any>}) {
+export default function (dataSource: DataSource, slots: {[k: string]: OperationSlot<any>}) {
   const slotDispatch = {
     free: freeSlotView,
     column: columnSlotView,
+    multicolumn: multicolumnView,
   };
 
   function main({ DOM, props: props$ }) {

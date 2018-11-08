@@ -1,5 +1,5 @@
+import xs, { Stream } from 'xstream';
 import { div, span, strong, table, td, th, tr, button, VNode } from "@cycle/dom";
-import { Stream, combine, mergeArray } from "most";
 import { Maybe } from '../../lib/maybe';
 import { DataColumn, DataSource, StateModifier } from "../../types";
 import dataTypes from "../../lib/data-types";
@@ -29,20 +29,18 @@ const initState: LocalState = {
 };
 
 export default function main(cycleSources: {props: Stream<Props>, DOM: any}): Output {
-  const props$: Stream<Props> = cycleSources.props;
+  const props$: Stream<Props> = cycleSources.props.startWith({source: Maybe.Nothing<DataSource>()});
 
   const { firstPage$, prevPage$, nextPage$, lastPage$, columnSort$ } = intent({ DOM: cycleSources.DOM });
   const pageChanger = (action$: Stream<any>, pageFn: (page: number) => number): StateModifier<State> => {
-    return combine(
-      (_, props) => state => ({ ...state,
+    return xs.combine<Stream<any>, Props>(action$, props$)
+      .map(([_, props]) => state => ({ ...state,
         page: clamp(1, props.source.map(numPages).withDefault(1), pageFn(state.page))
-      }),
-      action$, props$
-    ).skipRepeats();
+      }));
   };
 
   const stateModifiers$: StateModifier<LocalState> =
-    mergeArray([
+    xs.merge(
       pageChanger(firstPage$, _ => 1),
       pageChanger(prevPage$, p => p-1),
       pageChanger(nextPage$, p => p+1),
@@ -52,10 +50,10 @@ export default function main(cycleSources: {props: Stream<Props>, DOM: any}): Ou
         const nextDir = (col === nextCol && dir === 'asc') ? 'desc' : 'asc';
         return { ...state, sorting: { col: nextCol, dir: nextDir }};
       }),
-    ]);
+    );
 
-  const localState$ = stateModifiers$.scan((state, fn) => fn(state), initState);
-  const state$ = combine<Props, LocalState, State>(merge, props$, localState$);
+  const localState$ = stateModifiers$.fold((state, fn) => fn(state), initState);
+  const state$ = xs.combine<Props, LocalState>(props$, localState$).map(([a,b]) => merge(a,b));
 
   return {
     DOM: state$.map(view),

@@ -1,58 +1,98 @@
-import xs, { Stream as XStream } from 'xstream';
+import xs, { Stream } from 'xstream';
 import isolate from '@cycle/isolate';
 import { adapt } from '@cycle/run/lib/adapt';
-import { Stream, never } from 'most';
+import sampleCombine from 'xstream/extra/sampleCombine';
+
+const ITEM_ID = Symbol('id');
+const ITEM_NAME = Symbol('name');
+const ITEM_REMOVE$ = Symbol('remove$');
 
 type Component = any;//(sources: {[k: string]: Stream<any>}) => {[k: string]: Stream<any>}
+type ChainedCollectionInput = {
+  component: Component,
+  sources: object,
+  add$: Stream<any>,
+  root$,
+  chainConnector: (sinks: {[k: string]: Stream<any>}) => Stream<any>,
+  removeConnector: (item: {[k: string]: Stream<any>}) => Stream<any>,
+}
+type Item = {
+  [ITEM_ID]: number,
+  [ITEM_NAME]: string,
+  [ITEM_REMOVE$]: Stream<any>,
+  [k: string]: Stream<any>
+}
 
 // helpers
 const id = (function () { let i = 1; return function () { return i++; }}());
 function isVtree (x) { return x && typeof x.sel === 'string'; }
 
+function ChainedCollection(args: ChainedCollectionInput) {
+  const { component, sources, add$, root$, chainConnector, removeConnector } = args;
+  const removeProxy$: Stream<number> = xs.create();
+  const chainSourceProxy$ = xs.create();
 
-// IF THIS DOESN'T SEEM TO BE WORKING, TRY SOMETHING LIKE THIS:
-// FAILS: const activeSource$ = state$.map(activeSourceObj);
-// WORKS: const activeSource$ = adapt(xs.fromObservable(state$.map(activeSourceObj)).remember())
-// It ain't cool, but it'll do for now.
-function ChainedCollection(
-  component: Component,
-  sources: {[k: string]: any},
-  sourceAdd$: Stream<any>,
-  rootWithMemory$,
-  connector: (sinks: {[k: string]: Stream<any>}) => Stream<any>,
-) {
-
-  const addModifier$ = sourceAdd$.constant((collection: any[]) => {
-    const chainSource = collection.length === 0 ?
-      rootWithMemory$ :
-      connector(collection[collection.length - 1]);
+  const addModifier$ = add$.mapTo((collection: Item[]): Item[] => {
+    const initChain = collection.length === 0 ?
+      root$ :
+      chainConnector(collection[collection.length - 1]);
 
     const newId = id();
-    const newItem = isolate(component, newId.toString())({ ...sources, chain$: rootWithMemory$ });
-    newItem._id = newId;
-    newItem._name = component.name;
+    const newItem = isolate(component, newId.toString())({
+      ...sources,
+      chain$: chainSourceProxy$
+        .startWith({[newId]: initChain})
+        .map(chainSource => chainSource[newId] || initChain)
+        .flatten()
+        .remember()
+    });
+    newItem[ITEM_ID] = newId;
+    newItem[ITEM_NAME] = component.name;
+    newItem[ITEM_REMOVE$] = removeConnector(newItem).take(1).mapTo(newId);
 
     return [...collection, newItem];
   });
 
-  // remove stuff needs to be included eventually--consider a stream of streams for connection purposes
+  const removeModifier$ = removeProxy$.map(itemId => collection => removeItem(itemId, collection));
 
-  const modifiers = [
+  const modifier$: Stream<(collection: Item[]) => any> = xs.merge(
     addModifier$,
-  ];
+    removeModifier$,
+  );
 
-  const init: any[] = [];
-  const collection$ = addModifier$.scan((coll, fn) => fn(coll), init);
+  const init: Item[] = [];
+  const collection$ = modifier$.fold((coll, fn) => fn(coll), init).debug();
+  const remove$ = collection$
+    .map(items => items.map(item => item[ITEM_REMOVE$]))
+    .map(remove$$ => xs.merge(...remove$$))
+    .flatten() as Stream<number>;
+
+  const chainSource$ = modifier$
+    .compose(sampleCombine(collection$))
+    .map(([_, collection]) => collection)
+    .map(collection => collection.reduce((acc, item, idx) => {
+      const chainSource = idx === 0 ? root$ : chainConnector(collection[idx - 1]);
+      const entry = {[item[ITEM_ID]]: chainSource};
+      return Object.assign({}, acc, entry);
+    }, {}))
+
+  removeProxy$.imitate(remove$);
+  chainSourceProxy$.imitate(chainSource$);
 
   return collection$;
 }
 
 
-function pluck(sourceCollection$: Stream<any[]>, pluckSelector): Stream<any[]> {
+function removeItem(itemIdToRemove: number, collection: any[]): any[] {
+  return collection.filter(item => item[ITEM_ID] !== itemIdToRemove);
+}
+
+
+function pluck(sourceCollection$: Stream<any[]>, pluckSelector): Stream<any> {
   const sinks = {};
 
   function sink$(item) {
-    const key = item._id;
+    const key = item[ITEM_ID];
 
     if (sinks[key] === undefined) {
       const selectedSink = xs.fromObservable(pluckSelector(item));
@@ -65,7 +105,7 @@ function pluck(sourceCollection$: Stream<any[]>, pluckSelector): Stream<any[]> {
     return sinks[key];
   }
 
-  const collection$: XStream<any[]> = xs.fromObservable(sourceCollection$);
+  const collection$: Stream<any[]> = xs.fromObservable(sourceCollection$);
   const outputCollection$ = collection$
     .map(items => items.map(item => sink$(item)))
     .map(sinkStreams => xs.combine(...sinkStreams))

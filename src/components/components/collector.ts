@@ -1,71 +1,97 @@
-import { div, button, option, h3, select, input } from '@cycle/dom';
-import { Stream, mergeArray, combine } from 'most';
+import xs, { Stream } from 'xstream'
+import sampleCombine from 'xstream/extra/sampleCombine'
+import { div, button, option, h3, select, input, VNode, span } from '@cycle/dom';
 import { lensPath, set, values } from 'ramda';
-import { DataSource, StateModifier, OperationSlot, Operation } from '../../types';
+import { DataSource, StateModifier, OperationSlot, Operation, DataColumn } from '../../types';
 import { Maybe } from '../../lib/maybe';
-import { merge, eq, inlineKey, go, sortWith, mapObj, flatten } from '../../lib/utils';
-import { indexedOptions, targetValue } from '../../lib/dom-utils';
+import { eq, inlineKey, go, sortWith, mapObj, flatten } from '../../lib/utils';
 import operationDefs from '../../operations';
 import { applyOperation } from '../../lib/data-functions';
+import Multiselect from './multiselect';
 
-
+type Obj = {[k: string]: string};
 interface LocalState {
   operation: Maybe<string>,
-  inputs: {[k in string]: string},
+  inputs: Obj,
   editing: boolean,
+  savedValue: Maybe<Obj>
 }
 
 interface Props {
   source: Maybe<DataSource>
 }
 
-const initState: LocalState = { operation: Maybe.Nothing<string>(), inputs: {}, editing: true };
+const initState: LocalState = {
+  operation: Maybe.Nothing<string>(),
+  inputs: {},
+  editing: true,
+  savedValue: Maybe.Nothing<Obj>(),
+};
 
 const slotDispatch = {
   free: freeSlotMarkup,
   column: columnSlotMarkup,
+  multicolumn: multicolumnSlotMarkup,
 };
+
+const iconTags = [
+  'deriver',
+  'filter',
+  'grouping',
+  'aggregator'
+];
+
 
 export default function main(cycleSources) {
   const { DOM, chain$ } = cycleSources;
-  const { save$, cancel$, apply$, updateInput$, setOperation$ } = intent(DOM);
+  const { save$, cancel$, edit$, apply$, updateInput$, setOperation$, removePress$ } = intent(DOM);
 
-  const stateModifiers$: StateModifier<LocalState> = mergeArray([
+  const stateModifiers$ = xs.merge(
     setOperation$.map(operation => state => ({...state,
       operation: Maybe.fromValue(operation),
     })),
     updateInput$.map(({ value, slot }) => set(lensPath(['inputs', slot]), value)),
-  ]);
+    save$
+      .filter(_ => valid)
+      .mapTo(state => ({...state, editing: false, savedValue: Maybe.of(state.inputs) })),
+    edit$.mapTo(state => ({...state, editing: true })),
+    cancel$
+      .filter(_ => state => !state.savedValue.isNothing())
+      .mapTo(state => ({ ...state, editing: false, inputs: state.savedValue.withDefault({})}))
+  ) as StateModifier<LocalState>;
 
-  const localState$: Stream<LocalState> = stateModifiers$.scan((state, mod) => mod(state), initState);
-  const state$ = combine<Props, LocalState, Props&LocalState>(merge, chain$, localState$).tap(b => console.log({b}));
+  const localState$: Stream<LocalState> = stateModifiers$.fold((state, mod) => mod(state), initState);
+  const state$ = xs.combine<LocalState, Maybe<DataSource>>(localState$, chain$);
 
   // basis of what the outside sees
-  const activeState$ = localState$
-    .sampleWith(mergeArray([save$, apply$]))
+  const activeState$ = xs.merge(save$, apply$)
+    .compose(sampleCombine(localState$))
+    .map(([_, ls]) => ls)
+    .debug()
     .filter(valid)
     .map(Maybe.of)
     .startWith(Maybe.Nothing<LocalState>());
 
-  const nextDataSource = (mSource: {source: Maybe<DataSource>}, mActiveState: Maybe<LocalState>) => go(function* (){
+  const cancelRemove$ = cancel$
+    .compose(sampleCombine(localState$))
+    .filter(([_, ls]) => ls.savedValue.isNothing());
+
+  const nextDataSource = (mSource: Maybe<DataSource>, mActiveState: Maybe<LocalState>) => go(function* (){
     const activeState: LocalState = yield mActiveState;
     const op = yield activeState.operation;
     const opDef: Operation = operationDefs[op];
-    const src: DataSource = yield mSource.source;
+    const src: DataSource = yield mSource;
     return applyOperation(src, opDef, activeState.inputs);
   });
 
-  const dataSource$ = combine(nextDataSource, chain$, activeState$)
+  const dataSource$ = xs.combine<Maybe<DataSource>, Maybe<LocalState>>(chain$, activeState$).map(([a,b]) => nextDataSource(a, b))
     .startWith(Maybe.Nothing<DataSource>());
 
-  activeState$.observe(console.log)
-  apply$.observe(console.log)
-  dataSource$.observe(console.log)
-
   return {
-    DOM: state$.map(view).startWith(div('')),
+    DOM: state$.map(args => view(args[0], args[1])).startWith(div('')),
     value: activeState$,
     dataSource: dataSource$,
+    remove$: xs.merge(removePress$, cancelRemove$),
   };
 }
 
@@ -75,15 +101,37 @@ function intent(DOM) {
     save$: DOM.select('.collector .save').events('click'),
     apply$: DOM.select('.collector .apply').events('click'),
     cancel$: DOM.select('.collector .cancel').events('click'),
+    edit$: DOM.select('.collector .edit').events('click'),
+    removePress$: DOM.select('.collector .remove').events('click'),
     setOperation$: DOM.select('.operation-id').events('change').map(ev => ev.target.value),
     updateInput$: DOM.select('.slot-input').events('change')
-      .map(ev => ({ value: ev.target.value, slot: ev.target.dataset.slotId })).tap(console.log)
+      .map(ev => ({ value: ev.target.value, slot: ev.target.dataset.slotId })),
   }
 }
 
 
-function view(state: LocalState & Props) {
-  const { operation, source } = state;
+function view(state: LocalState, mSource: Maybe<DataSource>, DOM) {
+  if (state.editing) { return viewEdit(state, mSource, DOM); }
+
+  const def = state.operation.map(o => operationDefs[o]).withDefault(null);
+  const source = mSource.withDefault(null);
+  if (!def || !source) { return []; }
+
+  const icon = `collector-${def.tags.find(t => iconTags.includes(t)) || 'generic'}`;
+
+  return div({class: {collector: true, [icon]: true}}, [
+    div({class: {definition: true}}, def.display(source, state.inputs)),
+    div({class: {controls: true}}, [
+      span('.edit', ''),
+      span('.remove', '')
+    ])
+  ]);
+
+}
+
+
+function viewEdit(state: LocalState, source: Maybe<DataSource>, DOM) {
+  const { operation } = state;
   const opOpts = sortWith(od => od.name, inlineKey(operationDefs))
     .map(od => option({ attrs: { value: od.key, selected: operation.withDefault('') === od.key }}, od.name));
 
@@ -95,10 +143,10 @@ function view(state: LocalState & Props) {
   ]);
 
   const slotMarkup = values(mapObj(slots, (s, sid) => {
-    return slotDispatch[s.slotType](s, sid, source);
+    return slotDispatch[s.slotType](s, sid, state.inputs[sid], source, DOM);
   }));
 
-  return div('.collector', {}, flatten([
+  return div('.collector.editing', {}, flatten([
     [opMarkup],
     slotMarkup,
     [
@@ -112,18 +160,22 @@ function view(state: LocalState & Props) {
 }
 
 
-function freeSlotMarkup(slot: OperationSlot<any>, slotId: string) {
+function freeSlotMarkup(slot: OperationSlot<any>, slotId: string, value: string) {
   return div('.slot', {}, [
     h3({}, slot.display),
-    input('.slot-input', { attrs: { type: 'text', required: true }, dataset: { slotId }})
+    input('.slot-input', {
+      attrs: { type: 'text', required: true },
+      props: { value },
+      dataset: { slotId }
+    })
   ]);
 }
 
 
-function columnSlotMarkup(slot: OperationSlot<any>, slotId: string, mSource: Maybe<DataSource>) {
+function columnSlotMarkup(slot: OperationSlot<any>, slotId: string, value: string, mSource: Maybe<DataSource>) {
   const emptyCol = option({ attrs: { value: '' }}, '');
-  const colRed = (acc, col, idx) => col.hasType(slot.type) ?
-    [...acc, option({ attrs: { value: idx }}, col.name)] :
+  const colRed = (acc: VNode[], col: DataColumn, idx: number) => col.hasType(slot.type) ?
+    [...acc, option({ attrs: { value: idx, selected: (value === idx.toString()) }}, col.name)] :
     acc;
 
   const relevantColumns = mSource.map(source => source.columns.reduce(colRed, [emptyCol]));
@@ -135,10 +187,13 @@ function columnSlotMarkup(slot: OperationSlot<any>, slotId: string, mSource: May
 }
 
 
-function displayOperation(op) {
-  console.log({op, operationDefs});
-  return "";
+function multicolumnSlotMarkup(slot: OperationSlot<any>, slotId: string, value: string[], mSource: Maybe<DataSource>, DOM) {
+  return div('.slot', {}, [
+    h3({}, slot.display),
+    Multiselect()
+  ])
 }
+
 
 
 function valid(state: LocalState): boolean {

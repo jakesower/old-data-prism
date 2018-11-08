@@ -1,5 +1,5 @@
+import xs, { Stream } from 'xstream';
 import { aside, div, input, main as main_, p, h1, h2, DOMSource } from '@cycle/dom';
-import { combineArray, Stream, mergeArray, combine } from 'most';
 import { DataSource, StateModifier } from '../../types';
 import Grid from './grid';
 import { scopedEvent } from '../../lib/dom-utils';
@@ -24,21 +24,19 @@ export default function main(cycleSources: { DOM: DOMSource, props: Stream<Props
   const { props: props$, DOM } = cycleSources;
   const { addSource$, newSource$, changeSource$ } = intent({ DOM });
 
-  const stateModifiers$: StateModifier<LocalState> = mergeArray([
-    newSource$.constant(state => ({ ...state, activeSource: noNum })),
+  const stateModifiers$ = xs.merge(
+    newSource$.mapTo(state => ({ ...state, activeSource: noNum })),
     changeSource$.map((id: number) => state => ({ ...state, activeSource: Maybe.of(id) })),
     props$.map(ps => ps.sources.length)
-      .skipRepeats()
       .filter(l => l > 0)
       .map(l => state => ({ ...state, activeSource: Maybe.of(l-1) })),
     props$.map(ps => ps.sources.length)
-      .skipRepeats()
       .filter(l => l === 0)
       .map(l => state => ({ ...state, activeSource: noNum }))
-  ]);
+  ) as StateModifier<LocalState>;
 
-  const localState$: Stream<LocalState> = stateModifiers$.scan((state, mod) => mod(state), initState);
-  const state$ = combine<Props, LocalState, State>(merge, props$, localState$).skipRepeatsWith(eq);
+  const localState$: Stream<LocalState> = stateModifiers$.fold((state, mod) => mod(state), initState);
+  const state$ = xs.combine(props$, localState$).map(args => merge(...args));
 
   const activeSourceObj: (state: State) => ({ source: Maybe<DataSource> }) = state =>
     ({ source: state.activeSource.map(rs => state.sources[rs]) });
@@ -47,7 +45,7 @@ export default function main(cycleSources: { DOM: DOMSource, props: Stream<Props
   const gridDom$ = grid.DOM;
 
   return {
-    DOM: combineArray(view, [state$, gridDom$]),
+    DOM: xs.combine(state$, gridDom$).map(c => view(c[0] as State, c[1])).startWith(div('hi')),
     csvLoader: addSource$.map(e => ({ source: 'upload-csv', element: e })),
   }
 }

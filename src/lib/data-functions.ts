@@ -3,7 +3,7 @@ import { DataType, OperationSlot, DataSource, Operation } from '../types';
 import { mapObj, mergeAll, zipObj } from './utils';
 
 export function applyOperation(dataSource: DataSource, operation: Operation, inputs: {[k in string]: string}): DataSource {
-  return operation.fn(dataSource, populateSlots(operation.slots, inputs));
+  return operation.fn(dataSource, populateSlots(dataSource, operation.slots, inputs));
 }
 
 export function discoverTypes(vals: string[]): DataType<any>[] {
@@ -14,21 +14,34 @@ export function modifyStateAttr<T>(attr: keyof T, fn: (x: T[keyof T]) => T[keyof
   return obj => Object.assign({}, obj, {[attr]: fn(obj[attr]) });
 }
 
-export function populateSlots<T>(slots: {[k in string]: OperationSlot<T>}, rawInputs: {[k in string]: string}): {[k in string]: T} {
-  return mapObj(slots, (slot, key) => slot.type.cast(rawInputs[key]));
+export function populateSlots<T>(
+  dataSource: DataSource,
+  slots: {[k in string]: OperationSlot<T>},
+  rawInputs: {[k: string]: string}): {[k: string]: T}
+{
+  // console.log({dataSource,slots,rawInputs})
+  return mapObj(slots, (slot, key) => {
+    switch (slot.slotType) {
+      case "column":
+        return dataSource.columns[rawInputs[key]].values.map(slot.type.cast);
+      default:
+       return slot.type.cast(rawInputs[key]);
+    }
+  });
 }
 
 // TODO: optimize
-export function mapRows(fn: ((x: {[k in string]: any}) => string)): (dataSource: DataSource, inputs: {[k in string]: any}) => string[] {
+export function mapRows(fn: ((x: {[k: string]: any}) => string)): (dataSource: DataSource, inputs: {[k: string]: any}) => string[] {
   return function(dataSource, inputs) {
     const [ks, vs] = [Object.keys(inputs), Object.values(inputs)];
     let output: string[] = [];
 
-    for (let i=0;i<dataSource.numRecords;i+=1) { // record number
-      for (let j=0;j<ks.length;j+=1) {           // column index
-        const rowVals = vs.map(v => Array.isArray(v) ? v[j] : v);
-        output.push(fn(zipObj(ks, rowVals)));
+    for (let i=0; i < dataSource.numRecords; i+=1) {
+      let row = {};
+      for (let j=0; j < ks.length; j+=1) {
+        row[ks[j]] = Array.isArray(vs[j]) ? vs[j][i] : vs[j];
       }
+      output.push(fn(row));
     }
 
     return output;

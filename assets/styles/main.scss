@@ -240,7 +240,7 @@ div.main-container {
         height: 1.2em;
         width: 1.2em;
         float: right;
-        display: inline-block;
+        // display: inline-block;
 
         &::before {
           font: normal normal normal 14px/1 FontAwesome;
@@ -420,9 +420,9 @@ nav {
 }
 
 .collector {
+  margin: 0.5em 0;
   padding: 0.5em;
   font-size: 110%;
-  border: 1px black dashed;
 
   .definition {
     padding: 0 1em;
@@ -440,7 +440,17 @@ nav {
     }
   }
 
+  &.editing {
+    border: 1px black dashed;
+  }
+
   &:not(.editing) {
+    display: flex;
+
+    .definition {
+      flex: 1;
+    }
+
     .controls {
       flex: 0 0 auto;
       visibility: hidden;
