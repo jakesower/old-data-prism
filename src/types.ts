@@ -38,12 +38,17 @@ export interface DataType<T> {
 export interface Operation {
   display: (source: DataSource, inputs: {[k: string]: any}) => VNode,
   fn: (source: DataSource, inputs: {[k: string]: any}) => DataSource,
-  help?: string,
   name: string,
   slots: { [k in string]: OperationSlot<any> },
   tags: string[],
+  collector: any,
+  help?: string,
   valid?: (source: DataSource, inputs: {[k: string]: any}) => boolean,
 }
+
+export type StreamObj = {[k: string]: Stream<any>};
+export type Component = (cycleSources: StreamObj) => StreamObj;
+export type Collector = (op: Operation) => any;
 
 
 

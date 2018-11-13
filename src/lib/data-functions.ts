@@ -30,9 +30,11 @@ export function populateSlots<T>(
   });
 }
 
+
 // TODO: optimize
 export function mapRows(fn: ((x: {[k: string]: any}) => string)): (dataSource: DataSource, inputs: {[k: string]: any}) => string[] {
   return function(dataSource, inputs) {
+    console.log({ dataSource, inputs })
     const [ks, vs] = [Object.keys(inputs), Object.values(inputs)];
     let output: string[] = [];
 

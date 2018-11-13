@@ -15,17 +15,16 @@ interface Props {
 }
 
 
-export default function main(cycleSources: { DOM: any, props: Stream<Props> }) {
-  const { DOM, props } = cycleSources;
+export default function main(init: Props, cycleSources: { DOM: any }) {
+  const { DOM } = cycleSources;
   const { toggle$ } = intent(DOM);
 
-  const value$ = xs.combine(props, toggle$)
-    .map(([props, value]) => toggle(props.selected, value));
+  const value$ = toggle$
+    .fold((value, togId) => toggle(value, togId), init.selected);
 
   return {
-    DOM: xs
-      .combine<Props, string[]>(props, value$)
-      .map(([prop, value]) => view(value, prop.options))
+    DOM: value$.map(value => view(value, init.options)),
+    value: value$,
   }
 }
 
@@ -46,7 +45,8 @@ function view(currentValues: string[], options: Option[]) {
     ]);
   }
 
-  const currentDisplays = currentValues.map(cv => options.find(o => o.value === cv).display);
+  const currentDisplays = currentValues
+    .map(cv => (options.find(o => o.value === cv) as Option).display);
   const placeholder = currentValues.length > 0 ?
     `${currentValues.length} Selected: ${currentDisplays.join(', ')}` :
     'Please select';

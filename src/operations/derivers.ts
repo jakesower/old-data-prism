@@ -33,6 +33,7 @@ const makeDeriver = (def: Deriver): Operation => {
         types: discoverTypes(vals)
       }));
     },
+    collector: SlotCollector,
     help: 'help text',
     tags: ["deriver"],
   });
@@ -154,6 +155,7 @@ export const AbsoluteValue = makeDeriver({
 export const Quantile: Operation = {
   name: "Quantile",
   tags: ["math", "bucketers"],
+  collector: SlotCollector,
 
   slots: {
     columnName: colNameSlot,
@@ -232,22 +234,22 @@ export const Quantile: Operation = {
 //     col(dataSource, inputs.num)
 //   ])
 
-const Sum = makeDeriver({
-  name: "Summation",
-  tags: ["math"],
-  slots: {
-    columnName: colNameSlot,
-    addends: MultiColumnSlot({ display: 'Column', type: dataTypes.FiniteNumber }),
-  },
-  deriverFn: mapRows(({addends}) => R.map(R.sum, inputs.addends),
-  display: (dataSource, inputs) => {
-    const colSpans = R.map(col(dataSource), inputs.addends);
-    return h('div', {}, R.flatten([
-      "Sum of ",
-      R.intersperse(', ', colSpans)
-    ]))
-  }
-});
+// const Sum = makeDeriver({
+//   name: "Summation",
+//   tags: ["math"],
+//   slots: {
+//     columnName: colNameSlot,
+//     addends: MultiColumnSlot({ display: 'Column', type: dataTypes.FiniteNumber }),
+//   },
+//   deriverFn: mapRows(({addends}) => R.map(R.sum, inputs.addends),
+//   display: (dataSource, inputs) => {
+//     const colSpans = R.map(col(dataSource), inputs.addends);
+//     return h('div', {}, R.flatten([
+//       "Sum of ",
+//       R.intersperse(', ', colSpans)
+//     ]))
+//   }
+// });
 
 
 // module.exports = {

@@ -49,6 +49,7 @@ function ChainedCollection(args: ChainedCollectionInput) {
     newItem[ITEM_ID] = newId;
     newItem[ITEM_NAME] = component.name;
     newItem[ITEM_REMOVE$] = removeConnector(newItem).take(1).mapTo(newId);
+    newItem.DOM.debug()
 
     return [...collection, newItem];
   });
@@ -61,7 +62,7 @@ function ChainedCollection(args: ChainedCollectionInput) {
   );
 
   const init: Item[] = [];
-  const collection$ = modifier$.fold((coll, fn) => fn(coll), init).debug();
+  const collection$ = modifier$.fold((coll, fn) => fn(coll), init);
   const remove$ = collection$
     .map(items => items.map(item => item[ITEM_REMOVE$]))
     .map(remove$$ => xs.merge(...remove$$))
