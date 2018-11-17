@@ -1,12 +1,10 @@
 import xs, { Stream } from 'xstream'
 import sampleCombine from 'xstream/extra/sampleCombine'
-import { div, button, option, h3, select, input, VNode, span, map } from '@cycle/dom';
-import { lensPath, set, values } from 'ramda';
-import { DataSource, StateModifier, OperationSlot, Operation, DataColumn, Component, StreamObj } from '../../types';
+import { div, button, option, h3, select, VNode, span } from '@cycle/dom';
+import { DataSource, StateModifier, Operation } from '../../types';
 import { Maybe } from '../../lib/maybe';
-import { eq, inlineKey, go, sortWith, mapObj, flatten, merge, mergeAll } from '../../lib/utils';
-import operationDefs from '../../operations';
-import { applyOperation } from '../../lib/data-functions';
+import { inlineKey, go, sortWith, flatten } from '../../lib/utils';
+import operationDefs, { OperationType } from '../../operations';
 import { sampleWith } from '../../lib/stream-utils';
 
 type StrObj = {[k: string]: string};
@@ -36,10 +34,11 @@ const iconTags = [
   'aggregator'
 ];
 
-// PELIGRO! This is a big jungle of Maybe handling
+
 export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<DataSource>> }) {
   const { DOM, chain$ } = cycleSources;
-  const collectorValueProxy$: any = xs.create();
+  const collectorValueApplyProxy$: any = xs.create();
+  const collectorValueSaveProxy$: any = xs.create();
 
   // STATE MODIFIERS
   //
@@ -52,10 +51,12 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
     cancel$
       .filter(_ => state => !state.savedValue.isNothing())
       .mapTo(state => ({ ...state, editing: false, inputs: state.savedValue.withDefault({})})),
-    collectorValueProxy$ // activated upon save
-      .debug(i => console.log({inputs: i}))
+    collectorValueApplyProxy$
       .filter(_ => valid)
-      .map(inputs => state => ({ ...state, inputs, savedValue: Maybe.of(inputs), editing: false }))
+      .map(inputs => state => ({ ...state, inputs })),
+    collectorValueSaveProxy$
+      .filter(_ => valid)
+      .map(inputs => state => ({ ...state, inputs, editing: false, savedValue: Maybe.of(inputs) }))
   ) as StateModifier<LocalState>;
 
   const localState$: Stream<LocalState> = stateModifiers$.fold((state, mod) => mod(state), initState);
@@ -66,9 +67,11 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
   const collector$ = collector(localState$, DOM, chain$);
   const collectorVdom$: Stream<VNode | VNode[]> = collector$.map(c => c.DOM).flatten();
   const collectorValue$: Stream<{[k: string]: string}> = collector$.map(c => c.value).flatten();
-  const collectorValueSnapshot$ = collectorValue$.compose(sampleWith(save$));
+  const collectorValueApply$ = collectorValue$.compose(sampleWith(apply$));
+  const collectorValueSave$ = collectorValue$.compose(sampleWith(save$));
 
-  collectorValueProxy$.imitate(collectorValueSnapshot$);
+  collectorValueApplyProxy$.imitate(collectorValueApply$);
+  collectorValueSaveProxy$.imitate(collectorValueSave$);
 
   const state$: Stream<State> = xs.combine<LocalState, Maybe<DataSource>>(localState$, chain$)
     .map(([a,b]) => Object.assign({}, a, { dataSource: b }))
@@ -98,7 +101,7 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
 
   return {
     DOM: dom$,
-    value: value$.debug(v => console.log({value$: v})),
+    value: value$,
     dataSource: dataSource$,
     remove$: xs.merge(removePress$, cancelRemove$),
   };
@@ -118,7 +121,6 @@ function intent(DOM) {
 
 
 function view(state: State, collectorMarkup: VNode | VNode[]) {
-  console.log({ state, collectorMarkup });
   if (state.editing) { return viewEdit(state, collectorMarkup); }
 
   const def = state.operation.map(o => operationDefs[o]).withDefault(null);
@@ -163,13 +165,12 @@ function viewEdit(state: LocalState, collectorMarkup: VNode | VNode[]): VNode {
 
 
 function valid(state: State): boolean {
-  if (state.operation.isNothing()) { return false; }
-
-  const slots = state.operation
-    .map(o => operationDefs[o].slots)
-    .withDefault({});
-
-  return eq(Object.keys(slots), Object.keys(state.inputs));
+  return go(function* (){
+    const op = yield state.operation;
+    const opDef: OperationType = operationDefs[op];
+    const src: DataSource = yield state.dataSource;
+    return opDef.valid(src, state.inputs);
+  }).withDefault(false);
 }
 
 
@@ -179,8 +180,8 @@ function collector(localState$: Stream<LocalState>, DOM, dataSource): Stream<{DO
   return localState$.map(localState =>
     localState.operation
       .map(op => {
-        const opDef: Operation = operationDefs[op];
-        return opDef.collector(opDef)({ DOM, dataSource, inputs: localState.inputs });
+        const opDef: OperationType = operationDefs[op];
+        return opDef.collector(opDef, localState.inputs)({ DOM, dataSource });
       })
       .withDefault(emptyCollector)
   );
@@ -190,8 +191,8 @@ function collector(localState$: Stream<LocalState>, DOM, dataSource): Stream<{DO
 function nextDataSource(state: State): Maybe<DataSource> {
   return go(function* () {
     const op = yield state.operation;
-    const opDef: Operation = operationDefs[op];
+    const opDef: OperationType = operationDefs[op];
     const src: DataSource = yield state.dataSource;
-    return applyOperation(src, opDef, state.inputs);
+    return opDef.fn(src, state.inputs);
   });
 }

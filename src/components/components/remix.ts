@@ -48,7 +48,7 @@ export default function main(cycleSources) {
     removeConnector: sink => sink.remove$,
   });
 
-  const collectorDom$ = pl(collectors$, x => x.DOM).debug(x => console.log({cDom: x}));
+  const collectorDom$ = pl(collectors$, x => x.DOM);
   const collectorSources$ = pl(collectors$, x => x.dataSource);
 
   const gridSource = xs.combine<Maybe<DataSource>, any[]>(activeSource$, collectorSources$)

@@ -1,47 +1,72 @@
-const R = require('ramda');
-const h = require('snabbdom/h').default;
+import { div } from '@cycle/dom';
+import { groupBy, values, pipeThru, transpose } from '../lib/utils';
+import { GroupCollector, GroupOperation } from '../components/collectors/group-collector';
+import { makeDataColumn, makeDataSource, DataColumn } from '../types';
+import { discoverTypes } from '../lib/data-functions';
+import * as aggregatorDefs from './aggregators';
 
-const Dataset = require('../types/dataset');
-const Column = require('../types/column');
+interface GroupInputs {
+  groupBasis: number[],
+  aggregators: AggregatorInput[],
+}
 
-const GroupCollector = require('../components/collectors/group-collector');
+interface AggregatorInput {
+  aggregator: string,
+  inputs: {[k: string]: string},
+}
 
-const mapIndexed = R.addIndex(R.map);
 
-const Grouping = {
+export const Grouping: GroupOperation = {
   name: "Grouping",
   tags: ["grouping"],
-  display: "Grouping",
+  display: _ => div("Grouping"),
   help: "Well hai",
+  valid: _ => true,
 
-  valid: ({dataset}, inputs) => {
-    const colsValid = R.length(inputs.columns) > 0;
-    const aggsValid = R.all(inputs.aggregators.valid(dataset));
+  // valid: ({dataset}, inputs) => {
+  //   const colsValid = R.length(inputs.columns) > 0;
+  //   const aggsValid = R.all(inputs.aggregators.valid(dataset));
 
-    return colsValid && aggsValid;
-  },
+  //   return colsValid && aggsValid;
+  // },
 
-  fn: ({dataset}, inputs) => {
-    const {columns, aggregators} = inputs;
+  fn: (dataSource, inputs: GroupInputs) => {
+    console.log({dataSource, inputs})
+    const { groupBasis, aggregators } = inputs;
 
-    const headers = R.map(R.nth(R.__, dataset.headers), columns);
-    const groups = R.pipe(
-      R.groupBy(record => JSON.stringify(R.map(R.nth(R.__, record), columns))),
-      R.toPairs
-    )(dataset.records);
+    const dataSourceGroups = pipeThru(dataSource.records, [
+      recs => groupBy(recs, record => JSON.stringify(groupBasis.map(col => record[col]))),
+      values,
+      (rgs: string[][][]) => rgs.map(rg => {
+        const rgcs = transpose(rg);
+        const cols = dataSource.columns.map((c, idx) => makeDataColumn({ name: "", values: rgcs[idx], types: c.types }));
+        return makeDataSource({ id: "", name: "", columns: cols });
+      }),
+    ]);
 
-    const groupingCols = R.pipe(
-      R.nth(0),
-      JSON.parse,
-      mapIndexed((vals, i) => Column.autoSchema(headers[i], vals))
-    )
+    console.log({ dataSourceGroups, records: dataSource.records, groupBasis, aggregators })
 
-    const groupedRows = R.map(agg =>
-      R.map(group => agg.fn(group[1])), // returns a list of Columns
-      aggregators
-    );
+    const basisColumns = groupBasis.map(col => {
+      const vals = dataSourceGroups.map(ds => ds.records[0][col]);
 
-    return Dataset(R.concat(groupingCols, groupedRows));
+      return makeDataColumn({
+        name: dataSource.columns[col].name,
+        values: vals,
+        types: discoverTypes(vals),
+      });
+    });
+
+    const aggColumns = aggregators.map(agg => {
+      const aggDef = aggregatorDefs[agg.aggregator];
+      return aggDef.fn(dataSourceGroups, agg.inputs);
+    })
+
+    return makeDataSource({
+      id: dataSource.id,
+      name: 'Oh Hai',
+      columns: basisColumns.concat(aggColumns),
+    });
+
   },
 
   collector: GroupCollector,
@@ -59,8 +84,3 @@ const BucketGrouper = {
     5. Can a fn be derived from above scenarios automatically?
   */
 }
-
-
-module.exports = {
-  Grouping
-};

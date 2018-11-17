@@ -4,7 +4,7 @@ import { scopedEvent } from '../../lib/dom-utils';
 import { toggle } from '../../lib/utils';
 
 
-interface Option {
+export interface Option {
   value: string,
   display: string,
 }
@@ -15,23 +15,27 @@ interface Props {
 }
 
 
-export default function main(init: Props, cycleSources: { DOM: any }) {
-  const { DOM } = cycleSources;
-  const { toggle$ } = intent(DOM);
+export default function main(init: Props) {
+  return function (cycleSources: { DOM: any }) {
+    const { DOM } = cycleSources;
+    const { toggle$ } = intent(DOM);
 
-  const value$ = toggle$
-    .fold((value, togId) => toggle(value, togId), init.selected);
+    const value$ = toggle$
+      .fold((value, togId) => toggle(value, togId), init.selected);
 
-  return {
-    DOM: value$.map(value => view(value, init.options)),
-    value: value$,
+    return {
+      DOM: value$.map(value => view(value, init.options)),
+      value: value$,
+    }
   }
 }
 
 
 function intent(DOM) {
+  console.log({DOM})
   return {
     toggle$: scopedEvent(DOM.select('.option'), 'click').map(t => t.dataset.value) as Stream<string>
+    // toggle$: DOM.select('.option').events('click').debug().map(t => t.dataset.value) as Stream<string>
   }
 }
 

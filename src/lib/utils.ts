@@ -1,6 +1,9 @@
 import { over, set, lensPath } from "ramda";
 
 type Ord = number | string | boolean | Date;
+type ObjType<T> = {
+  [Symbol.iterator]: IterableIterator<string>
+}
 
 export function ascend<T>(fn: ((x: T) => any)): (a: T, b: T) => number {
   return function(a, b) {
@@ -43,6 +46,17 @@ export function filterObj<T>(obj: {[k: string]: T}, predicate: (item: T) => bool
 
 export function flatten<T>(list: T | Array<T> | Array<T[]>): T[] {
   return makeFlat(list, true);
+}
+
+export function groupBy<T>(list: T[], fn: (item: T) => string): {[k: string]: T[]} {
+  let groups = {};
+  const ll = list.length;
+  for (let i=0; i<ll; i+=1) {
+    const g = fn(list[i]);
+    groups[g] = groups[g] || [];
+    groups[g][groups[g].length] = list[i];
+  }
+  return groups;
 }
 
 export function go(generator: () => IterableIterator<any>, wrapperMonad?: any) {
@@ -190,6 +204,10 @@ export function transpose<T>(xss: T[][]): T[][] {
 
 export function unnest<T>(list: Array<T> | Array<T[]>): T[] {
   return makeFlat(list, false);
+}
+
+export function values<T>(obj: {[k: string]: T}): T[] {
+  return Object.keys(obj).map(k => obj[k]);
 }
 
 export function zip<T, U>(l1: T[], l2: U[]): [T, U][] {

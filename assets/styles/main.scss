@@ -57,8 +57,7 @@ body, input, select, option {
 }
 
 input:invalid {
-  background-color: red;
-  color: green;
+  background-color: $light-red;
 }
 
 div.body-container {
@@ -109,16 +108,26 @@ div.body-container {
         }
       }
 
-      .menu .item {
-        &:hover {
-          background-color: $light-orange;
-        }
+      .sub-menu {
+        position: absolute;
+        height: 100%;
+        left: 5em; top: 0;
+        border-left: 3px black solid;
+        background-color: $mid-orange;
+        width: 19em;
+        z-index: 2;
 
-        .sub-menu {
-          background-color: $mid-orange;
-          border-left: 2px solid $light-orange;
+        &::before {
+          left: -6em;
+          content: '<';
+          opacity: 0.7;
+          background-color: white;
+          position: absolute;
+          width: calc(6em - 3px);
+          height: 100%;
         }
       }
+
     }
 
     tr:nth-child(2n) {
@@ -136,11 +145,11 @@ div.body-container {
     }
   }
 
-  &.annotate {
+  &.analyze {
     @include page-colors($green);
   }
 
-  &.export {
+  &.share {
     @include page-colors($blue);
   }
 
@@ -148,7 +157,7 @@ div.body-container {
     @include page-colors($indigo);
   }
 
-  &.purple {
+  &.learn {
     @include page-colors($purple);
   }
 
@@ -208,7 +217,6 @@ div.main-container {
     }
 
     .slot {
-      // border-top: 2px dashed black;
       padding: 4px 0;
       margin-bottom: 4px;
       z-index: 1;
@@ -217,16 +225,29 @@ div.main-container {
       h3 {
         padding: 0;
         text-transform: uppercase;
-      }
 
-      .multiselect {
-        width: 100%;
-        opacity: 1;
+        .remove {
+          cursor: pointer;
+          height: 1.2em;
+          width: 1.2em;
+          float: right;
+          margin-top: -3px;
 
-        .multiselect-content {
-          background-clip: padding-box;
-          background-color: #eee;
+          &::before {
+            font: normal normal normal 14px/1 FontAwesome;
+            content: "\f1f8";
+          }
         }
+      }
+    }
+
+    .multiselect {
+      width: 100%;
+      opacity: 1;
+
+      .multiselect-content {
+        background-clip: padding-box;
+        background-color: #eee;
       }
     }
 
@@ -253,23 +274,31 @@ div.main-container {
       }
     }
 
-    .form {
-
-
-
-      .aggregator {
-        padding: 5px 0;
-
-        .collector-form {
-          border-left: 0;
-          border-right: 0;
-
-          h2 {
-            display: none;
-          }
-        }
-      }
+    .aggregators {
+      // border-top: 1px black dashed;
+      padding: 0.5em 0;
     }
+
+    .aggregator {
+      padding: 0.5em;
+      margin: 0.25em 0;
+      border: 1px black dashed;
+    }
+
+    // .form {
+    //   .aggregator {
+    //     padding: 5px 0;
+
+    //     .collector-form {
+    //       border-left: 0;
+    //       border-right: 0;
+
+    //       h2 {
+    //         display: none;
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   main {
@@ -441,7 +470,7 @@ nav {
   }
 
   &.editing {
-    border: 1px black dashed;
+    border: 1px black solid;
   }
 
   &:not(.editing) {
@@ -494,6 +523,26 @@ nav {
       .controls {
         visibility: visible;
       }
+    }
+  }
+
+  button, .button {
+    padding: 7px;
+    margin: 0 3px;
+    border: 2px solid #000;
+    border-radius: 2px;
+    background-color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    outline: none;
+    text-transform: uppercase;
+
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+
+    &:hover {
+      background-color: transparent;
     }
   }
 }
@@ -588,6 +637,12 @@ nav {
       }
     }
   }
+}
+
+.fa {
+  font: normal normal normal 14px/1 FontAwesome;
+
+  &.fa-trash::before { content: "\f1f8"; }
 }
 
 .collector-filter::before {

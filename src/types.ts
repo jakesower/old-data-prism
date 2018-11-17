@@ -39,16 +39,15 @@ export interface Operation {
   display: (source: DataSource, inputs: {[k: string]: any}) => VNode,
   fn: (source: DataSource, inputs: {[k: string]: any}) => DataSource,
   name: string,
-  slots: { [k in string]: OperationSlot<any> },
   tags: string[],
   collector: any,
   help?: string,
-  valid?: (source: DataSource, inputs: {[k: string]: any}) => boolean,
+  valid: (source: DataSource, inputs: {[k: string]: any}) => boolean,
 }
 
 export type StreamObj = {[k: string]: Stream<any>};
 export type Component = (cycleSources: StreamObj) => StreamObj;
-export type Collector = (op: Operation) => any;
+export type Collector = (op: Operation) => {DOM: Stream<any>, value: Stream<any>};
 
 
 
@@ -77,7 +76,7 @@ export function makeDataSource(attrs: { id: string, name: string, columns: DataC
   return Object.setPrototypeOf(Object.assign({}, attrs), sourcePrototype);
 }
 
-export function makeDataColumn(attrs): DataColumn {
+export function makeDataColumn(attrs: { idx?: number, name: string, values: string[], types: DataType<any>[]}): DataColumn {
   return Object.setPrototypeOf(Object.assign({}, attrs), dataColumnPrototype);
 }
 

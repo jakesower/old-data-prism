@@ -6,7 +6,7 @@ import { objectStream } from "../lib/stream-utils";
 import { DataSource, StateModifier } from "../types";
 
 interface State {
-  page: "sources" | "remix" | "chart" | "annotate" | "export" | "purple",
+  page: "sources" | "remix" | "chart" | "analyze" | "share" | "learn",
   help: boolean,
   sources: DataSource[],
 }
@@ -74,9 +74,9 @@ function view(state, page) {
       tab("sources"),
       tab("remix"),
       tab("chart"),
-      tab("annotate"),
-      tab("export"),
-      tab("purple")
+      tab("analyze"),
+      tab("share"),
+      tab("learn")
     ]),
 
     div({class: {"help-bar": true}}, [

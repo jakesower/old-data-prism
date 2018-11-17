@@ -1,24 +1,30 @@
 import { div, h3, input, select, option, VNode } from '@cycle/dom';
-import { mergeAll, mapObj, zipObj } from '../../lib/utils';
-import { OperationSlot, DataSource, Collector, DataColumn } from '../../types';
+import { zipObj, eq } from '../../lib/utils';
+import { OperationSlot, DataSource, Collector, DataColumn, Operation } from '../../types';
 import Multiselect from '../components/multiselect';
 import xs, { Stream } from 'xstream';
 import isolate from '@cycle/isolate';
 import { Maybe } from '../../lib/maybe';
 
-interface CompOut {
-  DOM: Stream<any>,
-  value: Stream<any>
+
+export interface SlotOperation extends Operation {
+  slots: { [k in string]: OperationSlot<any> },
 }
 
-type SlotComp = (slot: OperationSlot<any>) => ((args: {DOM: any, dataSource: Stream<Maybe<DataSource>>}) => CompOut);
+
+interface CompOut {
+  DOM: Stream<any>,
+  value: Stream<string | string[]>
+}
+
+type SlotComp = (slot: OperationSlot<any>, init: any) => ((args: {DOM: any, dataSource: Stream<Maybe<DataSource>>}) => CompOut);
 
 interface SlotCompDispatch {
   [k: string]: SlotComp
 }
 
 // A higher order component--takes in slots and returns a component
-export default <Collector>function (opDef) {
+export function SlotCollector(opDef: SlotOperation, initialInputs) {
   const slots = opDef.slots;
   const slotKeys = Object.keys(slots);
   const slotVals = Object.values(slots);
@@ -30,11 +36,12 @@ export default <Collector>function (opDef) {
   };
 
   function main(cycleSources: { DOM: Stream<any>, dataSource: Stream<Maybe<DataSource>>}) {
-    const slotComponents = slotVals.map((slot, idx) =>
-      isolate(slotDispatch[slot.slotType](slot), idx)(cycleSources)
-    );
+    const slotComponents = slotVals.map((slot, idx) => {
+      const init = initialInputs[slotKeys[idx]];
+      return isolate(slotDispatch[slot.slotType](slot, init), idx)(cycleSources)
+    });
 
-    const value = xs.combine(...slotComponents.map(sc => sc.value))
+    const value: Stream<{[k: string]: string}> = xs.combine(...slotComponents.map(sc => sc.value))
       .map(vals => zipObj(slotKeys, vals));
 
     const outDom = xs.combine(...slotComponents.map(sc => sc.DOM))
@@ -44,12 +51,12 @@ export default <Collector>function (opDef) {
   }
 
 
-  function freeSlotComponent(slot) {
+  function freeSlotComponent(slot, init) {
     return function ({ DOM }): { DOM: Stream<any>, value: Stream<string> } {
       const value$ = DOM.select('.slot-input')
         .events('change')
         .map(ev => ev.target.value)
-        .startWith('');
+        .startWith(init || '');
 
       const view$ = value$.map(value =>
         div('.slot', {}, [
@@ -66,12 +73,12 @@ export default <Collector>function (opDef) {
   }
 
 
-  function columnSlotComponent(slot) {
+  function columnSlotComponent(slot, init) {
     return function ({ DOM, dataSource: dataSource$ }) {
-      const value$ = DOM.select('.slot-input').events('change').map(ev => ev.target.value).startWith('');
+      const value$ = DOM.select('.slot-input').events('change').map(ev => ev.target.value).startWith(init || '');
       const view$ = xs.combine(value$, <Stream<Maybe<DataSource>>>dataSource$)
         .map(([value, mDataSource]) => {
-          const emptyCol = option({ attrs: { value: '' }}, '');
+          const emptyCol = option({ attrs: { value: '', selected: (value === "") }}, '');
           const colReducer = (acc: VNode[], col: DataColumn, idx: number) => col.hasType(slot.type) ?
             [...acc, option({ attrs: { value: idx, selected: (value === idx.toString()) }}, col.name)] :
             acc;
@@ -89,22 +96,25 @@ export default <Collector>function (opDef) {
   }
 
 
-  function multicolumnSlotComponent(slot) {
+  function multicolumnSlotComponent(slot: OperationSlot<any>) {
     return function ({ DOM, dataSource }) {
       const colReducer = (acc, col: DataColumn, idx: number) =>
         col.hasType(slot.type) ?
           [...acc, { value: idx, display: col.name }] :
           acc;
 
-      const relevantColumns = dataSource.columns.reduce(colReducer, []);
+      const ms$ = dataSource
+        .map(mDs => {
+          const relevantColumns = mDs.map(ds => ds.columns.reduce(colReducer, [])).withDefault([]);
+          return Multiselect({ options: relevantColumns, selected: [] })({ DOM });
+        });
 
-      return Multiselect(
-        { options: relevantColumns, selected: [] },
-        { DOM }
-      )
+      return {
+        DOM: ms$.map(ms => ms.DOM).debug(x => console.log({x})),
+        value: ms$.map(ms => ms.value)
+      };
     }
   }
-
 
   return main;
 }

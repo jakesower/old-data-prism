@@ -1,14 +1,14 @@
 import { div, span, VNode } from '@cycle/dom';
 import { nth, range, findLastIndex } from 'ramda';
-import { Operation, DataSource, makeDataColumn, OperationSlot } from '../types';
-import { discoverTypes, mapRows } from '../lib/data-functions';
+import { DataSource, makeDataColumn, OperationSlot } from '../types';
+import { discoverTypes, mapRows, populateSlots } from '../lib/data-functions';
 import dataTypes from '../lib/data-types';
-import { merge, sort } from '../lib/utils';
+import { merge, sort, eq } from '../lib/utils';
 import { FreeSlot, ColumnSlot, MultiColumnSlot } from '../lib/slots';
-import SlotCollector from '../components/collectors/slot-collector';
+import { SlotCollector, SlotOperation } from '../components/collectors/slot-collector';
 
 type PartialOperation = {
-  [P in keyof Operation]?: Operation[P];
+  [P in keyof SlotOperation]?: SlotOperation[P];
 }
 
 interface Deriver extends PartialOperation {
@@ -23,10 +23,16 @@ const col = (dataSource, cName) =>
 
 const colNameSlot = FreeSlot({ display: 'Column Name', type: dataTypes.String });
 
-const makeDeriver = (def: Deriver): Operation => {
+const validateSlots = slots => (dataSource: DataSource, inputs: {[k: string]: string}): boolean => {
+  // TODO make this validate slot types
+  return eq(Object.keys(slots), Object.keys(inputs));
+}
+
+const makeDeriver = (def: Deriver): SlotOperation => {
   return merge(def, {
-    fn: (dataSource: DataSource, inputs: {[k in string]: any}) => {
-      const vals = def.deriverFn(dataSource, inputs);
+    fn: (dataSource: DataSource, inputs: {[k in string]: string}) => {
+      const populated = populateSlots(dataSource, def.slots, inputs);
+      const vals = def.deriverFn(dataSource, populated);
       return dataSource.appendColumn(makeDataColumn({
         name: inputs.columnName,
         values: vals,
@@ -36,8 +42,10 @@ const makeDeriver = (def: Deriver): Operation => {
     collector: SlotCollector,
     help: 'help text',
     tags: ["deriver"],
+    valid: (ds, i) => validateSlots(def.slots)(ds, i) && (def.valid ? def.valid(ds, i) : true),
   });
 }
+
 
 
 export const AbsoluteValue = makeDeriver({
@@ -152,56 +160,61 @@ export const AbsoluteValue = makeDeriver({
 // });
 
 
-export const Quantile: Operation = {
-  name: "Quantile",
-  tags: ["math", "bucketers"],
-  collector: SlotCollector,
 
-  slots: {
+export const Quantile: SlotOperation = (function () {
+  const slots = {
     columnName: colNameSlot,
     column: ColumnSlot({ display: 'Column', type: dataTypes.FiniteNumber }),
     order: FreeSlot({ display: 'Order', type: dataTypes.PositiveFiniteNumber }),
-  },
+  };
 
-  fn: (dataSource, inputs) => {
-    const sorted = sort(inputs.column);
-    const frac = sorted.length / inputs.order;
-    const cutoffs = range(0, parseInt(inputs.order)).map(
-      n => nth(Math.ceil(n*frac), sorted)
-    );
+  return {
+    name: "Quantile",
+    tags: ["math", "bucketers"],
+    collector: SlotCollector,
+    slots,
+    valid: validateSlots(slots),
 
-    const qCol = inputs.column.map(n => findLastIndex((m: number) => parseFloat(n) >= m, cutoffs) + 1);
-    return dataSource.appendColumn(makeDataColumn({
-      name: inputs.columnName,
-      values: qCol,
-      types: discoverTypes(qCol) // TODO
-    }))
-  },
+    fn: (dataSource, inputs) => {
+      const sorted = sort(inputs.column);
+      const frac = sorted.length / inputs.order;
+      const cutoffs = range(0, parseInt(inputs.order)).map(
+        n => nth(Math.ceil(n*frac), sorted)
+      );
 
-  display: (dataSource, inputs) => {
-    const quantileNames = {
-      '2': "median groups",
-      '3': "terciles",
-      '4': "quartiles",
-      '5': "quintiles",
-      '6': "sextiles",
-      '7': "septiles",
-      '8': "octiles",
-      '10': "deciles",
-      '12': "duo-deciles",
-      '16': "hexadeciles",
-      '20': "ventiles",
-      '100': "percentiles",
-      '1000': "permilles"
-    };
+      const qCol = inputs.column.map(n => findLastIndex((m: number) => parseFloat(n) >= m, cutoffs) + 1);
+      return dataSource.appendColumn(makeDataColumn({
+        name: inputs.columnName,
+        values: qCol,
+        types: discoverTypes(qCol) // TODO
+      }))
+    },
 
-    const name = quantileNames[inputs.order] || `${inputs.order}-quantile`;
-    return div({}, [
-      `${name} on `,
-      col(dataSource, inputs.column)
-    ]);
+    display: (dataSource, inputs) => {
+      const quantileNames = {
+        '2': "median groups",
+        '3': "terciles",
+        '4': "quartiles",
+        '5': "quintiles",
+        '6': "sextiles",
+        '7': "septiles",
+        '8': "octiles",
+        '10': "deciles",
+        '12': "duo-deciles",
+        '16': "hexadeciles",
+        '20': "ventiles",
+        '100': "percentiles",
+        '1000': "permilles"
+      };
+
+      const name = quantileNames[inputs.order] || `${inputs.order}-quantile`;
+      return div({}, [
+        `${name} on `,
+        col(dataSource, inputs.column)
+      ]);
+    }
   }
-};
+}());
 
 // const Round = makeDeriver({
 //   name: "Round",
