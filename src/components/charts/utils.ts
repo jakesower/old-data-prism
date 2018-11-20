@@ -25,11 +25,13 @@ function defaultSvgAttrs(dimensions) {
 
 export function paddedSvg(dimensions, padding, attrs, body) {
   return svg({ ...attrs, ...defaultSvgAttrs(dimensions) },
-
     h('g', {attrs: {transform: `translate(${padding}, ${padding})`}}, body)
   )
 }
 
 export function toSvgTag(attrs, shape: Shape) {
-  return { ...attrs, ...shape.svgAttrs };
+  return h(
+    shape.svgTag,
+    { attrs: { ...attrs, ...shape.svgAttrs }}
+  );
 }

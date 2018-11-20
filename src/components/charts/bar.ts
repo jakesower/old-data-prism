@@ -40,7 +40,7 @@ export function fn(dataSource: DataSource, inputs, dimensions) {
   const bars = pipeThru(yVals, [
     (yvs: number[]) => yvs.map((yv, idx) => barShape(idx, yv)),
     rcts => rcts.map(rct => rct.project(basis).pad(10)),
-    rcts => rcts.map(rct => toSvgTag({} , rct))
+    rcts => rcts.map(rct => toSvgTag({} , rct)),
   ]);
 
   const columnLabels = pipeThru(dataSource, [
