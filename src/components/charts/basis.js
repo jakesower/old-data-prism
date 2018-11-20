@@ -18,7 +18,6 @@ module.exports = (dimensions, xRange, yRange) => {
 
   const circle = (center, radius) => {
     const {x, y} = project(center);
-    // console.log({ix: center.x, iy: center.y, x, y, xMin, xMax, yMin, yMax})
     return {
       cx: x,
       cy: y,

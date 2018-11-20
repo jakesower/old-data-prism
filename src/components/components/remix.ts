@@ -65,7 +65,6 @@ export default function main(cycleSources) {
 
 
 function intent(DOM) {
-  const opId = ev => parseFloat(ev.target.dataset.operationId);
   return {
     changeRoot$: DOM.select('select.root-source').events('change').map(targetValue).map(v => v ? parseFloat(v) : null),
     newOperation$: DOM.select('.new-operation-button').events('click'),

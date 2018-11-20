@@ -6,10 +6,11 @@ import xs, { Stream } from 'xstream';
 import isolate from '@cycle/isolate';
 import { Maybe } from '../../lib/maybe';
 
-
-export interface SlotOperation extends Operation {
+export interface SlotHolder {
   slots: { [k in string]: OperationSlot<any> },
 }
+
+export interface SlotOperation extends Operation, SlotHolder {}
 
 
 interface CompOut {
@@ -24,7 +25,7 @@ interface SlotCompDispatch {
 }
 
 // A higher order component--takes in slots and returns a component
-export function SlotCollector(opDef: SlotOperation, initialInputs) {
+export function SlotCollector(opDef: SlotHolder, initialInputs) {
   const slots = opDef.slots;
   const slotKeys = Object.keys(slots);
   const slotVals = Object.values(slots);

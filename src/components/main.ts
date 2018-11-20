@@ -2,6 +2,7 @@ import { a, aside, div, h1, main as mainT, nav, p } from "@cycle/dom";
 import xs from 'xstream';
 import Sources from "./components/sources";
 import Remix from "./components/remix";
+import Chart from "./components/chart";
 import { objectStream } from "../lib/stream-utils";
 import { DataSource, StateModifier } from "../types";
 
@@ -34,10 +35,12 @@ function main(cycleSources) {
   const componentSources = { ...cycleSources, props: state$ };
   const sources = Sources(componentSources);
   const remix = Remix(componentSources);
+  const chart = Chart(componentSources);
 
   const pageDoms$ = objectStream({
     sources: sources.DOM,
     remix: remix.DOM,
+    chart: chart.DOM,
   });
 
   const view$ = xs.combine(state$, pageDoms$).map(([s, pd]) => view(s, pd));
