@@ -3,8 +3,8 @@ import { nth, range, findLastIndex } from 'ramda';
 import { DataSource, makeDataColumn, OperationSlot } from '../types';
 import { discoverTypes, mapRows, populateSlots } from '../lib/data-functions';
 import dataTypes from '../lib/data-types';
-import { merge, sort, eq } from '../lib/utils';
-import { FreeSlot, ColumnSlot, MultiColumnSlot } from '../lib/slots';
+import { merge, sort, eq, pairs } from '../lib/utils';
+import { FreeSlot, ColumnSlot, ExpressionSlot, MultiColumnSlot } from '../lib/slots';
 import { SlotCollector, SlotOperation } from '../components/collectors/slot-collector';
 
 type PartialOperation = {
@@ -21,11 +21,13 @@ interface Deriver extends PartialOperation {
 const col = (dataSource, cName) =>
   span('.column-name', dataSource.headers[cName]);
 
-const colNameSlot = FreeSlot({ display: 'Column Name', type: dataTypes.String });
+const colNameSlot = FreeSlot({ display: 'Column Name', type: dataTypes.NonEmptyString });
 
-const validateSlots = slots => (dataSource: DataSource, inputs: {[k: string]: string}): boolean => {
-  // TODO make this validate slot types
-  return eq(Object.keys(slots), Object.keys(inputs));
+const validateSlots = (slots: {[k: string]: OperationSlot<any>}) => (dataSource: DataSource, inputs: {[k: string]: string}): boolean => {
+  console.log({ a: Object.keys(slots), b: Object.keys(inputs)})
+  if (!eq(Object.keys(slots), Object.keys(inputs))) { return false; }
+  console.log(pairs(inputs).forEach(([k, input]) => console.log({ k, input, x: slots[k].isValid(dataSource, input)})))
+  return pairs(inputs).every(([k, input]) => slots[k].isValid(dataSource, input));
 }
 
 const makeDeriver = (def: Deriver): SlotOperation => {
@@ -62,6 +64,18 @@ export const AbsoluteValue = makeDeriver({
       col(dataSource, inputs.num)
     ])
 });
+
+
+export const Expression = makeDeriver({
+  name: "Expression",
+  tags: ["math"],
+  slots: {
+    columnName: colNameSlot,
+    expression: ExpressionSlot({ display: "Expression", type: dataTypes.String }),
+  },
+  deriverFn: (_, inputs) => inputs.expression,
+  display: (dataSource, inputs) => div('hi'),
+})
 
 
 
@@ -176,15 +190,16 @@ export const Quantile: SlotOperation = (function () {
     valid: validateSlots(slots),
 
     fn: (dataSource, inputs) => {
-      const sorted = sort(inputs.column);
-      const frac = sorted.length / inputs.order;
-      const cutoffs = range(0, parseInt(inputs.order)).map(
+      const populated = populateSlots(dataSource, slots, inputs);
+      const sorted = sort(populated.column);
+      const frac = sorted.length / populated.order;
+      const cutoffs = range(0, parseInt(populated.order)).map(
         n => nth(Math.ceil(n*frac), sorted)
       );
 
-      const qCol = inputs.column.map(n => findLastIndex((m: number) => parseFloat(n) >= m, cutoffs) + 1);
+      const qCol = populated.column.map(n => (findLastIndex((m: number) => parseFloat(n) >= m, cutoffs) + 1).toString());
       return dataSource.appendColumn(makeDataColumn({
-        name: inputs.columnName,
+        name: populated.columnName,
         values: qCol,
         types: discoverTypes(qCol) // TODO
       }))

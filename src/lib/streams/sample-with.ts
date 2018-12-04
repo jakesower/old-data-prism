@@ -1,4 +1,4 @@
-import {InternalListener, Operator, Stream, MemoryStream} from 'xstream';
+import { Stream, MemoryStream } from 'xstream';
 
 const NO = {};
 

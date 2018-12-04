@@ -6,7 +6,7 @@ import { OperationSlot, OperationSlotDefinition } from './lib/slots';
 export { OperationSlot, OperationSlotDefinition };
 
 export interface DataSource {
-  id: string,
+  id?: string,
   name: string,
   columns: DataColumn[],
   schema?: any,
@@ -72,7 +72,7 @@ const dataColumnPrototype = Object.create(null, {
 });
 
 // TODO: consider using immutable js for some stuff
-export function makeDataSource(attrs: { id: string, name: string, columns: DataColumn[], schema?: any }): DataSource {
+export function makeDataSource(attrs: { id?: string, name: string, columns: DataColumn[], schema?: any }): DataSource {
   return Object.setPrototypeOf(Object.assign({}, attrs), sourcePrototype);
 }
 

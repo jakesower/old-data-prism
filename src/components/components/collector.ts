@@ -14,6 +14,7 @@ interface LocalState {
   editing: boolean,
   savedValue: Maybe<object>,
   inputs: StrObj,
+  showErrors: boolean,
 }
 
 interface State extends LocalState {
@@ -25,6 +26,7 @@ const initState: LocalState = {
   editing: true,
   savedValue: Maybe.Nothing<object>(),
   inputs: {},
+  showErrors: false,
 };
 
 const iconTags = [
@@ -56,7 +58,10 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
       .map(inputs => state => ({ ...state, inputs })),
     collectorValueSaveProxy$
       .filter(_ => valid)
-      .map(inputs => state => ({ ...state, inputs, editing: false, savedValue: Maybe.of(inputs) }))
+      .map(inputs => state => ({ ...state, inputs, editing: false, savedValue: Maybe.of(inputs) })),
+    // xs.merge(collectorValueApplyProxy$, collectorValueSaveProxy$)
+    //   .filter(_ => state => !valid(state))
+    //   .mapTo(state => ({ ...state, showErrors: true })),
   ) as StateModifier<LocalState>;
 
   const localState$: Stream<LocalState> = stateModifiers$.fold((state, mod) => mod(state), initState);

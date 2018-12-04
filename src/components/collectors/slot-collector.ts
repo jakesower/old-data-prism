@@ -33,6 +33,7 @@ export function SlotCollector(opDef: SlotHolder, initialInputs) {
   const slotDispatch: SlotCompDispatch = {
     free: freeSlotComponent,
     column: columnSlotComponent,
+    expression: freeSlotComponent,
     multicolumn: multicolumnSlotComponent,
   };
 

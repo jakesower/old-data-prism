@@ -49,7 +49,7 @@ function ChainedCollection(args: ChainedCollectionInput) {
     newItem[ITEM_ID] = newId;
     newItem[ITEM_NAME] = component.name;
     newItem[ITEM_REMOVE$] = removeConnector(newItem).take(1).mapTo(newId);
-    newItem.DOM.debug()
+    // newItem.DOM.debug()
 
     return [...collection, newItem];
   });

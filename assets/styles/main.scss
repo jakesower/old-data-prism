@@ -54,6 +54,7 @@ strong {
 
 body, input, select, option {
   font-family: Lato;
+  font-size: 11pt;
 }
 
 input:invalid {
@@ -128,10 +129,23 @@ div.body-container {
         }
       }
 
+      table {
+        margin-bottom: 0.5em;
+      }
+
+      tr {
+        border-bottom: 1px solid black;
+        input:not([type=checkbox]) {
+          min-width: 150px;
+        }
+      }
+
     }
 
-    tr:nth-child(2n) {
-      background-color: lighten($orange, 40%);
+    main {
+      tr:nth-child(2n) {
+        background-color: lighten($orange, 40%);
+      }
     }
   }
 
@@ -175,6 +189,22 @@ div.body-container {
 
 }
 
+// .sources-button {
+//   padding: 3px 7px;
+//   border: 1px solid transparent;
+//   border-radius: 5px;
+//   background-color: $mid-red;
+//   cursor: pointer;
+//   outline: none;
+//   display: inline-block;
+//   text-transform: uppercase;
+
+//   user-select: none;
+//   -moz-user-select: none;
+//   -webkit-user-select: none;
+//   -ms-user-select: none;
+// }
+
 div.main-container {
   flex: 1;
   display: flex;
@@ -182,7 +212,7 @@ div.main-container {
 
   aside {
     position: relative;
-    flex: 0 0 19em;
+    flex: 0 0 24em;
     padding: 1em 1em 0 1em;
     display: flex;
     flex-direction: column;
@@ -620,14 +650,17 @@ nav {
   .operations-menu {
     &.active {
       .menu { display: block; }
-      .new-operation-button::after { transform: rotate(0.25turn);}
+      .new-operation-button::after { transform: rotate(0.25turn); }
+    }
+
+    .button {
+      cursor: pointer;
+      padding: 1em 0;
+      text-transform: uppercase;
     }
 
     .new-operation-button {
       width: 100%;
-      cursor: pointer;
-      padding: 1em 0;
-      text-transform: uppercase;
 
       &::after {
         transition: transform 0.2s;

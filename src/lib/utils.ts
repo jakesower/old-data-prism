@@ -26,6 +26,16 @@ export function descend<T>(fn: ((x: T) => any)): (a: T, b: T) => number {
   }
 }
 
+export function encase<T,U>(fn: (...args: any[]) => T, safetyVal: U): (...args: any[]) => T|U {
+  return function (...args) {
+    try {
+      return fn(...args);
+    } catch (e) {
+      return safetyVal;
+    }
+  };
+}
+
 export function eq(x: any, y: any): boolean {
   if (Array.isArray(x) && Array(y)) {
     return x.length === y.length && x.every((xi, idx) => eq(xi, y[idx]));
@@ -84,10 +94,31 @@ export function isPojo(obj): boolean {
   return obj !== null && typeof obj === "object" && Object.getPrototypeOf(obj) === Object.prototype;
 }
 
+export function isSafe(fn: (...args: any[]) => any): (...args: any[]) => boolean {
+  return function (...args) {
+    try {
+      fn(...args);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+}
+
+export function last<T>(list: T[]): T {
+  return list[list.length - 1];
+}
+
 export function mapObj<T,U>(obj: {[k in string]: T}, fn: (x: T, idx: string) => U): ({[k in string]: U}) {
   const [keys, vals] = [Object.keys(obj), Object.values(obj)];
   const mappedVals = vals.map((v, idx) => fn(v, keys[idx]));
   return zipObj(keys, mappedVals);
+}
+
+export function mapObjValues<T,U>(obj: {[k in string]: T}, fn: (x: T, idx: string) => U): U[] {
+  const [keys, vals] = [Object.keys(obj), Object.values(obj)];
+  const mappedVals = vals.map((v, idx) => fn(v, keys[idx]));
+  return mappedVals;
 }
 
 export function merge<T1, T2>(a: T1, b: T2): T1 & T2 {
@@ -104,6 +135,15 @@ export function objFromPairs<T>(pairs: [string, T][]): {[k: string]: T} {
     const o = {[pair[0]]: pair[1]};
     return { ...out, ...o };
   }, {});
+}
+
+export function pairs<T>(obj: {[k: string]: T}): [string, T][] {
+  const keys = Object.keys(obj);
+  let result = <([string, T])[]>[];
+  for (let key of keys) {
+    result.push([key, obj[key]]);
+  }
+  return result;
 }
 
 export function pipe(fns: ((x: any) => any)[]): (x: any) => any {

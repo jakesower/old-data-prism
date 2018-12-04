@@ -6,7 +6,7 @@ import { indexedOptions } from '../../lib/dom-utils';
 import { Maybe } from '../../lib/maybe';
 import { StateModifier, DataSource } from '../../types';
 import { SlotCollector } from '../collectors/slot-collector';
-import { sampleWith } from '../../lib/stream-utils';
+// import { sampleWith } from '../../lib/stream-utils';
 // const scatterPlot = require('./charts/scatter');
 // const lineChart = require('./charts/line');
 

@@ -23,12 +23,14 @@ const initState: State = {
 function main(cycleSources) {
   const actions = intent(cycleSources);
   const selectedPage$ = actions.changeTab$;
+  const addSourceProxy$ = xs.create();
 
   const stateModifiers$: StateModifier<State>[] = [
     selectedPage$.map(page => prev => ({ ...prev, page })),
-    cycleSources.csvLoader.map(source => prev => ({ ...prev,
-      sources: prev.sources.concat(source),
-    })),
+    xs.merge(cycleSources.csvLoader, addSourceProxy$)
+      .map(source => prev => ({ ...prev,
+        sources: prev.sources.concat(source),
+      })),
   ];
   const state$ = xs.merge(...stateModifiers$).fold((state, fn) => fn(state), initState);
 
@@ -36,6 +38,8 @@ function main(cycleSources) {
   const sources = Sources(componentSources);
   const remix = Remix(componentSources);
   const chart = Chart(componentSources);
+
+  addSourceProxy$.imitate(remix.source);
 
   const pageDoms$ = objectStream({
     sources: sources.DOM,

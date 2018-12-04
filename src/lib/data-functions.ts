@@ -1,6 +1,6 @@
 import dataTypes from './data-types';
 import { DataType, OperationSlot, DataSource, Operation } from '../types';
-import { mapObj, mergeAll, zipObj } from './utils';
+import { mapObj } from './utils';
 
 export function discoverTypes(vals: string[]): DataType<any>[] {
   return Object.values(dataTypes).filter(type => vals.every(type.test));
@@ -10,19 +10,12 @@ export function modifyStateAttr<T>(attr: keyof T, fn: (x: T[keyof T]) => T[keyof
   return obj => Object.assign({}, obj, {[attr]: fn(obj[attr]) });
 }
 
-export function populateSlots<T>(
+export function populateSlots(
   dataSource: DataSource,
-  slots: {[k in string]: OperationSlot<T>},
-  rawInputs: {[k: string]: string}): {[k: string]: T}
+  slots: {[k in string]: OperationSlot<any>},
+  rawInputs: {[k: string]: string}): {[k: string]: any}
 {
-  return mapObj(slots, (slot, key) => {
-    switch (slot.slotType) {
-      case "column":
-        return dataSource.columns[rawInputs[key]].values.map(slot.type.cast);
-      default:
-       return slot.type.cast(rawInputs[key]);
-    }
-  });
+  return mapObj(slots, (slot, key) => slot.extract(dataSource, rawInputs[key]));
 }
 
 

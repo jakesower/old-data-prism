@@ -31,7 +31,6 @@ export const Grouping: GroupOperation = {
   // },
 
   fn: (dataSource, inputs: GroupInputs) => {
-    console.log({dataSource, inputs})
     const { groupBasis, aggregators } = inputs;
 
     const dataSourceGroups = pipeThru(dataSource.records, [
