@@ -43,7 +43,7 @@ export default function main(cycleSources) {
       rootSource: Maybe.fromValue(source),
     })),
     toggleSave$.mapTo(state => ({...state, saveOpen: !state.saveOpen })),
-    saveSource$.mapTo(state => ({ ...state, showSaved: true })),
+    saveSource$.mapTo(state => ({ ...state, showSaved: true, saveOpen: false })),
     saveSource$.compose(delay(5000)).mapTo(state => ({ ...state, showSaved: false })),
   ) as StateModifier<LocalState>;
 

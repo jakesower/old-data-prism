@@ -1,14 +1,15 @@
 import { Stream } from 'xstream';
 import { VNode } from '@cycle/dom';
+import * as sha1 from 'js-sha1';
 import { transpose } from './lib/utils';
 import { OperationSlot, OperationSlotDefinition } from './lib/slots';
 
 export { OperationSlot, OperationSlotDefinition };
 
 export interface DataSource {
-  id?: string,
   name: string,
   columns: DataColumn[],
+  fingerprint: string,
   schema?: any,
 
   appendColumn: (this: DataSource, column: DataColumn) => DataSource,
@@ -19,7 +20,7 @@ export interface DataSource {
 }
 
 interface DataColumnAttrs {
-  idx?: number,
+  fingerprint: string,
   name: string,
   values: string[],
   types: DataType<any>[]
@@ -72,12 +73,14 @@ const dataColumnPrototype = Object.create(null, {
 });
 
 // TODO: consider using immutable js for some stuff
-export function makeDataSource(attrs: { id?: string, name: string, columns: DataColumn[], schema?: any }): DataSource {
-  return Object.setPrototypeOf(Object.assign({}, attrs), sourcePrototype);
+export function makeDataSource(attrs: { name: string, columns: DataColumn[], schema?: any }): DataSource {
+  const fingerprint = sha1(JSON.stringify([attrs.name].concat(attrs.columns.map(c => c.fingerprint))));
+  return Object.setPrototypeOf(Object.assign({}, attrs, { fingerprint }), sourcePrototype);
 }
 
 export function makeDataColumn(attrs: { idx?: number, name: string, values: string[], types: DataType<any>[]}): DataColumn {
-  return Object.setPrototypeOf(Object.assign({}, attrs), dataColumnPrototype);
+  const fingerprint = sha1(JSON.stringify([attrs.name].concat(attrs.values)));
+  return Object.setPrototypeOf(Object.assign({}, attrs, { fingerprint }), dataColumnPrototype);
 }
 
 

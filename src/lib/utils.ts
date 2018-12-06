@@ -48,6 +48,14 @@ export function eq(x: any, y: any): boolean {
   return x === y;
 }
 
+export function fill<T>(numElts: number, filler: T): T[] {
+  let out = <T[]>[];
+  for (let i=0; i<numElts; i+=1) {
+    out[i] = filler;
+  }
+  return out;
+}
+
 export function filterObj<T>(obj: {[k: string]: T}, predicate: (item: T) => boolean): {[k: string]: T} {
   const es = Object.entries(obj);
   const passed = es.filter(e => predicate(e[1]));

@@ -37,7 +37,7 @@ const iconTags = [
 ];
 
 
-export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<DataSource>> }) {
+export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<DataSource>>, props: any }) {
   const { DOM, chain$ } = cycleSources;
   const collectorValueApplyProxy$: any = xs.create();
   const collectorValueSaveProxy$: any = xs.create();
@@ -69,7 +69,7 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
 
   // SECONDARY STREAMS
   //
-  const collector$ = collector(localState$, DOM, chain$);
+  const collector$ = collector(localState$, DOM, chain$, cycleSources.props);
   const collectorVdom$: Stream<VNode | VNode[]> = collector$.map(c => c.DOM).flatten();
   const collectorValue$: Stream<{[k: string]: string}> = collector$.map(c => c.value).flatten();
   const collectorValueApply$ = collectorValue$.compose(sampleWith(apply$));
@@ -179,14 +179,14 @@ function valid(state: State): boolean {
 }
 
 
-function collector(localState$: Stream<LocalState>, DOM, dataSource): Stream<{DOM: Stream<any>, value: Stream<any>}> {
+function collector(localState$: Stream<LocalState>, DOM, dataSource, props): Stream<{DOM: Stream<any>, value: Stream<any>}> {
   const emptyCollector = { DOM: xs.of([]), value: xs.of({}) };
 
   return localState$.map(localState =>
     localState.operation
       .map(op => {
         const opDef: OperationType = operationDefs[op];
-        return opDef.collector(opDef, localState.inputs)({ DOM, dataSource });
+        return opDef.collector(opDef, localState.inputs)({ DOM, dataSource, props });
       })
       .withDefault(emptyCollector)
   );

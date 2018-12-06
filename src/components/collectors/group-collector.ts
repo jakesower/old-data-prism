@@ -24,7 +24,7 @@ type SlotComp = ((args: {DOM: Stream<any>, dataSource: Stream<Maybe<DataSource>>
 
 // A higher order component--takes in slots and returns a component
 export function GroupCollector(opDef: GroupOperation, init) {
-  function main(cycleSources: { DOM: Stream<any>, dataSource: Stream<Maybe<DataSource>>}) {
+  function main(cycleSources: { DOM: Stream<any>, dataSource: Stream<Maybe<DataSource>>, props: any}) {
     const { new$ } = intent(cycleSources.DOM);
 
     const groupBasisComp = multicolumnSlotComponent(
@@ -153,7 +153,7 @@ function Aggregator(cycleSources, init) {
       state.aggregator
         .map(agg => {
           const aggDef = aggregatorDefs[agg];
-          return SlotCollector(aggDef, state.inputs)({ DOM, dataSource });
+          return SlotCollector(aggDef, state.inputs)({ DOM, dataSource, props: cycleSources.props });
         })
         .withDefault(emptyCollector)
     );

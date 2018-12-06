@@ -3,6 +3,7 @@ import 'mocha';
 import { compileTestData } from './test-utils';
 import { Expression, Quantile } from '../src/operations/derivers'
 import { Grouping } from '../src/operations/groupings';
+import { Join } from '../src/operations/misc';
 
 const testData = compileTestData({
   Date: ['2014-06-14', '2014-06-14', '2014-06-19', '2014-06-20', '2014-06-24', '2014-06-24'],
@@ -60,5 +61,44 @@ describe('groupings', () => {
       assert.equal(sum.name, 'Sum');
       assert.deepEqual(sum.values, ['3', '1', '0', '0']);
     });
+  });
+});
+
+
+
+describe('joins', () => {
+  const capitalData = compileTestData({
+    Country: ['England', 'Uruguay', 'Italy', 'Canada', 'Madagascar'],
+    Capital: ['London', 'Montevideo', 'Rome', 'Ottawa', 'Antananarivo'],
+  });
+  const baseInput = { foreignSource: capitalData, localKey: 'Home', foreignKey: 'Country' };
+
+  it('should work for inner join', () => {
+    const inputs = { ...baseInput, joinMethod: 'Inner' };
+    const result = Join.fn(testData, inputs);
+
+    assert.equal(result.columns.length, 7);
+    assert.equal(result.records.length, 5);
+    assert.deepEqual(['2014-06-14', 'Uruguay', 'Costa Rica', '1', '3', 'Uruguay', 'Montevideo'], result.records[0]);
+  });
+
+  it('should work for left join', () => {
+    const inputs = { ...baseInput, joinMethod: 'Left' };
+    const result = Join.fn(testData, inputs);
+
+    assert.equal(result.columns.length, 7);
+    assert.equal(result.records.length, 6);
+    assert.deepEqual(['2014-06-14', 'Uruguay', 'Costa Rica', '1', '3', 'Uruguay', 'Montevideo'], result.records[0]);
+    assert.deepEqual(['2014-06-24', 'Costa Rica', 'England', '0', '0', '', ''], result.records[5]);
+  });
+
+  it('should work for right join', () => {
+    const inputs = { ...baseInput, joinMethod: 'Right' };
+    const result = Join.fn(testData, inputs);
+
+    assert.equal(result.columns.length, 7);
+    assert.equal(result.records.length, 7);
+    assert.deepEqual(['2014-06-14', 'Uruguay', 'Costa Rica', '1', '3', 'Uruguay', 'Montevideo'], result.records[1]);
+    assert.deepEqual(['', '', '', '', '', 'Canada', 'Ottawa'], result.records[5]);
   });
 });
