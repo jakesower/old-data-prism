@@ -18,9 +18,9 @@ interface Props {
 }
 
 // A higher order component--takes in slots and returns a component
-export function JoinCollector(_opDef, initialInputs) {
-  function main(cycleSources: { DOM: Stream<any>, dataSource: Stream<Maybe<DataSource>>, props: Stream<Props> }) {
-    const { DOM, dataSource: dataSource$, props: props$ } = cycleSources;
+export function JoinCollector(_opDef, dataSource, initialInputs) {
+  function main(cycleSources: { DOM: Stream<any>, props: Stream<Props> }) {
+    const { DOM, props: props$ } = cycleSources;
     const initialState = {
       foreignSourceId: Maybe.fromValue(initialInputs.foreignSourceId),
       localKey: Maybe.fromValue(initialInputs.localKey),
@@ -38,8 +38,8 @@ export function JoinCollector(_opDef, initialInputs) {
 
     const state$: Stream<LocalState> = stateModifiers$.fold((state, mod) => mod(state), initialState);
 
-    const dom$ = xs.combine(state$, props$, dataSource$)
-      .map(([state, props, ds]) => view(state, props.sources, ds));
+    const dom$ = xs.combine(state$, props$)
+      .map(([state, props]) => view(state, props.sources, dataSource));
 
     const value$ = xs.combine(state$, props$)
       .map(([state, props]) => go(function* () {
@@ -60,7 +60,7 @@ export function JoinCollector(_opDef, initialInputs) {
   }
 
 
-  function view(state: LocalState, sources: DataSource[], mActiveSource: Maybe<DataSource>) {
+  function view(state: LocalState, sources: DataSource[], dataSource: DataSource) {
     const joinMethods = ['Inner', 'Left', 'Right'];
     const emptyOption = option({ attrs: { value: '' }}, '');
     const withEmpty = opts => [emptyOption].concat(opts);
@@ -82,19 +82,17 @@ export function JoinCollector(_opDef, initialInputs) {
         ))),
       ]),
 
-      mActiveSource.map(dataSource =>
-        div('.slot', [
-          h3('Local Key'),
-          select('.local-key', withEmpty(dataSource.columns.map(column =>
-            option({ attrs: { value: column.name, selected: (state.localKey.hasValue(column.name)) }}, column.name)
-          )))
-        ]),
-      ).withDefault(null),
+      div('.slot', [
+        h3('Local Key'),
+        select('.local-key', withEmpty(dataSource.columns.map(column =>
+          option({ attrs: { value: column.name, selected: (state.localKey.hasValue(column.name)) }}, column.name)
+        )))
+      ]),
 
-      mForeignSource.map(dataSource =>
+      mForeignSource.map(fSource =>
         div('.slot', [
           h3('Foreign Key'),
-          select('.foreign-key', withEmpty(dataSource.columns.map(column =>
+          select('.foreign-key', withEmpty(fSource.columns.map(column =>
             option({ attrs: { value: column.name, selected: (state.localKey.hasValue(column.name)) }}, column.name)
           ))),
       ])

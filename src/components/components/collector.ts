@@ -1,7 +1,7 @@
 import xs, { Stream } from 'xstream'
 import sampleCombine from 'xstream/extra/sampleCombine'
 import { div, button, option, h3, select, VNode, span } from '@cycle/dom';
-import { DataSource, StateModifier, Operation } from '../../types';
+import { DataSource, StateModifier } from '../../types';
 import { Maybe } from '../../lib/maybe';
 import { inlineKey, go, sortWith, flatten } from '../../lib/utils';
 import operationDefs, { OperationType } from '../../operations';
@@ -179,17 +179,23 @@ function valid(state: State): boolean {
 }
 
 
-function collector(localState$: Stream<LocalState>, DOM, dataSource, props): Stream<{DOM: Stream<any>, value: Stream<any>}> {
+function collector(localState$: Stream<LocalState>, DOM, dataSource$: Stream<Maybe<DataSource>>, props): Stream<{DOM: Stream<any>, value: Stream<any>}> {
   const emptyCollector = { DOM: xs.of([]), value: xs.of({}) };
+  const noDataSourceCollector = { DOM: xs.of(div('hi')), value: xs.of({}) };
 
-  return localState$.map(localState =>
-    localState.operation
-      .map(op => {
-        const opDef: OperationType = operationDefs[op];
-        return opDef.collector(opDef, localState.inputs)({ DOM, dataSource, props });
-      })
-      .withDefault(emptyCollector)
-  );
+  return xs.combine(localState$, dataSource$)
+    .map(([ localState, mDataSource ]) =>
+      mDataSource.map(dataSource =>
+        localState.operation
+          .map(op => {
+            const opDef: OperationType = operationDefs[op];
+            return opDef.collector(opDef, dataSource, localState.inputs)({ DOM, props });
+          })
+          .withDefault(emptyCollector)
+      )
+      .withDefault(noDataSourceCollector)
+    )
+    .startWith(noDataSourceCollector)
 }
 
 

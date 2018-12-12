@@ -52,6 +52,7 @@ function main(cycleSources) {
   return {
     DOM: view$,
     csvLoader: sources.csvLoader,
+    csvExport: remix.csvExport,
   };
 }
 

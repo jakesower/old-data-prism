@@ -17,30 +17,19 @@ type ValueStream = Stream<{ keep: boolean, name: string }[]>;
 
 
 // A higher order component--takes in slots and returns a component
-export function ColumnCollector(_opDef, initialInputs) {
-  function main(cycleSources: { DOM: Stream<any>, dataSource: Stream<Maybe<DataSource>>}) {
-    const { dataSource: dataSource$ } = cycleSources;
-
-    const component$ = dataSource$.map(mDataSource => {
-      const columnComponents: CompOut[] = mDataSource.map(dataSource =>
-        dataSource.columns.map((col, idx) => {
-          const init = initialInputs[idx] || { keep: true, name: col.name };
-          return isolate(columnComponent(col, init), idx)(cycleSources);
-        })
-      ).withDefault([]);
-
-      const value: ValueStream = xs.combine(...columnComponents.map(sc => sc.value));
-      const outDom = xs.combine(...columnComponents.map(sc => sc.DOM))
-        .map(vals => [...vals])
-        .map(view);
-
-      return { outDom, value };
-    });
+export function ColumnCollector(_opDef, dataSource: DataSource, initialInputs) {
+  function main(cycleSources: { DOM: Stream<any> }) {
+    const columnComponents = dataSource.columns.map((col, idx) => {
+      const init = initialInputs[idx] || { keep: true, name: col.name };
+      return isolate(columnComponent(col, init), idx)(cycleSources);
+    })
 
     return {
-      DOM: component$.map(c => c.outDom).flatten(),
-      value: component$.map(c => c.value).flatten(),
-    };
+      DOM: xs.combine(...columnComponents.map(sc => sc.DOM))
+        .map(vals => [...vals])
+        .map(view),
+      value: <ValueStream>xs.combine(...columnComponents.map(sc => sc.value)),
+    }
   }
 
 

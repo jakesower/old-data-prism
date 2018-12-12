@@ -39,11 +39,9 @@ export const Grouping: GroupOperation = {
       (rgs: string[][][]) => rgs.map(rg => {
         const rgcs = transpose(rg);
         const cols = dataSource.columns.map((c, idx) => makeDataColumn({ name: "", values: rgcs[idx], types: c.types }));
-        return makeDataSource({ id: "", name: "", columns: cols });
+        return makeDataSource({ columns: cols });
       }),
     ]);
-
-    console.log({ dataSourceGroups, records: dataSource.records, groupBasis, aggregators })
 
     const basisColumns = groupBasis.map(col => {
       const vals = dataSourceGroups.map(ds => ds.records[0][col]);
@@ -60,11 +58,7 @@ export const Grouping: GroupOperation = {
       return aggDef.fn(dataSourceGroups, agg.inputs);
     })
 
-    return makeDataSource({
-      id: dataSource.id,
-      name: 'Oh Hai',
-      columns: basisColumns.concat(aggColumns),
-    });
+    return makeDataSource({ columns: basisColumns.concat(aggColumns) });
 
   },
 

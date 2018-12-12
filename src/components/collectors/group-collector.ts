@@ -19,12 +19,12 @@ interface CompOut {
   value: Stream<any>
 }
 
-type SlotComp = ((args: {DOM: Stream<any>, dataSource: Stream<Maybe<DataSource>>}) => CompOut);
+type SlotComp = (dataSource: DataSource, args: {DOM: Stream<any>}) => CompOut;
 
 
 // A higher order component--takes in slots and returns a component
-export function GroupCollector(opDef: GroupOperation, init) {
-  function main(cycleSources: { DOM: Stream<any>, dataSource: Stream<Maybe<DataSource>>, props: any}) {
+export function GroupCollector(_opDef: GroupOperation, dataSource, init) {
+  function main(cycleSources: { DOM: Stream<any>, props: any}) {
     const { new$ } = intent(cycleSources.DOM);
 
     const groupBasisComp = multicolumnSlotComponent(
@@ -32,9 +32,9 @@ export function GroupCollector(opDef: GroupOperation, init) {
       init.groupBasis,
     );
 
-    const GroupBasis = groupBasisComp(cycleSources);
+    const GroupBasis = groupBasisComp(dataSource, cycleSources);
     const aggregators$ = Collection({
-      component: Aggregator,
+      component: (cs, i) => Aggregator(cs, dataSource, i),
       sources: cycleSources,
       add$: new$,
       init: init.aggregators || [],
@@ -66,7 +66,6 @@ export function GroupCollector(opDef: GroupOperation, init) {
 
 
   function view(state) {
-    console.log({state})
     return div('.slot', [
       h3('Group By'),
       state.basisDom,
@@ -77,22 +76,14 @@ export function GroupCollector(opDef: GroupOperation, init) {
 
 
   function multicolumnSlotComponent(slot: OperationSlot<any>, init): SlotComp {
-    return function ({ DOM, dataSource }) {
+    return function (dataSource, { DOM }) {
       const colReducer = (acc, col: DataColumn, idx: number): Option[] =>
         col.hasType(slot.type) ?
           [...acc, { value: idx.toString(), display: col.name }] :
           acc;
 
-      const ms$ = dataSource
-        .map(mDs => {
-          const relevantColumns: Option[] = mDs.map(ds => ds.columns.reduce(colReducer, [])).withDefault([]);
-          return Multiselect({ options: relevantColumns, selected: init || [] })({ DOM });
-        });
-
-      return {
-        DOM: ms$.map(ms => ms.DOM).flatten(),
-        value: ms$.map(ms => ms.value).flatten()
-      };
+      const cols = dataSource.columns.reduce(colReducer, []);
+      return Multiselect({ options: cols, selected: init || [] })({ DOM });
     }
   }
 
@@ -105,8 +96,8 @@ interface AggState {
   inputs: {[k: string]: string}
 }
 
-function Aggregator(cycleSources, init) {
-  const { DOM, dataSource } = cycleSources;
+function Aggregator(cycleSources, dataSource: DataSource, init) {
+  const { DOM } = cycleSources;
   const initState: AggState = init ?
     { ...init, aggregator: Maybe.of(init.aggregator) } :
     { aggregator: Maybe.Nothing(), inputs: {} };
@@ -153,7 +144,7 @@ function Aggregator(cycleSources, init) {
       state.aggregator
         .map(agg => {
           const aggDef = aggregatorDefs[agg];
-          return SlotCollector(aggDef, state.inputs)({ DOM, dataSource, props: cycleSources.props });
+          return SlotCollector(aggDef, dataSource, state.inputs)({ DOM, props: cycleSources.props });
         })
         .withDefault(emptyCollector)
     );

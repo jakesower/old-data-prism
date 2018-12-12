@@ -6,6 +6,14 @@ $blue: #0000ff;
 $indigo: #4b0082;
 $purple: #8b00ff;
 
+$dark-red: darken($red, 20%);
+$dark-orange: darken($orange, 20%);
+$dark-yellow: darken($yellow, 20%);
+$dark-green: darken($green, 20%);
+$dark-blue: darken($blue, 20%);
+$dark-indigo: darken($indigo, 20%);
+$mid-purple: darken($purple, 20%);
+
 $mid-red: lighten($red, 20%);
 $mid-orange: lighten($orange, 20%);
 $mid-yellow: lighten($yellow, 20%);

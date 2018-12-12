@@ -1,6 +1,6 @@
 import xs, { Stream } from 'xstream';
 import delay from 'xstream/extra/delay';
-import { aside, div, main as main_, select, h2, VNode, input, button, map } from '@cycle/dom';
+import { aside, div, main as main_, select, h2, VNode, input, button, map, h3 } from '@cycle/dom';
 import { ChainedCollection, pluck as pl} from '../../lib/chained-collection';
 import { DataSource, StateModifier, makeDataSource } from '../../types';
 import { merge, flatten, last } from '../../lib/utils';
@@ -34,7 +34,7 @@ const initState: LocalState = {
 
 export default function main(cycleSources) {
   const { props: props$, DOM } = cycleSources;
-  const { changeRoot$, newOperation$, saveSource$, toggleSave$, saveName$ } = intent(DOM);
+  const { changeRoot$, newOperation$, saveSource$, toggleSave$, saveName$, export$ } = intent(DOM);
   const activeSourceObj: (state: State) => Maybe<DataSource> =
     state => state.rootSource.map(rs => state.sources[rs]);
 
@@ -63,12 +63,12 @@ export default function main(cycleSources) {
   const collectorDom$ = pl(collectors$, x => x.DOM);
   const collectorSources$ = pl(collectors$, x => x.dataSource);
 
-  const gridSource = xs.combine<Maybe<DataSource>, any[]>(activeSource$, collectorSources$)
+  const gridSource$ = xs.combine<Maybe<DataSource>, any[]>(activeSource$, collectorSources$)
     .map(([activeSource, collectorSources]): Maybe<DataSource> => {
       return collectorSources.reduce((last, s) => s.isNothing() ? last : s, activeSource);
     })
 
-  const grid = Grid({ DOM: DOM, props: gridSource.map(source => ({source})) });
+  const grid = Grid({ DOM: DOM, props: gridSource$.map(source => ({source})) });
 
   return {
     DOM: xs.combine<State, VNode|null, VNode|null>(state$, grid.DOM, collectorDom$).map(a => view(a[0], a[1], a[2])),
@@ -81,6 +81,10 @@ export default function main(cycleSources) {
         name,
         columns: dataSource.columns,
       })),
+    csvExport: gridSource$
+      .map(a => a.withDefault(null))
+      .compose(sampleWith(export$))
+      .filter(a => a != undefined),
   };
 }
 
@@ -92,6 +96,7 @@ function intent(DOM) {
     toggleSave$: DOM.select('.save-toggle').events('click'),
     saveSource$: DOM.select('.save-source').events('click'),
     saveName$: DOM.select('.save-name').events('change').map(ev => ev.target.value).startWith(''),
+    export$: DOM.select('.export-csv').events('click'),
   }
 }
 
@@ -104,17 +109,20 @@ function view(state: State, gridDom, collectorDom) {
         select({ class: { "root-source": true }}, indexedOptions(state.sources.map(s => s.name), state.rootSource.withDefault(null)))
       ]),
       div('.remix-controls', {}, [
-        div('.operations-menu', {}, flatten([
+        div((state.rootSource.isNothing() ? '.operations-menu.disabled' : '.operations-menu'), {}, flatten([
           collectorDom,
-          div('.new-operation-button.button', {}, "New Operation"),
-          div('.save-as-source', {}, [
-            div('.save-toggle.button', {}, "Save as Source"),
-            div({ style: { display: state.saveOpen ? 'block' : 'none' }}, [
+          div('.new-operation-button', {}, "New Operation"),
+          div('.save-as-source' + (state.saveOpen ? '.open' : ''), {}, [
+            div('.save-toggle.button.closed', {}, "Save as Source"),
+            div('.collector.editing.open', {}, [
+              h3('Save As...'),
               input('.save-name', { attrs: { type: 'text', required: true }}),
               button('.save-source', 'Save Source'),
+              button('.save-toggle.button', 'Cancel'),
             ]),
             div({ style: { display: state.showSaved ? 'block' : 'none' }}, 'Saved!'),
           ]),
+          div('.export-csv.button', {}, "Export to CSV"),
         ]))
       ])
     ]),

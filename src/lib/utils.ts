@@ -98,6 +98,10 @@ export function inlineKey<T, K extends keyof T>(obj: T): (T[K] & { key: string }
   return result;
 }
 
+export function intersection<T>(xs: T[], ys: T[]): T[] {
+  return xs.filter(value => -1 !== ys.indexOf(value));
+}
+
 export function isPojo(obj): boolean {
   return obj !== null && typeof obj === "object" && Object.getPrototypeOf(obj) === Object.prototype;
 }

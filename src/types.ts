@@ -7,7 +7,7 @@ import { OperationSlot, OperationSlotDefinition } from './lib/slots';
 export { OperationSlot, OperationSlotDefinition };
 
 export interface DataSource {
-  name: string,
+  name?: string,
   columns: DataColumn[],
   fingerprint: string,
   schema?: any,
@@ -73,12 +73,12 @@ const dataColumnPrototype = Object.create(null, {
 });
 
 // TODO: consider using immutable js for some stuff
-export function makeDataSource(attrs: { name: string, columns: DataColumn[], schema?: any }): DataSource {
+export function makeDataSource(attrs: { name?: string, columns: DataColumn[] }): DataSource {
   const fingerprint = sha1(JSON.stringify([attrs.name].concat(attrs.columns.map(c => c.fingerprint))));
   return Object.setPrototypeOf(Object.assign({}, attrs, { fingerprint }), sourcePrototype);
 }
 
-export function makeDataColumn(attrs: { idx?: number, name: string, values: string[], types: DataType<any>[]}): DataColumn {
+export function makeDataColumn(attrs: { name: string, values: string[], types: DataType<any>[]}): DataColumn {
   const fingerprint = sha1(JSON.stringify([attrs.name].concat(attrs.values)));
   return Object.setPrototypeOf(Object.assign({}, attrs, { fingerprint }), dataColumnPrototype);
 }

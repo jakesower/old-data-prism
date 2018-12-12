@@ -7,7 +7,7 @@ import { ascend, descend, sortBy, merge, pipe, clamp } from "../../lib/utils";
 
 interface LocalState {
   page: number,
-  sorting: { col: number, dir: "asc" | "desc"},
+  sorting: { col: Maybe<number>, dir: "asc" | "desc"},
 }
 
 interface Props {
@@ -25,7 +25,7 @@ const perPage = 25;
 
 const initState: LocalState = {
   page: 1,
-  sorting: {col: 0, dir: "asc"},
+  sorting: {col: Maybe.Nothing<number>(), dir: "asc"},
 };
 
 export default function main(cycleSources: {props: Stream<Props>, DOM: any}): Output {
@@ -80,16 +80,18 @@ const view = (state: State) => {
   const { headers } = source;
   const { sorting } = state;
 
-  const sortCol: DataColumn = source.columns[sorting.col] || source.columns[0];
-  const numericSort = sortCol.hasType(dataTypes.Number);
-  const getCell = (rec: string[]): string => rec[sorting.col];
-  const sorter = sorting.dir === "asc" ? ascend : descend;
+  const records = sorting.col.map(sortColNum => {
+    const sortCol: DataColumn = source.columns[sortColNum] || source.columns[0];
+    const numericSort = sortCol.hasType(dataTypes.Number);
+    const getCell = (rec: string[]): string => rec[sortColNum];
+    const sorter = sorting.dir === "asc" ? ascend : descend;
 
-  const sortPipe = numericSort ?
-    sorter(pipe([getCell, v => dataTypes.Number.cast(v)])) :
-    sorter(getCell);
+    const sortPipe = numericSort ?
+      sorter(pipe([getCell, v => dataTypes.Number.cast(v)])) :
+      sorter(getCell);
 
-  const records = sortBy(sortPipe, source.records) as string[][];
+    return sortBy(sortPipe, source.records) as string[][];
+  }).withDefault(source.records);
 
   if(records.length === 0) return div({}, "");
 
@@ -100,7 +102,7 @@ const view = (state: State) => {
   const recordsOnPage = records.slice((page - 1) * perPage, page*perPage);
 
   const gridHeader = tr({}, headers.map((c, idx) => {
-    const activeSort = sorting.col === idx ? sorting.dir : null;
+    const activeSort = sorting.col.hasValue(idx) ? sorting.dir : null;
 
     return th(
       { class: {

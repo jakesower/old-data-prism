@@ -52,7 +52,7 @@ export default function ChartComponent(cycleSources) {
     };
   }).debug();
 
-  const collector$ = collector(state$, DOM);
+  const collector$ = collector(state$, cycleSources);
   const collectorVdom$: Stream<VNode | VNode[]> = collector$.map(c => c.DOM).flatten();
   const collectorValue$: Stream<{[k: string]: string}> = collector$.map(c => c.value).flatten();
 
@@ -107,17 +107,17 @@ function view(state: State, collectorVdom, chartVdom) {
   ])
 }
 
-function collector(state$: Stream<State>, DOM): Stream<{DOM: Stream<any>, value: Stream<any>}> {
+function collector(state$: Stream<State>, cycleSources): Stream<{DOM: Stream<any>, value: Stream<any>}> {
   const emptyCollector = { DOM: xs.of([]), value: xs.of({}) };
 
   return state$.map(state =>
-    state.chartType
-      .map(chartType => {
+    state.dataSource.map(dataSource =>
+      state.chartType.map(chartType => {
         console.log({ chartDefs, chartType })
         const { slots } = chartDefs[chartType];
-        return SlotCollector({ slots }, {/* TODO */})({ DOM, dataSource: xs.of(state.dataSource) });
-      })
-      .withDefault(emptyCollector)
+        return SlotCollector({ slots }, dataSource, {})(cycleSources);
+      }).withDefault(emptyCollector)
+    ).withDefault(emptyCollector)
   );
 }
 

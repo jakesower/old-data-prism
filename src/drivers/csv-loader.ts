@@ -40,7 +40,6 @@ export default function fileLoaderDriver(request$: Stream<Request>): Stream<Data
             }));
 
             const s: DataSource = makeDataSource({
-              id: source,
               name: fileName,
               columns,
             });

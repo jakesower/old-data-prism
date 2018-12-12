@@ -4,7 +4,7 @@ import { DataSource, makeDataColumn, OperationSlot } from '../types';
 import { discoverTypes, mapRows, populateSlots } from '../lib/data-functions';
 import dataTypes from '../lib/data-types';
 import { merge, sort, eq, pairs } from '../lib/utils';
-import { FreeSlot, ColumnSlot, ExpressionSlot, MultiColumnSlot } from '../lib/slots';
+import { FreeSlot, ColumnSlot, ExpressionSlot } from '../lib/slots';
 import { SlotCollector, SlotOperation } from '../components/collectors/slot-collector';
 
 type PartialOperation = {
@@ -43,7 +43,7 @@ const makeDeriver = (def: Deriver): SlotOperation => {
     },
     collector: SlotCollector,
     help: 'help text',
-    tags: ["deriver"],
+    tags: def.tags ? def.tags.concat(["deriver"]) : ["deriver"],
     valid: (ds, i) => validateSlots(def.slots)(ds, i) && (def.valid ? def.valid(ds, i) : true),
   });
 }
@@ -71,10 +71,20 @@ export const Expression = makeDeriver({
   tags: ["math"],
   slots: {
     columnName: colNameSlot,
-    expression: ExpressionSlot({ display: "Expression", type: dataTypes.String }),
+    expression: ExpressionSlot({ display: "Expression" }),
   },
   deriverFn: (_, inputs) => inputs.expression,
-  display: (dataSource, inputs) => div('hi'),
+  display: (_, inputs) => div(['Expression Column ', span('.column-name', inputs.columnName)]),
+});
+
+
+export const Index = makeDeriver({
+  name: "Index",
+  slots: {
+    columnName: colNameSlot,
+  },
+  deriverFn: (dataSource, _) => dataSource.records.map((_, idx) => (idx+1).toString()),
+  display: _ => div('Add Index'),
 })
 
 

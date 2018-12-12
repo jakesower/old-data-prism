@@ -3,7 +3,7 @@ import { aside, div, input, main as main_, p, h1, h2, DOMSource } from '@cycle/d
 import { DataSource, StateModifier } from '../../types';
 import Grid from './grid';
 import { scopedEvent } from '../../lib/dom-utils';
-import { merge, eq } from '../../lib/utils';
+import { merge } from '../../lib/utils';
 import { Maybe } from '../../lib/maybe';
 
 const noNum = Maybe.Nothing<number>();
@@ -107,19 +107,19 @@ function activeSourceVdom(source: DataSource, grid) {
 
 function newSourceVdom() {
   return div({}, [
-    h1({}, 'Load New DataSource'),
+    h1({}, 'Import New DataSource'),
 
     div({}, [
       div({class: {colgroup: true}}, [
         div({class: {"upload-type": true}}, [
-          h2({}, 'Upload CSV'),
+          h2({}, 'Import CSV'),
           input({
             attrs: {type: 'file', id: 'data-file'},
           }, [])
         ]),
 
         div({class: {"upload-type": true}}, [
-          h2({}, 'Load Sample Data'),
+          h2({}, 'Import Sample Data'),
           // h('select',
           //   prepend(emptyOption, R.map(({name, uri}) =>
           //     option({attrs: {value: uri}}, name),

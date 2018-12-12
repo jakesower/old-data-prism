@@ -5,7 +5,7 @@ import xs, { Stream } from 'xstream';
 import { Maybe } from '../../../lib/maybe';
 
 
-export function freeSlotComponent(slot, init) {
+export function freeSlotComponent(slot, _dataSource, init) {
   return function ({ DOM }): { DOM: Stream<any>, value: Stream<string> } {
     const value$ = DOM.select('.slot-input')
       .events('change')
@@ -27,51 +27,42 @@ export function freeSlotComponent(slot, init) {
 }
 
 
-export function columnSlotComponent(slot, init) {
-  return function ({ DOM, dataSource: dataSource$ }) {
+export function columnSlotComponent(slot, dataSource, init) {
+  return function ({ DOM }) {
     const value$ = DOM.select('.slot-input').events('change').map(ev => ev.target.value).startWith(init || '');
-    const view$ = xs.combine(value$, <Stream<Maybe<DataSource>>>dataSource$)
-      .map(([value, mDataSource]) => {
-        const emptyCol = option({ attrs: { value: '', selected: (value === "") }}, '');
-        const colReducer = (acc: VNode[], col: DataColumn, idx: number) => col.hasType(slot.type) ?
-          [...acc, option({ attrs: { value: idx, selected: (value === idx.toString()) }}, col.name)] :
-          acc;
+    const view$ = value$.map(value => {
+      const emptyCol = option({ attrs: { value: '', selected: (value === "") }}, '');
+      const colReducer = (acc: VNode[], col: DataColumn, idx: number) => col.hasType(slot.type) ?
+        [...acc, option({ attrs: { value: idx, selected: (value === idx.toString()) }}, col.name)] :
+        acc;
 
-        const relevantColumns = mDataSource.map(ds => ds.columns.reduce(colReducer, [emptyCol]));
+      const relevantColumns = dataSource.columns.reduce(colReducer, [emptyCol]);
 
-        return div('.slot', {}, [
-          h3({}, slot.display),
-          select('.slot-input', relevantColumns.withDefault([emptyCol]))
-        ]);
-      });
+      return div('.slot', {}, [
+        h3({}, slot.display),
+        select('.slot-input', relevantColumns),
+      ]);
+    });
 
     return { value: value$, DOM: view$ };
   }
 }
 
 
-export function multicolumnSlotComponent(slot: OperationSlot<any>) {
-  return function ({ DOM, dataSource }) {
+export function multicolumnSlotComponent(slot: OperationSlot<any>, dataSource: DataSource) {
+  return function ({ DOM }) {
     const colReducer = (acc, col: DataColumn, idx: number) =>
       col.hasType(slot.type) ?
         [...acc, { value: idx, display: col.name }] :
         acc;
 
-    const ms$ = dataSource
-      .map(mDs => {
-        const relevantColumns = mDs.map(ds => ds.columns.reduce(colReducer, [])).withDefault([]);
-        return Multiselect({ options: relevantColumns, selected: [] })({ DOM });
-      });
-
-    return {
-      DOM: ms$.map(ms => ms.DOM).debug(x => console.log({x})),
-      value: ms$.map(ms => ms.value)
-    };
+    const relevantColumns = dataSource.columns.reduce(colReducer, []);
+    return Multiselect({ options: relevantColumns, selected: [] })({ DOM });
   }
 }
 
 
-export function sourceSlotComponent(slot, init) {
+export function sourceSlotComponent(slot, _dataSource, init) {
   return function ({ DOM, props: props$ }) {
     const value$ = DOM.select('.slot-input').events('change').map(ev => ev.target.value).startWith(init || '');
     const view$ = xs.combine(value$, <Stream<any>>props$)
@@ -92,7 +83,7 @@ export function sourceSlotComponent(slot, init) {
 }
 
 
-export function enumeratedSlotComponent(slot, init) {
+export function enumeratedSlotComponent(slot, _dataSource, init) {
   return function ({ DOM }) {
     const value$ = DOM.select('.slot-input').events('change').map(ev => ev.target.value).startWith(init || '');
     const view$ = value$.map(value => {
