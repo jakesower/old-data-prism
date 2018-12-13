@@ -68,7 +68,6 @@ function intent({ DOM }) {
 
 
 function view(state, page) {
-  // console.log({state, page})
   const tab = n => a({
     class: {selected: state.page === n, tab: true}, dataset: { tab: n.toLowerCase() },
   }, n);

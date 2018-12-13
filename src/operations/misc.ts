@@ -83,7 +83,7 @@ export const Sort: Operation = {
         const n = sorters[i].offset;
         const c = sorters[i].comp(rowA[n], rowB[n]);
         if (c !== 0) {
-          return (rowA[n] < rowB[n]) ? -1 : 1;
+          return c;
         }
       }
       return 0;
