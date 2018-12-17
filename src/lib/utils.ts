@@ -142,6 +142,20 @@ export function mergeAll<T>(...args: {[k in string]: T}[]): ({[k in string]: T})
   return args.reduce((merged, arg) => ({ ...merged, ...arg }), init);
 }
 
+// square matrices only for now
+export function reflectUTMatrix<T>(matrix: T[][]): T[][] {
+  const l = matrix.length;
+  let out = [...matrix];
+
+  for (let i=1; i<l; i+=1) {
+    for (let j=0; j<i; j+=1) {
+      out[i][j] = matrix[j][i];
+    }
+  }
+
+  return out;
+}
+
 export function objFromPairs<T>(pairs: [string, T][]): {[k: string]: T} {
   return pairs.reduce((out, pair) => {
     const o = {[pair[0]]: pair[1]};
@@ -168,6 +182,11 @@ export function pipeThru(val: any, fns: ((x: any) => any)[]): any {
 
 export function prepend<T>(elt: T, ary: T[]): T[] {
   return [elt].concat(ary);
+}
+
+export function round(n: number, precision: number): number {
+  const mult = Math.pow(10, precision);
+  return Math.round(n*mult) / mult;
 }
 
 export function setIn(path) {
@@ -254,6 +273,45 @@ export function transpose<T>(xss: T[][]): T[][] {
   return xss[0].map((_, i) => xss.map(row => row[i]));
 }
 
+// export function upperTriangularPairs<T>(xs: T[], includeSame: boolean): [T, T][] {
+//   const o = includeSame ? 0 : 1;
+//   const l = xs.length;
+//   let pairs: [T, T][] = [];
+//   for (let i=0; i<l; i+=1) {
+//     for (let j=(i+o); j<l; j+=1) {
+//       pairs.push([xs[i], xs[j]]);
+//     }
+//   }
+//   return pairs;
+// }
+
+// export function filledUpperTriangularMatrix<T,U>(xs: T[], includeSame: boolean, filler: U): (T|U)[][] {
+//   let rows = [];
+//   for (let i=0)
+// }
+
+export function crossMatrixMap<T,U,V>(xs: T[], ys: U[], fn: (x: T, y: U, xidx?: number, yidx?: number) => V): V[][] {
+  const xl = xs.length, yl = ys.length;
+  const out: V[][] = [];
+  for (let i=0;i<xl;i+=1) {
+    let row: V[] = [];
+    for (let j=0;j<yl;j+=1) {
+      row[j] = fn(xs[i], ys[j], i, j);
+    }
+    out[i] = row;
+  }
+
+  return out;
+}
+
+export function upperTriangularMatrixMap<T,U,V,W>(xs: T[], ys: U[], fn: (x: T, y: U) => V, filler: W, includeSame: boolean): (V|W)[][] {
+  const fn2 = includeSame ?
+    (x, y, xidx, yidx) => (xidx <= yidx ? fn(x, y) : filler) :
+    (x, y, xidx, yidx) => (xidx < yidx ? fn(x, y) : filler);
+
+  return crossMatrixMap(xs, ys, fn2);
+}
+
 export function unnest<T>(list: Array<T> | Array<T[]>): T[] {
   return makeFlat(list, false);
 }
@@ -275,6 +333,16 @@ export function zipObj(keys: string[], vals: any[]): {} {
     const o = {[key]: vals[idx]};
     return { ...out, ...o };
   }, {});
+}
+
+
+export function zipWith<T,U,V>(fn: (x: T, y: U) => V, xs: T[], ys: U[]): V[] {
+  const l = Math.min(xs.length, ys.length);
+  let out: V[] = [];
+  for (let i=0; i<l; i+=1) {
+    out[i] = fn(xs[i], ys[i]);
+  }
+  return out;
 }
 
 

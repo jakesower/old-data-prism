@@ -63,6 +63,17 @@ export const Count: Aggregator = makeAggregator({
 });
 
 
+export const Mean = makeAggregator({
+  name: "Mean",
+  slots: {
+    columnName: colNameSlot,
+    a: ColumnSlot({ display: 'Column', type: dataTypes.FiniteNumber }),
+  },
+  aggregatorFn: (_, inputs) => (inputs.a.reduce((x, y) => x+y, 0) / inputs.a.length).toString(),
+  display: () => div('Sum'),
+});
+
+
 // const Mean = makeSlotAggregator({
 //   name: "Mean",
 //   slots: [

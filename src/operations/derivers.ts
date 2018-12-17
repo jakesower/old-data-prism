@@ -1,3 +1,4 @@
+import * as moment from "moment";
 import { div, span, VNode } from '@cycle/dom';
 import { nth, range, findLastIndex } from 'ramda';
 import { DataSource, makeDataColumn, OperationSlot } from '../types';
@@ -89,23 +90,38 @@ export const Index = makeDeriver({
 
 
 
-// const Ceiling = makeDeriver({
-//   name: "Ceiling",
-//   tags: ["math"],
-//   slots: [
-//     DataSlot.Column('num', 'Column', DataType.FiniteNumber),
-//     Slot.Free('precision', 'Precision', DataType.Integer)
-//   ],
-//   fn: ({num, precision}) => {
-//     const m = Math.pow(10, precision * -1);
-//     return R.map(n => Math.ceil(m*n) / m, num);
-//   },
-//   display: ({dataSource}, inputs) =>
-//     h('div', {}, [
-//       'Ceiling ',
-//       col(dataSource, inputs.num)
-//     ])
-// });
+export const FormatDate = makeDeriver({
+  name: "Format Date",
+  tags: ["date", "time"],
+  slots: {
+    columnName: colNameSlot,
+    date: ColumnSlot({ display: 'Column', type: dataTypes.Date }),
+    format: FreeSlot({ display: 'Format', type: dataTypes.String })
+  },
+  deriverFn: mapRows(({ date, format }) => date.format(format)),
+  display: (dataSource, inputs) =>
+    div({}, [
+      'Formatted ',
+      col(dataSource, inputs.num)
+    ])
+});
+
+
+export const ParseDate = makeDeriver({
+  name: "Parse Date",
+  tags: ["date", "time"],
+  slots: {
+    columnName: colNameSlot,
+    date: ColumnSlot({ display: 'Column', type: dataTypes.String }),
+    format: FreeSlot({ display: 'Pattern', type: dataTypes.String })
+  },
+  deriverFn: mapRows(({ date, format }) => moment(date, format).toString()),
+  display: (dataSource, inputs) =>
+    div({}, [
+      'Formatted ',
+      col(dataSource, inputs.num)
+    ])
+});
 
 
 // const Exponent = makeDeriver({

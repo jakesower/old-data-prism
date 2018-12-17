@@ -3,7 +3,7 @@ import 'mocha';
 import { compileTestData } from './test-utils';
 import { Expression, Quantile } from '../src/operations/derivers'
 import { Grouping } from '../src/operations/groupings';
-import { Join } from '../src/operations/misc';
+import { Join } from '../src/operations/joins';
 
 const testData = compileTestData({
   Date: ['2014-06-14', '2014-06-14', '2014-06-19', '2014-06-20', '2014-06-24', '2014-06-24'],

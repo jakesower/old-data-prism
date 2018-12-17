@@ -182,6 +182,14 @@ div.body-container {
 
   &.analyze {
     @include page-colors($green);
+
+    tr:nth-child(2n) {
+      background-color: lighten($green, 40%);
+    }
+
+    .correlation-grid td {
+      cursor: pointer;
+    }
   }
 
   &.share {
@@ -401,6 +409,10 @@ div.main-container {
   td {
     padding: 0.4em;
     // font-family: "Oswald";
+
+    &.numeric {
+      text-align: right;
+    }
   }
 }
 

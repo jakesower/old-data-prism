@@ -49,7 +49,7 @@ const PositiveInteger: DataType<number> = {
 const _Date: DataType<moment.Moment> = {
   name: "Date",
   test: x => !isNaN(Date.parse(x)),
-  cast: x => moment(x)
+  cast: x => moment(new Date(x))
 }
 
 const _Boolean: DataType<boolean> = {

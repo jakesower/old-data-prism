@@ -47,8 +47,8 @@ export default function main(cycleSources: {props: Stream<Props>, DOM: any}): Ou
       pageChanger(lastPage$, _ => Infinity),
       columnSort$.map(nextCol => state => {
         const { col, dir } = state.sorting;
-        const nextDir = (col === nextCol && dir === 'asc') ? 'desc' : 'asc';
-        return { ...state, sorting: { col: nextCol, dir: nextDir }};
+        const nextDir = (col.hasValue(nextCol) && dir === 'asc') ? 'desc' : 'asc';
+        return { ...state, sorting: { col: Maybe.of(nextCol), dir: nextDir }};
       }),
     );
 

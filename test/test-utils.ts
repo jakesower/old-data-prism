@@ -9,5 +9,5 @@ export function compileTestData(raw: {[k: string]: string[]}): DataSource {
     types: discoverTypes(vals),
   }));
 
-  return makeDataSource({ id: 'test', name: 'Test', columns });
+  return makeDataSource({ columns });
 }

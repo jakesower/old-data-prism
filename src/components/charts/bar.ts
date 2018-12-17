@@ -1,8 +1,8 @@
 import { h } from "@cycle/dom";
 import { pipeThru, flatten } from "../../lib/utils";
 import { DataSource } from "../../types";
-import { Range, Point, Line, Rectangle } from './chart-types';
-import { paddedBasis, toSvgTag, paddedSvg } from "./utils";
+import { Range, Point, Line, Rectangle } from './shapes';
+import { paddedBasis, toSvgTag, paddedSvg } from "./chart-utils";
 import { ColumnSlot } from '../../lib/slots';
 import dataTypes from '../../lib/data-types';
 

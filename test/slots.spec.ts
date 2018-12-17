@@ -13,7 +13,7 @@ const testData = compileTestData({
 });
 
 describe('expression slot', () => {
-  const slot = ExpressionSlot({ display: 'Test', type: dataTypes.String });
+  const slot = ExpressionSlot({ display: 'Test' });
 
   it('should compile a proper expression', () => {
     const exp = "{GF} + {GA}";

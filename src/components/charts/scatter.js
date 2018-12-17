@@ -2,8 +2,8 @@ const R = require('ramda');
 const h = require('snabbdom/h').default;
 const {DataType, DataSlot, Slot} = require('../../types');
 
-const {Shape, Range, Point} = require('./chart-types');
-const {paddedBasis, paddedSvg, toSvgTag} = require('./utils');
+const {Shape, Range, Point} = require('./shapes');
+const {paddedBasis, paddedSvg, toSvgTag} = require('./chart-utils');
 
 const slots = [
   DataSlot.Column('rowAxis', 'Row Axis', DataType.String),

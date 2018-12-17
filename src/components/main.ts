@@ -3,6 +3,7 @@ import xs from 'xstream';
 import Sources from "./components/sources";
 import Remix from "./components/remix";
 import Chart from "./components/chart";
+import Analyze from "./components/analyze";
 import { objectStream } from "../lib/stream-utils";
 import { DataSource, StateModifier } from "../types";
 
@@ -38,6 +39,7 @@ function main(cycleSources) {
   const sources = Sources(componentSources);
   const remix = Remix(componentSources);
   const chart = Chart(componentSources);
+  const analyze = Analyze(componentSources);
 
   addSourceProxy$.imitate(remix.source);
 
@@ -45,6 +47,7 @@ function main(cycleSources) {
     sources: sources.DOM,
     remix: remix.DOM,
     chart: chart.DOM,
+    analyze: analyze.DOM,
   });
 
   const view$ = xs.combine(state$, pageDoms$).map(([s, pd]) => view(s, pd));
