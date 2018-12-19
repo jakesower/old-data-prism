@@ -185,7 +185,7 @@ export function prepend<T>(elt: T, ary: T[]): T[] {
 }
 
 export function round(n: number, precision: number): number {
-  const mult = Math.pow(10, precision);
+  const mult = Math.pow(10, -precision);
   return Math.round(n*mult) / mult;
 }
 

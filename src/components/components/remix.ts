@@ -1,6 +1,6 @@
 import xs, { Stream } from 'xstream';
 import delay from 'xstream/extra/delay';
-import { aside, div, main as main_, select, h2, VNode, input, button, map, h3 } from '@cycle/dom';
+import { aside, div, main as main_, select, h2, VNode, input, button, map, h3, option } from '@cycle/dom';
 import { ChainedCollection, pluck as pl} from '../../lib/chained-collection';
 import { DataSource, StateModifier, makeDataSource } from '../../types';
 import { merge, flatten, last } from '../../lib/utils';
@@ -13,7 +13,7 @@ import { sampleWith } from '../../lib/stream-utils';
 
 interface LocalState {
   collectors: any[],
-  rootSource: Maybe<number>,
+  rootSource: Maybe<string>,
   saveOpen: boolean,
   showSaved: boolean,
 }
@@ -36,7 +36,7 @@ export default function main(cycleSources) {
   const { props: props$, DOM } = cycleSources;
   const { changeRoot$, newOperation$, saveSource$, toggleSave$, saveName$, export$ } = intent(DOM);
   const activeSourceObj: (state: State) => Maybe<DataSource> =
-    state => state.rootSource.map(rs => state.sources[rs]);
+    state => state.rootSource.chain(rs => Maybe.fromValue(state.sources.find(s => s.fingerprint === rs)));
 
   const stateModifiers$ = xs.merge(
     changeRoot$.map(source => state => ({...state,
@@ -85,13 +85,14 @@ export default function main(cycleSources) {
       .map(a => a.withDefault(null))
       .compose(sampleWith(export$))
       .filter(a => a != undefined),
+    workingState: gridSource$.debug(gs => console.log({gs})),
   };
 }
 
 
 function intent(DOM) {
   return {
-    changeRoot$: DOM.select('select.root-source').events('change').map(targetValue).map(v => v ? parseFloat(v) : null),
+    changeRoot$: DOM.select('select.root-source').events('change').map(targetValue),
     newOperation$: DOM.select('.new-operation-button').events('click'),
     toggleSave$: DOM.select('.save-toggle').events('click'),
     saveSource$: DOM.select('.save-source').events('click'),
@@ -102,11 +103,19 @@ function intent(DOM) {
 
 
 function view(state: State, gridDom, collectorDom) {
+  const emptyOption = option({ attrs: { value: "", select: state.rootSource.isNothing() }});
+  const sourceOptions = state.sources.map(s => option(
+    { attrs: { value: s.fingerprint, selected: state.rootSource.hasValue(s.fingerprint) }},
+    s.name
+  ));
+
+  const opts = [emptyOption].concat(sourceOptions);
+
   return div('.main-container', [
     aside({}, [
       div('.root-datasource', {}, [
         h2({}, 'Root DataSource'),
-        select({ class: { "root-source": true }}, indexedOptions(state.sources.map(s => s.name), state.rootSource.withDefault(null)))
+        select({ class: { "root-source": true }}, opts)
       ]),
       div('.remix-controls', {}, [
         div((state.rootSource.isNothing() ? '.operations-menu.disabled' : '.operations-menu'), {}, flatten([

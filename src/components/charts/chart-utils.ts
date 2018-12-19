@@ -74,7 +74,7 @@ export function xAxisBreaks(valRange: IRange, dimRange: IRange): Shape[] {
     Line(Point(x, lineY-5), Point(x, lineY+5)),
     Label(Point(x, textY), label),
   ]);
-  console.log({ ticks, firstTick, tickInc, tickLog })
+  console.log({ ticks, firstTick, tickInc, tickLog, f: round(firstTick, tickLog) })
 
   // const scale = Math.log10(maxVal - minVal);
   // Can a tick mark be placed for every value between min and max?
@@ -90,14 +90,13 @@ export function xAxisBreaks(valRange: IRange, dimRange: IRange): Shape[] {
 export function yAxisBreaks(valRange: IRange, dimRange: IRange): Shape[] {
   // Draw a tick marks such that there can be no text overlap
   const flip = n => dimRange.max - n;
-  const width = dimRange.length;
   const translateRange = (n: number, initRange: IRange, targetRange: IRange): number =>
     (((n - initRange.min) / initRange.length) * targetRange.length) + targetRange.min
 
   // constraints from dimensions
   const tickLog = Math.floor(Math.log10(valRange.length))
   const maxTextWidth = yAxisWidth(valRange) + 5;
-  const maxTicks = Math.floor(width / maxTextWidth);
+  const maxTicks = Math.floor(dimRange.length / 6); // TODO: figure this out better
 
   // use those to find round numbers from the value range
   const minTickInc = valRange.length / maxTicks;
@@ -128,8 +127,8 @@ export function yAxisBreaks(valRange: IRange, dimRange: IRange): Shape[] {
 
 export function yAxisWidth(valRange) {
   const tickLog = Math.floor(Math.log10(valRange.length));
-  return Math.max(
+  return (Math.max(
     round(valRange.min, tickLog).toString().length,
     round(valRange.max, tickLog).toString().length
-  ) * 10;
+  ) * 10) + 3;
 }

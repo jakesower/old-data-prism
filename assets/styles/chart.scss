@@ -1,3 +1,5 @@
+@import "variables.scss";
+
 .chart-container {
   position: relative;
 }
@@ -94,11 +96,21 @@
     .plots {
       opacity: 0.6;
     }
+
+    .regression-line line {
+      fill: $dark-green;
+      stroke: $dark-green;
+      stroke-width: 2;
+    }
   }
 
   .axes {
     text {
       font-size: 15px;
+      &.y-axis {
+        text-anchor: start;
+      }
     }
+
   }
 }

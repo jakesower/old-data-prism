@@ -1,6 +1,6 @@
 import xs, { Stream } from 'xstream';
 import delay from 'xstream/extra/delay';
-import { aside, div, main as main_, select, h2, VNode, input, button, map, h3, table, tr, td, th } from '@cycle/dom';
+import { aside, div, main as main_, select, h2, VNode, input, button, map, h3, table, tr, td, th, option } from '@cycle/dom';
 import { ChainedCollection, pluck as pl} from '../../lib/chained-collection';
 import { DataSource, StateModifier, makeDataSource, DataColumn } from '../../types';
 import { merge, flatten, last, upperTriangularMatrixMap, round, reflectUTMatrix, zipWith, go } from '../../lib/utils';
@@ -16,7 +16,7 @@ import { Point, IPoint } from '../charts/shapes';
 
 
 interface LocalState {
-  rootSource: Maybe<number>,
+  rootSource: Maybe<string>,
   activePair: Maybe<[number, number]>
 }
 
@@ -34,10 +34,8 @@ const initState: LocalState = {
 
 
 export default function main(cycleSources) {
-  const { props: props$, DOM, dimensions: dimensions$ } = cycleSources;
+  const { props: props$, DOM, dimensions: dimensions$, remixSource: remixSource$ } = cycleSources;
   const { changeRoot$, changeActivePair$ } = intent(DOM);
-  const activeSourceObj: (state: State) => Maybe<DataSource> =
-    state => state.rootSource.map(rs => state.sources[rs]);
 
   const stateModifiers$ = xs.merge(
     changeRoot$.map(source => state => ({...state,
@@ -47,8 +45,14 @@ export default function main(cycleSources) {
   ) as StateModifier<LocalState>;
 
   const localState$: Stream<LocalState> = stateModifiers$.fold((state, mod) => mod(state), initState);
-  const state$ = xs.combine<Props, LocalState>(props$, localState$).map(([a,b]) => merge(a,b)).debug();
-  const activeSource$ = state$.map(activeSourceObj).remember();
+  const state$ = xs.combine<Props, LocalState>(props$, localState$).debug(analState => console.log({ analState })).map(([a,b]) => merge(a,b));
+  const activeSource$: Stream<Maybe<DataSource>> = state$
+    .map(state =>
+      state.rootSource.hasValue('remix') ?
+        remixSource$ :
+        xs.of(state.rootSource.chain(rs => Maybe.fromValue(state.sources.find(s => s.fingerprint === rs))))
+    )
+    .flatten();
 
   const grid$ = activeSource$
     .map(mActiveSource =>
@@ -66,17 +70,15 @@ export default function main(cycleSources) {
     )
     .startWith(Maybe.Nothing())
 
-  // const grid = Grid({ DOM: DOM, props: gridSource$.map(source => ({source})) });
-
   return {
-    DOM: xs.combine<State, Maybe<ColPair>, any>(state$, grid$, dimensions$).map(a => view(a[0], a[1], a[2])),
+    DOM: xs.combine<State, Maybe<ColPair>, any>(state$, grid$, remixSource$).map(a => view(a[0], a[1], a[2])),
   };
 }
 
 
 function intent(DOM) {
   return {
-    changeRoot$: DOM.select('select.root-source').events('change').map(targetValue).map(v => v ? parseFloat(v) : null),
+    changeRoot$: DOM.select('select.root-source').events('change').map(targetValue).map(v => v || null),
     changeActivePair$: DOM.select('.correlation-grid, td')
       .events('click')
       .map(ev => [parseFloat(ev.target.dataset.row), parseFloat(ev.target.dataset.col)]),
@@ -84,14 +86,26 @@ function intent(DOM) {
 }
 
 
-function view(state: State, grid: Maybe<ColPair>, dimensions) {
+function view(state: State, grid: Maybe<ColPair>, remixSource: Maybe<DataSource>) {
   const mPts = extractPoints(state, grid);
+
+  const remixOption = remixSource.map(_ =>
+    [option({ attrs: { value: "remix", select: state.rootSource.hasValue("remix") }}, "(remix source)")]
+  ).withDefault([]) as VNode[];
+
+  const sourceOptions = [option({ attrs: { value: "", select: state.rootSource.isNothing() }})].concat(
+    remixOption.concat(
+    state.sources.map(s => option(
+      { attrs: { value: s.fingerprint, selected: state.rootSource.hasValue(s.fingerprint) }},
+      s.name
+    ))
+  ));
 
   return div('.main-container', [
     aside({}, [
       div('.root-datasource', {}, [
         h2({}, 'Root DataSource'),
-        select({ class: { "root-source": true }}, indexedOptions(state.sources.map(s => s.name), state.rootSource.withDefault(null)))
+        select('.root-source', sourceOptions)
       ]),
     ]),
 
@@ -116,7 +130,7 @@ function numberGrid(colPair: ColPair) {
     matrix.map((row, i) => tr(flatten([
       th(cols[i].name),
       row.map((cell, j) => (
-        td('.numeric', { dataset: { row: i.toString(), col: j.toString() }}, cell ? round(cell, 2) : "")
+        td('.numeric', { dataset: { row: i.toString(), col: j.toString() }}, cell ? round(cell, -2) : "—")
       ))])
     ))
   ]));
@@ -125,7 +139,6 @@ function numberGrid(colPair: ColPair) {
 
 function extractPoints(state: State, mGrid: Maybe<ColPair>): Maybe<IPoint[]> {
   return go(function* () {
-    console.log({ mGrid, state })
     const grid = yield mGrid;
     const activePair: [number, number] = yield state.activePair;
     const cols: DataColumn[] = grid[0];

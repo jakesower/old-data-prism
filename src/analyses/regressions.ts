@@ -33,6 +33,7 @@ export const LinearRegression = (function () {
 }());
 
 
+// TODO: Optimize this big time
 export function regressionLine(points: IPoint[]): { slope: number, yIntercept: number } {
   const n = points.length;
   const r2 = LinearRegression.fn(points.map(p => p.x), points.map(p => p.y));
@@ -53,9 +54,12 @@ export function regressionLine(points: IPoint[]): { slope: number, yIntercept: n
     sy += Math.pow(y - yMean, 2);
   }
 
-  const slope = r2 * (sy / sx);
+  const stdX = Math.sqrt(sx);
+  const stdY = Math.sqrt(sy);
+
+  const slope = r2 * (stdY / stdX);
   const yIntercept = yMean - (slope * xMean);
-  console.log({ slope, yIntercept, r2, sumX, sx, sy })
+  // console.log({ slope, yIntercept, r2, sumX, sx, sy, r, stdX, stdY })
 
   return { slope, yIntercept };
 }

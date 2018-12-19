@@ -6,6 +6,8 @@ import Chart from "./components/chart";
 import Analyze from "./components/analyze";
 import { objectStream } from "../lib/stream-utils";
 import { DataSource, StateModifier } from "../types";
+import { Maybe } from "../lib/maybe";
+import isolate from "@cycle/isolate";
 
 interface State {
   page: "sources" | "remix" | "chart" | "analyze" | "share" | "learn",
@@ -33,13 +35,19 @@ function main(cycleSources) {
         sources: prev.sources.concat(source),
       })),
   ];
-  const state$ = xs.merge(...stateModifiers$).fold((state, fn) => fn(state), initState);
+  const state$ = xs.merge(...stateModifiers$)
+    .fold((state, fn) => fn(state), initState)
+    .debug(mainState => console.log({ mainState }));
 
   const componentSources = { ...cycleSources, props: state$ };
-  const sources = Sources(componentSources);
-  const remix = Remix(componentSources);
-  const chart = Chart(componentSources);
-  const analyze = Analyze(componentSources);
+  console.log({ componentSources })
+  const sources = isolate(Sources, 'source')(componentSources);
+  const remix = isolate(Remix, 'remix')(componentSources);
+
+  const remixSource = remix.workingState.startWith(Maybe.Nothing());
+
+  const chart = isolate(Chart, 'chart')({ ...componentSources, remixSource });
+  const analyze = isolate(Analyze, 'analyze')({ ...componentSources, remixSource });
 
   addSourceProxy$.imitate(remix.source);
 

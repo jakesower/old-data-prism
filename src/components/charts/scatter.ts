@@ -31,15 +31,15 @@ export function plot(points: IPoint[], dimensions: { height: number, width: numb
 
   const axes = flatten([
     xAxisBreaks(xRange, Range(xOffset, dimensions.width)).map(s => toSvgTag({}, s)),
-    yAxisBreaks(yRange, Range(yOffset, dimensions.height)).map(s => toSvgTag({}, s)),
+    yAxisBreaks(yRange, Range(yOffset, dimensions.height)).map(s => toSvgTag({ class: "y-axis" }, s)),
   ]);
 
   const { slope, yIntercept } = regressionLine(points);
-  console.log({ slope, yIntercept })
   const regLineShape = Line(
     Point(xRange.min, yIntercept + (slope*xRange.min)),
     Point(xRange.max, yIntercept + (slope*xRange.max))
   );
+  console.log({ slope, yIntercept, regLineShape, proj: regLineShape.project(basis) })
   const regLine = toSvgTag({}, regLineShape.project(basis));
 
   // const yZero = toSvgTag(
