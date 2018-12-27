@@ -37,8 +37,8 @@ const iconTags = [
 ];
 
 
-export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<DataSource>>, props: any }) {
-  const { DOM, chain$ } = cycleSources;
+export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<DataSource>>, chainInit$: Stream<any>, props: any }) {
+  const { DOM, chain$, chainInit$ } = cycleSources;
   const collectorValueApplyProxy$: any = xs.create();
   const collectorValueSaveProxy$: any = xs.create();
 
@@ -46,6 +46,7 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
   //
   const { save$, cancel$, edit$, apply$, setOperation$, removePress$ } = intent(DOM);
   const stateModifiers$: StateModifier<LocalState> = xs.merge(
+    chainInit$.map(ci => state => ({ ...state, operation: Maybe.fromValue(ci) })),
     setOperation$.map(operation => state => ({...state,
       operation: Maybe.fromValue(operation),
     })),
@@ -59,12 +60,9 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
     collectorValueSaveProxy$
       .filter(_ => valid)
       .map(inputs => state => ({ ...state, inputs, editing: false, savedValue: Maybe.of(inputs) })),
-    // xs.merge(collectorValueApplyProxy$, collectorValueSaveProxy$)
-    //   .filter(_ => state => !valid(state))
-    //   .mapTo(state => ({ ...state, showErrors: true })),
   ) as StateModifier<LocalState>;
 
-  const localState$: Stream<LocalState> = stateModifiers$.fold((state, mod) => mod(state), initState);
+  const localState$: Stream<LocalState> = stateModifiers$.fold((state, mod) => mod(state), initState).debug();
 
 
   // SECONDARY STREAMS
@@ -182,12 +180,14 @@ function valid(state: State): boolean {
 function collector(localState$: Stream<LocalState>, DOM, dataSource$: Stream<Maybe<DataSource>>, props): Stream<{DOM: Stream<any>, value: Stream<any>}> {
   const emptyCollector = { DOM: xs.of([]), value: xs.of({}) };
   const noDataSourceCollector = { DOM: xs.of(div('hi')), value: xs.of({}) };
+  console.log()
 
   return xs.combine(localState$, dataSource$)
     .map(([ localState, mDataSource ]) =>
       mDataSource.map(dataSource =>
         localState.operation
           .map(op => {
+            console.log({ op, operationDefs })
             const opDef: OperationType = operationDefs[op];
             return opDef.collector(opDef, dataSource, localState.inputs)({ DOM, props });
           })

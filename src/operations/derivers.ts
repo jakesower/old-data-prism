@@ -51,20 +51,20 @@ const makeDeriver = (def: Deriver): SlotOperation => {
 
 
 
-export const AbsoluteValue = makeDeriver({
-  name: "Absolute Value",
-  tags: ["math"],
-  slots: {
-    columnName: colNameSlot,
-    num: ColumnSlot({ display: 'Column', type: dataTypes.FiniteNumber })
-  },
-  deriverFn: mapRows(({num}) => Math.abs(num).toString()),
-  display: (dataSource, inputs) =>
-    div({}, [
-      'Absolute Value of ',
-      col(dataSource, inputs.num)
-    ])
-});
+// export const AbsoluteValue = makeDeriver({
+//   name: "Absolute Value",
+//   tags: ["math"],
+//   slots: {
+//     columnName: colNameSlot,
+//     num: ColumnSlot({ display: 'Column', type: dataTypes.FiniteNumber })
+//   },
+//   deriverFn: mapRows(({num}) => Math.abs(num).toString()),
+//   display: (dataSource, inputs) =>
+//     div({}, [
+//       'Absolute Value of ',
+//       col(dataSource, inputs.num)
+//     ])
+// });
 
 
 export const Expression = makeDeriver({

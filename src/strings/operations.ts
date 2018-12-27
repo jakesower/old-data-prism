@@ -1,4 +1,4 @@
-const markdown = require('marked');
+import markdown from 'marked';
 
 const helpText = {
 Grouping: `

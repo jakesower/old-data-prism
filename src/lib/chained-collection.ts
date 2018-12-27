@@ -32,7 +32,8 @@ function ChainedCollection(args: ChainedCollectionInput) {
   const removeProxy$: Stream<number> = xs.create();
   const chainSourceProxy$ = xs.create();
 
-  const addModifier$ = add$.mapTo((collection: Item[]): Item[] => {
+  const addModifier$ = add$.map(init => (collection: Item[]): Item[] => {
+    console.log({ init })
     const initChain = collection.length === 0 ?
       root$ :
       chainConnector(collection[collection.length - 1]);
@@ -40,6 +41,7 @@ function ChainedCollection(args: ChainedCollectionInput) {
     const newId = id();
     const newItem = isolate(component, newId.toString())({
       ...sources,
+      chainInit$: xs.of(init).remember(),      // TODO: this is hacky
       chain$: chainSourceProxy$
         .startWith({[newId]: initChain})
         .map(chainSource => chainSource[newId] || initChain)
@@ -49,7 +51,6 @@ function ChainedCollection(args: ChainedCollectionInput) {
     newItem[ITEM_ID] = newId;
     newItem[ITEM_NAME] = component.name;
     newItem[ITEM_REMOVE$] = removeConnector(newItem).take(1).mapTo(newId);
-    // newItem.DOM.debug()
 
     return [...collection, newItem];
   });

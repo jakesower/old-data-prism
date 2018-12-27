@@ -5,10 +5,11 @@ import { ChainedCollection, pluck as pl} from '../../lib/chained-collection';
 import { DataSource, StateModifier, makeDataSource } from '../../types';
 import { merge, flatten, last } from '../../lib/utils';
 import { Maybe } from '../../lib/maybe';
-import Grid from './grid';
-import Collector from './collector';
-import { indexedOptions, targetValue } from '../../lib/dom-utils';
+import Grid from '../components/grid';
+import Collector from '../components/collector';
+import { targetValue } from '../../lib/dom-utils';
 import { sampleWith } from '../../lib/stream-utils';
+import OperationsMenu from '../components/operations-menu';
 
 
 interface LocalState {
@@ -16,6 +17,7 @@ interface LocalState {
   rootSource: Maybe<string>,
   saveOpen: boolean,
   showSaved: boolean,
+  actionsOpen: boolean,
 }
 
 interface Props {
@@ -29,12 +31,13 @@ const initState: LocalState = {
   collectors: [],
   saveOpen: false,
   showSaved: false,
+  actionsOpen: false,
 };
 
 
 export default function main(cycleSources) {
   const { props: props$, DOM } = cycleSources;
-  const { changeRoot$, newOperation$, saveSource$, toggleSave$, saveName$, export$ } = intent(DOM);
+  const { changeRoot$, saveSource$, toggleSave$, saveName$, export$, toggleActions$ } = intent(DOM);
   const activeSourceObj: (state: State) => Maybe<DataSource> =
     state => state.rootSource.chain(rs => Maybe.fromValue(state.sources.find(s => s.fingerprint === rs)));
 
@@ -43,6 +46,7 @@ export default function main(cycleSources) {
       rootSource: Maybe.fromValue(source),
     })),
     toggleSave$.mapTo(state => ({...state, saveOpen: !state.saveOpen })),
+    toggleActions$.mapTo(state => ({ ...state, actionsOpen: !state.actionsOpen })),
     saveSource$.mapTo(state => ({ ...state, showSaved: true, saveOpen: false })),
     saveSource$.compose(delay(5000)).mapTo(state => ({ ...state, showSaved: false })),
   ) as StateModifier<LocalState>;
@@ -51,10 +55,11 @@ export default function main(cycleSources) {
   const state$ = xs.combine<Props, LocalState>(props$, localState$).map(([a,b]) => merge(a,b));
   const activeSource$ = state$.map(activeSourceObj).remember();
 
+  const menu = OperationsMenu(cycleSources);
   const collectors$ = ChainedCollection({
     component: Collector,
     sources: cycleSources,
-    add$: newOperation$,
+    add$: menu.operation,
     root$: activeSource$,
     chainConnector: sink => sink.dataSource,
     removeConnector: sink => sink.remove$,
@@ -71,7 +76,7 @@ export default function main(cycleSources) {
   const grid = Grid({ DOM: DOM, props: gridSource$.map(source => ({source})) });
 
   return {
-    DOM: xs.combine<State, VNode|null, VNode|null>(state$, grid.DOM, collectorDom$).map(a => view(a[0], a[1], a[2])),
+    DOM: xs.combine(state$, grid.DOM, collectorDom$, menu.DOM).map(a => view(a[0], a[1], a[2], a[3])),
     source: xs.combine<string, Maybe<DataSource>[]>(saveName$, collectorSources$)
       .compose(sampleWith(saveSource$))
       .map(([name, dataSources]) => ({ name, dataSource: last(dataSources) }))
@@ -85,7 +90,12 @@ export default function main(cycleSources) {
       .map(a => a.withDefault(null))
       .compose(sampleWith(export$))
       .filter(a => a != undefined),
-    workingState: gridSource$.debug(gs => console.log({gs})),
+    workingSource: gridSource$,
+    value: state$
+      .map(state => state.rootSource
+        .map(rootSource => ({collectors: state.collectors, rootSource }))
+        .withDefault({})
+      ),
   };
 }
 
@@ -93,16 +103,16 @@ export default function main(cycleSources) {
 function intent(DOM) {
   return {
     changeRoot$: DOM.select('select.root-source').events('change').map(targetValue),
-    newOperation$: DOM.select('.new-operation-button').events('click'),
     toggleSave$: DOM.select('.save-toggle').events('click'),
     saveSource$: DOM.select('.save-source').events('click'),
     saveName$: DOM.select('.save-name').events('change').map(ev => ev.target.value).startWith(''),
     export$: DOM.select('.export-csv').events('click'),
+    toggleActions$: DOM.select('.toggle-actions-button').events('click'),
   }
 }
 
 
-function view(state: State, gridDom, collectorDom) {
+function view(state: State, gridDom, collectorDom, menuDom) {
   const emptyOption = option({ attrs: { value: "", select: state.rootSource.isNothing() }});
   const sourceOptions = state.sources.map(s => option(
     { attrs: { value: s.fingerprint, selected: state.rootSource.hasValue(s.fingerprint) }},
@@ -117,21 +127,20 @@ function view(state: State, gridDom, collectorDom) {
         h2({}, 'Root DataSource'),
         select({ class: { "root-source": true }}, opts)
       ]),
-      div('.remix-controls', {}, [
-        div((state.rootSource.isNothing() ? '.operations-menu.disabled' : '.operations-menu'), {}, flatten([
+      div((state.rootSource.isNothing() ? '.remix-controls.disabled' : '.remix-controls'), {}, [
+        div({}, flatten([
           collectorDom,
-          div('.new-operation-button', {}, "New Operation"),
-          div('.save-as-source' + (state.saveOpen ? '.open' : ''), {}, [
-            div('.save-toggle.button.closed', {}, "Save as Source"),
-            div('.collector.editing.open', {}, [
+          menuDom,
+          div('.save-as-source.toggle' + (state.saveOpen ? '.open' : ''), {}, [
+            div('.save-toggle.action', {}, "Save as Source"),
+            div('.open', {}, [
               h3('Save As...'),
               input('.save-name', { attrs: { type: 'text', required: true }}),
               button('.save-source', 'Save Source'),
               button('.save-toggle.button', 'Cancel'),
             ]),
-            div({ style: { display: state.showSaved ? 'block' : 'none' }}, 'Saved!'),
           ]),
-          div('.export-csv.button', {}, "Export to CSV"),
+          div('.export-csv.action', {}, "Export to CSV"),
         ]))
       ])
     ]),

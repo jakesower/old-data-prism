@@ -1,7 +1,7 @@
 import xs, { Stream } from 'xstream';
 import { aside, div, input, main as main_, p, h1, h2, DOMSource } from '@cycle/dom';
 import { DataSource, StateModifier } from '../../types';
-import Grid from './grid';
+import Grid from '../components/grid';
 import { scopedEvent } from '../../lib/dom-utils';
 import { merge } from '../../lib/utils';
 import { Maybe } from '../../lib/maybe';

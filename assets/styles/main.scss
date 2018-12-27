@@ -4,6 +4,10 @@
 @import "fonts.scss";
 @import "forms.scss";
 @import "source.scss";
+@import "learn.scss";
+
+$nav-height: 35px;
+$total-nav-height: $nav-height + 4px;
 
 @mixin page-colors($pure-color) {
   $light: lighten($pure-color, 40%);
@@ -12,6 +16,7 @@
   nav {
     border-bottom: 4px solid $mid;
     background-color: #000;
+    height: $nav-height;
 
     h1 {
       color: #fff;
@@ -375,6 +380,14 @@ div.main-container {
     flex: 1;
     overflow-x: auto;
     position: relative;
+
+    h1 {
+      font-size: 200%;
+    }
+
+    h2 {
+      font-size: 150%;
+    }
   }
 
   th {
@@ -689,49 +702,153 @@ nav {
   }
 }
 
+.toggle {
+  & > .closed { display: inherit; }
+  & > .open { display: none; }
+
+  &.open {
+    & > .closed { display: none; }
+    & > .open { display: inherit; }
+  }
+}
 
 .remix-controls {
   flex: 0 1 2em;
   // border-bottom: 3px solid black;
   // border-top: 3px solid black;
 
-  .operations-menu {
-    &.active {
-      .menu { display: block; }
-      .new-operation-button::after { transform: rotate(0.25turn); }
-    }
+  .operations-menu-container {
+    display: none;
+    &.active { display: block; }
+    position: fixed;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding-top: $total-nav-height;
+    z-index: 2;
 
-    .new-operation-button {
-      cursor: pointer;
-      padding: 1em 0;
-      text-transform: uppercase;
-    }
+    .operations-menu {
+      display: flex;
+      height: 100%;
 
-    .save-as-source {
-      display: inline-block;
+      .close-mask {
+        width: 6em;
+        float: left;
+        text-align: center;
+        cursor: pointer;
 
-      .closed { display: inherit; }
-      .open { display: none; }
+        i {
+          font-size: 2em;
+          color: white;
+        }
+      }
 
-      &.open {
-        .closed { display: none; }
-        .open { display: inherit; }
+      .menu {
+        background-color: $mid-orange;
+
+        h1 {
+          font-size: 130%;
+          text-transform: uppercase;
+          padding: 0.5em 0.5em 1em;
+        }
+
+        ul {
+          list-style: none;
+          margin-left: 0;
+        }
+
+        li {
+          margin-bottom: 1em;
+          line-height: 120%;
+          padding: 0.25em 3em;
+          cursor: pointer;
+          position: relative;
+
+          .help {
+            position: absolute;
+            display: none;
+            left: 100%;
+            top: 0;
+            background-color: $mid-orange;
+            padding: 1em;
+            margin-top: -1em;
+          }
+
+          &:hover, &:first-child {
+            .help {
+              display: block;
+            }
+          }
+
+        }
+
+        .operation {
+          text-transform: uppercase;
+        }
+
       }
     }
+  }
 
-    .new-operation-button {
-      width: 100%;
+  &.active {
+    .menu { display: block; }
+    .new-operation-button::after { transform: rotate(0.25turn); }
+  }
 
-      &::after {
-        transition: transform 0.2s;
-        font: normal normal normal 14px/1 FontAwesome;
-        content: "\f054";
-        float: right;
-      }
+  .save-as-source.open {
+    margin-bottom: 0.5em;
+    padding: 0.5em;
+    border: 1px black solid;
+
+    .action { padding-top: 0; }
+    .action::after { transform: rotate(0.25turn); }
+  }
+
+  .action {
+    cursor: pointer;
+    padding: 1em 0;
+    text-transform: uppercase;
+    width: 100%;
+
+    &::after {
+      transition: transform 0.2s;
+      font: normal normal normal 14px/1 FontAwesome;
+      content: "\f054";
+      float: right;
     }
+  }
 
-    &.disabled {
-      display: none;
+  &.disabled {
+    display: none;
+  }
+}
+
+.actions-container {
+  .toggle-actions-button {
+    cursor: pointer;
+    padding: 1em 0;
+    text-transform: uppercase;
+    width: 100%;
+
+    &::after {
+      transition: transform 0.2s ease-in-out;
+      font: normal normal normal 14px/1 FontAwesome;
+      content: "\f054";
+      float: right;
+    }
+  }
+
+  &.open {
+    .toggle-actions-button::after { transform: rotate(0.25turn); }
+  }
+}
+
+.share {
+  h2 {
+    padding-bottom: 1em;
+    padding-top: 1em;
+
+    &:first-child {
+      padding-top: 0;
     }
   }
 }
@@ -744,6 +861,7 @@ nav {
 
   &.fa-trash::before { content: "\f1f8"; }
   &.fa-add::before { content: "\f067"; }
+  &.fa-times-circle::before { content: "\f057"; }
 }
 
 .collector-filter::before {

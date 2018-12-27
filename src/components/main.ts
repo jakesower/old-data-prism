@@ -1,9 +1,11 @@
 import { a, aside, div, h1, main as mainT, nav, p } from "@cycle/dom";
 import xs from 'xstream';
-import Sources from "./components/sources";
-import Remix from "./components/remix";
-import Chart from "./components/chart";
-import Analyze from "./components/analyze";
+import Sources from "./pages/sources";
+import Remix from "./pages/remix";
+import Chart from "./pages/chart";
+import Analyze from "./pages/analyze";
+import Share from "./pages/share";
+import Learn from "./pages/learn";
 import { objectStream } from "../lib/stream-utils";
 import { DataSource, StateModifier } from "../types";
 import { Maybe } from "../lib/maybe";
@@ -35,19 +37,30 @@ function main(cycleSources) {
         sources: prev.sources.concat(source),
       })),
   ];
+
   const state$ = xs.merge(...stateModifiers$)
     .fold((state, fn) => fn(state), initState)
     .debug(mainState => console.log({ mainState }));
 
-  const componentSources = { ...cycleSources, props: state$ };
-  console.log({ componentSources })
-  const sources = isolate(Sources, 'source')(componentSources);
-  const remix = isolate(Remix, 'remix')(componentSources);
+  const componentSources = page => ({
+    ...cycleSources,
+    props: state$.filter(state => state.page === page).startWith(initState),
+  });
 
-  const remixSource = remix.workingState.startWith(Maybe.Nothing());
+  const sources = isolate(Sources, 'sources')({ ...cycleSources, props: state$ });
+  const remix = isolate(Remix, 'remix')(componentSources('remix'));
 
-  const chart = isolate(Chart, 'chart')({ ...componentSources, remixSource });
-  const analyze = isolate(Analyze, 'analyze')({ ...componentSources, remixSource });
+  const remixSource = remix.workingSource.startWith(Maybe.Nothing());
+
+  const chart = isolate(Chart, 'chart')({ ...componentSources('chart'), remixSource });
+  const analyze = isolate(Analyze, 'analyze')({ ...componentSources('analyze'), remixSource });
+  const share = isolate(Share, 'share')({ ...componentSources('share'),
+    remixSource,
+    remixValue: remix.value.startWith(Maybe.Nothing()),
+    chartValue: xs.of(Maybe.Nothing()),
+    analysisValue: xs.of(Maybe.Nothing()),
+  });
+  const learn = isolate(Learn, 'learn')({ ...cycleSources });
 
   addSourceProxy$.imitate(remix.source);
 
@@ -56,6 +69,8 @@ function main(cycleSources) {
     remix: remix.DOM,
     chart: chart.DOM,
     analyze: analyze.DOM,
+    share: share.DOM,
+    learn: learn.DOM,
   });
 
   const view$ = xs.combine(state$, pageDoms$).map(([s, pd]) => view(s, pd));
