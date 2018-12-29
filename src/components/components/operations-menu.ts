@@ -3,6 +3,7 @@ import { div, span, strong, table, td, th, tr, button, VNode, i, ul, li, h1 } fr
 import { DataColumn, DataSource, StateModifier } from "../../types";
 import operationDefs, { OperationType } from '../../operations';
 import { sortWith, inlineKey } from '../../lib/utils';
+import * as help from '../../strings/operations';
 
 interface State {
   active: boolean,
@@ -49,7 +50,7 @@ const view = (state: State) => {
         ul(operations.map(operation =>
           li([
             span('.operation', { dataset: { operation: operation.key }}, operation.name),
-            div('.help', operation.help || div('TODO'))
+            div('.help', { props: { innerHTML: help[operation.key] }})
           ])
         )),
       ])

@@ -35,7 +35,6 @@ function intent(DOM) {
   console.log({DOM})
   return {
     toggle$: scopedEvent(DOM.select('.option'), 'click').map(t => t.dataset.value) as Stream<string>
-    // toggle$: DOM.select('.option').events('click').debug().map(t => t.dataset.value) as Stream<string>
   }
 }
 

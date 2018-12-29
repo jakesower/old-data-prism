@@ -3,7 +3,7 @@ import { aside, div, main as main_, select, h2, VNode, input, button, map, table
 
 // TODO: Separate files and that
 const sections = {
-  'introduction': [
+  introduction: [
     h1('Introduction'),
     p(['Welcome to Data Prism. Select a topic on the left to learn more.', strong('This project is incomplete. It is under active development.'), p('The application has been optimized for extensibility. New operations, charts, and analyses will regularly become available.')]),
     h2('About'),
@@ -16,6 +16,14 @@ const sections = {
     p('The Analyze tool performs various statistical analyses on imported and remixed data sources. These analyses will help users quickly identify trends in their data. Currently only simple linear regressions are supported.'),
     h2('Share'),
     p('The Share tool is incomplete. It will be used to export both actual data sources as well as remixes and other configurations. For example, a user might wish to create a remix formula that can be applied to multiple data files. The user will have the choice of hosting those data sources and the recipe, or merely the recipe, at which point other users will be able to apply it to suitable data sources of their own.')
+  ],
+
+  tutorials: [
+    h1('Tutorials'),
+  ],
+
+  reference: [
+    h1('Reference'),
   ]
 };
 

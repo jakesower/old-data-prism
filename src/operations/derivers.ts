@@ -25,9 +25,7 @@ const col = (dataSource, cName) =>
 const colNameSlot = FreeSlot({ display: 'Column Name', type: dataTypes.NonEmptyString });
 
 const validateSlots = (slots: {[k: string]: OperationSlot<any>}) => (dataSource: DataSource, inputs: {[k: string]: string}): boolean => {
-  console.log({ a: Object.keys(slots), b: Object.keys(inputs)})
   if (!eq(Object.keys(slots), Object.keys(inputs))) { return false; }
-  console.log(pairs(inputs).forEach(([k, input]) => console.log({ k, input, x: slots[k].isValid(dataSource, input)})))
   return pairs(inputs).every(([k, input]) => slots[k].isValid(dataSource, input));
 }
 

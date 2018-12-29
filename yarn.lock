@@ -592,6 +592,10 @@
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/@types/file-saver/-/file-saver-1.3.1.tgz#55d76b3c78b5fcc8a7588ead428dce0822464120"
 
+"@types/marked@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@types/marked/-/marked-0.5.0.tgz#4b91c66ee8cf0abb6938e02fdec207279959962e"
+
 "@types/mocha@^5.2.5":
   version "5.2.5"
   resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-5.2.5.tgz#8a4accfc403c124a0bafe8a9fc61a05ec1032073"

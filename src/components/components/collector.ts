@@ -1,11 +1,12 @@
 import xs, { Stream } from 'xstream'
 import sampleCombine from 'xstream/extra/sampleCombine'
-import { div, button, option, h3, select, VNode, span } from '@cycle/dom';
+import { div, button, VNode, span, h2, i } from '@cycle/dom';
 import { DataSource, StateModifier } from '../../types';
 import { Maybe } from '../../lib/maybe';
-import { inlineKey, go, sortWith, flatten } from '../../lib/utils';
+import { go, flatten } from '../../lib/utils';
 import operationDefs, { OperationType } from '../../operations';
 import { sampleWith } from '../../lib/stream-utils';
+import * as help from '../../strings/operations';
 
 type StrObj = {[k: string]: string};
 
@@ -15,6 +16,7 @@ interface LocalState {
   savedValue: Maybe<object>,
   inputs: StrObj,
   showErrors: boolean,
+  helpVisible: boolean,
 }
 
 interface State extends LocalState {
@@ -27,6 +29,7 @@ const initState: LocalState = {
   savedValue: Maybe.Nothing<object>(),
   inputs: {},
   showErrors: false,
+  helpVisible: false,
 };
 
 const iconTags = [
@@ -44,12 +47,12 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
 
   // STATE MODIFIERS
   //
-  const { save$, cancel$, edit$, apply$, setOperation$, removePress$ } = intent(DOM);
+  const { save$, cancel$, edit$, apply$, removePress$, toggleHelp$ } = intent(DOM);
   const stateModifiers$: StateModifier<LocalState> = xs.merge(
     chainInit$.map(ci => state => ({ ...state, operation: Maybe.fromValue(ci) })),
-    setOperation$.map(operation => state => ({...state,
-      operation: Maybe.fromValue(operation),
-    })),
+    // setOperation$.map(operation => state => ({...state,
+    //   operation: Maybe.fromValue(operation),
+    // })),
     edit$.mapTo(state => ({...state, editing: true })),
     cancel$
       .filter(_ => state => !state.savedValue.isNothing())
@@ -60,6 +63,7 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
     collectorValueSaveProxy$
       .filter(_ => valid)
       .map(inputs => state => ({ ...state, inputs, editing: false, savedValue: Maybe.of(inputs) })),
+    toggleHelp$.mapTo(state => ({ ...state, helpVisible: !state.helpVisible })),
   ) as StateModifier<LocalState>;
 
   const localState$: Stream<LocalState> = stateModifiers$.fold((state, mod) => mod(state), initState).debug();
@@ -118,7 +122,7 @@ function intent(DOM) {
     cancel$: DOM.select('.collector .cancel').events('click'),
     edit$: DOM.select('.collector .edit').events('click'),
     removePress$: DOM.select('.collector .remove').events('click'),
-    setOperation$: DOM.select('.operation-id').events('change').map(ev => ev.target.value),
+    toggleHelp$: DOM.select('.collector .help-toggle').events('click'),
   }
 }
 
@@ -144,25 +148,26 @@ function view(state: State, collectorMarkup: VNode | VNode[]) {
 
 
 function viewEdit(state: LocalState, collectorMarkup: VNode | VNode[]): VNode {
-  const { operation } = state;
-  const opOpts = sortWith(od => od.name, inlineKey(operationDefs))
-    .map(od => option({ attrs: { value: od.key, selected: operation.withDefault('') === od.key }}, od.name));
-
-  const opMarkup = div('.slot', {}, [
-    h3({}, "Operation"),
-    select('.operation-id', {}, [option({}, '')].concat(opOpts))
-  ]);
+  const operation = state.operation.map(o => operationDefs[o]).withDefault({
+    name: "",
+    help: "",
+  });
 
   return div('.collector.editing', {}, flatten([
-    [opMarkup],
+    div('.operation-heading', [
+      i('.fa.fa-question-circle.help-toggle', " "),
+      h2('.operation-title', operation.name),
+      div(
+        state.helpVisible ? '.active.help-container' : '.help-container',
+        div('.help', { props: { innerHTML: help[state.operation.withDefault('')] }})
+      ),
+    ]),
     collectorMarkup,
-    [
-      div('.collector-controls', {}, [
-        button('.save', {}, 'Save'),
-        button('.apply', {}, 'Apply'),
-        button('.cancel', {}, 'Cancel'),
-      ])
-    ]
+    div('.collector-controls', {}, [
+      button('.save', {}, 'Save'),
+      button('.apply', {}, 'Apply'),
+      button('.cancel', {}, 'Cancel'),
+    ])
   ]));
 }
 
@@ -180,14 +185,12 @@ function valid(state: State): boolean {
 function collector(localState$: Stream<LocalState>, DOM, dataSource$: Stream<Maybe<DataSource>>, props): Stream<{DOM: Stream<any>, value: Stream<any>}> {
   const emptyCollector = { DOM: xs.of([]), value: xs.of({}) };
   const noDataSourceCollector = { DOM: xs.of(div('hi')), value: xs.of({}) };
-  console.log()
 
   return xs.combine(localState$, dataSource$)
     .map(([ localState, mDataSource ]) =>
       mDataSource.map(dataSource =>
         localState.operation
           .map(op => {
-            console.log({ op, operationDefs })
             const opDef: OperationType = operationDefs[op];
             return opDef.collector(opDef, dataSource, localState.inputs)({ DOM, props });
           })

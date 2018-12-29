@@ -112,13 +112,13 @@ function view(state: State, remixSource: Maybe<DataSource>, collectorVdom, chart
         // select('.root-source', indexedOptions(state.sources.map(s => s.name), state.rootSource.withDefault(null)))
         select('.root-source', sourceOptions)
       ]),
-      div('.collector.editing', flatten([
+      state.rootSource.map(_ => div('.collector.editing', flatten([
         div('.slot', flatten([
           h3({}, 'Chart Type'),
           select('.chart-type', {}, chartOptions),
         ])),
         [collectorVdom]
-      ])),
+      ]))).withDefault(null),
     ]),
 
     main(chartVdom),
@@ -137,55 +137,3 @@ function collector(state$: Stream<State>, activeSource$: Stream<Maybe<DataSource
     ).withDefault(emptyCollector)
   );
 }
-
-
-// const update = Action.caseOn({
-//   SetType: (type, model) => {
-//     const slots = R.pathOr([], [type, 'slots'], CHARTS);
-//     const inputs = R.pipe( // TODO: no stringly typed crap
-//       R.map(s => ({[s.id]: s['@@tag'] === 'Multicolumn' ? [] : ''})),
-//       R.mergeAll
-//     )(slots);
-
-//     return R.merge(model, {type, inputs});
-//   },
-//   SetInput: (slotName, val, model) => {
-//     return R.assocPath(['inputs', slotName], val, model)
-//   }
-// });
-
-
-// const view = R.curry((action$, {dimensions, dataset}, model) => {
-//   const slots = R.pathOr([], [model.type, 'slots'], CHARTS);
-
-//   const action = slot => forwardTo(action$, Action.SetInput(slot.id));
-//   const typePool = R.map(t => ({ value: t, display: t }), R.keys(CHARTS));
-//   const toCollector = s => SlotCollector(
-//     action(s),
-//     s.toSlot(dataset),
-//     model.inputs[s.id]
-//   );
-
-//   return h('div', {class: {"main-container": true}}, [
-//     h('aside', {}, [
-//       h('div', {class: {"form": true}}, R.flatten([
-//         SlotCollector(
-//           forwardTo(action$, Action.SetType),
-//           Slot.Pool('chartType', 'Chart Type', DataType.String, typePool),
-//           model.type
-//         ),
-
-//         R.map(toCollector, slots)
-//       ]))
-//     ]),
-
-//     h('main', {},
-//       R.has(model.type, CHARTS) ?
-//         CHARTS[model.type].fn(dataset, model.inputs, dimensions) :
-//         []
-//     )
-//   ])
-// });
-
-
-// module.exports = { Action, init, update, view };

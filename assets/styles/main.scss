@@ -260,29 +260,48 @@ div.main-container {
       flex: 1 1 auto;
       overflow: auto;
     }
-    //
-    // .source {
-    //   &::before {
-    //     content: "\f1c0";
-    //     font: normal normal normal 14px/1 FontAwesome;
-    //     display: inline-block;
-    //     font-size: 150%;
-    //     padding-right: 0.5em;
-    //     float: left;
-    //   }
-    //
-    //   select {
-    //     width: calc(100% - 3em);
-    //   }
-    // }
+
     h2 {
       font-size: 120%;
       text-transform: uppercase;
+
+      &.operation-title {
+        text-decoration: underline;
+        margin-bottom: 8px;
+        width: 100%;
+      }
     }
 
     h3 {
       padding: 0;
       text-transform: uppercase;
+    }
+
+    .operation-heading {
+      position: relative;
+      z-index: 3;
+
+      .help-toggle {
+        font: normal normal normal 18px/1 FontAwesome;
+        float: right;
+
+        &:hover ~ .help-container { display: block; }
+      }
+
+      .help-container {
+        display: none;
+        &.active { display: block; .help { background-color: rgba($mid-orange, 1); } }
+        position: absolute;
+        top: 0; left: calc(100% + 22px);
+
+        .help {
+          margin: -1em 0;
+          padding: 1em;
+          background-color: rgba($mid-orange, 0.9);
+          min-width: 20em;
+        }
+      }
+
     }
 
     .slot-container {
@@ -768,12 +787,13 @@ nav {
             display: none;
             left: 100%;
             top: 0;
-            background-color: $mid-orange;
+            background-color: rgba($mid-orange, 0.9);
             padding: 1em;
             margin-top: -1em;
+            min-width: 20em;
           }
 
-          &:hover, &:first-child {
+          &:hover {
             .help {
               display: block;
             }
@@ -862,6 +882,7 @@ nav {
   &.fa-trash::before { content: "\f1f8"; }
   &.fa-add::before { content: "\f067"; }
   &.fa-times-circle::before { content: "\f057"; }
+  &.fa-question-circle::before { content: "\f059"; }
 }
 
 .collector-filter::before {
