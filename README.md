@@ -14,6 +14,7 @@ That said, the most important structures are in place and working. I will be upd
 - HTTP imports.
 - Export Remix recipes via JSON.
 - UI for importing Remix recipes.
+- Improve error message handling and validation.
 - Browser history tools for better linking/navigation.
 - UI and back end for data and recipe hosting.
 - Include more Remix operations, charts, and analyses.
