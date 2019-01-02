@@ -9,10 +9,6 @@ export interface ColumnOperation extends Operation {
 
 }
 
-interface CompOut {
-  DOM: Stream<any>,
-  value: Stream<any>
-}
 type ValueStream = Stream<{ keep: boolean, name: string }[]>;
 
 

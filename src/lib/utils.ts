@@ -156,6 +156,16 @@ export function reflectUTMatrix<T>(matrix: T[][]): T[][] {
   return out;
 }
 
+export function reverse<T>(xs: T[]): T[] {
+  const l = xs.length;
+  const o = l-1;
+  let out = <T[]>[];
+  for (let i=0;i<l;i+=1) {
+    out[i] = xs[o-i];
+  }
+  return out;
+}
+
 export function objFromPairs<T>(pairs: [string, T][]): {[k: string]: T} {
   return pairs.reduce((out, pair) => {
     const o = {[pair[0]]: pair[1]};

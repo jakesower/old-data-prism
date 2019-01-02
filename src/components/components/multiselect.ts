@@ -32,7 +32,6 @@ export default function main(init: Props) {
 
 
 function intent(DOM) {
-  console.log({DOM})
   return {
     toggle$: scopedEvent(DOM.select('.option'), 'click').map(t => t.dataset.value) as Stream<string>
   }

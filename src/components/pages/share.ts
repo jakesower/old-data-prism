@@ -36,7 +36,6 @@ export default function main(cycleSources) {
 
 
 function view(props, remixSource, remixValue, chartValue, analysisValue) {
-  console.log({ props })
   const empty = x => div(`(no ${x})`);
 
   return div('.main-container', [

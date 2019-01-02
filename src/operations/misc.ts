@@ -76,7 +76,6 @@ export const Sort: Operation = {
       comp: comps[direction],
     }));
     const numSorters = sorters.length;
-    console.log({ source, inputs, sorters })
 
     const sorter = (rowA, rowB) => {
       for (let i=0; i<numSorters; i+=1) {

@@ -40,7 +40,7 @@ export function SlotCollector(opDef: SlotHolder, dataSource: DataSource, initial
   function main(cycleSources: { DOM: Stream<any>, props: any }) {
     const slotComponents = slotVals.map((slot, idx) => {
       const init = initialInputs[slotKeys[idx]];
-      return isolate(slotDispatch[slot.slotType](slot, dataSource, init), idx)(cycleSources)
+      return isolate(slotDispatch[slot.slotType](slot, dataSource, init), idx)(cycleSources);
     });
 
     const value: Stream<{[k: string]: string}> = xs.combine(...slotComponents.map(sc => sc.value))

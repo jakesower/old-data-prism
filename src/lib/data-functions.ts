@@ -1,6 +1,7 @@
 import dataTypes from './data-types';
 import { DataType, OperationSlot, DataSource, Operation } from '../types';
 import { mapObj } from './utils';
+import * as math from 'mathjs';
 
 export function discoverTypes(vals: string[]): DataType<any>[] {
   return Object.values(dataTypes).filter(type => vals.every(type.test));
@@ -10,6 +11,7 @@ export function discoverTypes(vals: string[]): DataType<any>[] {
 export function modifyStateAttr<T>(attr: keyof T, fn: (x: T[keyof T]) => T[keyof T]): (obj: T) => T {
   return obj => Object.assign({}, obj, {[attr]: fn(obj[attr]) });
 }
+
 
 export function populateSlots(
   dataSource: DataSource,
@@ -36,4 +38,24 @@ export function mapRows(fn: ((x: {[k: string]: any}) => string)): (dataSource: D
 
     return output;
   }
+}
+
+
+export function compileExpression(dataSource: DataSource, raw: string) {
+  const pat = s => new RegExp('(?<!\\\\)\\{' + s + '\\}', 'g');
+  const subbed = dataSource.columns.reduce((acc, col, idx) => acc.replace(pat(col.name), `v${idx}`), raw);
+  const fn = math.compile(subbed);
+  return record => {
+    const scope = record.reduce((acc, v, idx) => {
+      const o = { ['v'+idx]: v };
+      return { ...acc, ...o };
+    }, {});
+    return fn.eval(scope).toString();
+  };
+}
+
+
+export function extractExpression(dataSource: DataSource, raw: string): string[] {
+  const fn = compileExpression(dataSource, raw);
+  return dataSource.records.map(fn);
 }

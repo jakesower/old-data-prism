@@ -22,7 +22,6 @@ export function plot(points: IPoint[], dimensions: { height: number, width: numb
   const xOffset = yAxisWidth(yRange);
   const yOffset = 45;
   const basis = paddedBasis({ height: dimensions.height - yOffset, width: dimensions.width - xOffset}, xRange, yRange, 10, 0);
-  console.log({ points, dimensions })
 
   // TODO: transduce
   const circles = points
@@ -39,7 +38,7 @@ export function plot(points: IPoint[], dimensions: { height: number, width: numb
     Point(xRange.min, yIntercept + (slope*xRange.min)),
     Point(xRange.max, yIntercept + (slope*xRange.max))
   );
-  console.log({ slope, yIntercept, regLineShape, proj: regLineShape.project(basis) })
+
   const regLine = toSvgTag({}, regLineShape.project(basis));
 
   // const yZero = toSvgTag(

@@ -39,8 +39,7 @@ function main(cycleSources) {
   ];
 
   const state$ = xs.merge(...stateModifiers$)
-    .fold((state, fn) => fn(state), initState)
-    .debug(mainState => console.log({ mainState }));
+    .fold((state, fn) => fn(state), initState);
 
   const componentSources = page => ({
     ...cycleSources,

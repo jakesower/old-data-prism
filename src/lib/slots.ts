@@ -1,7 +1,7 @@
 import { DataType, DataSource } from '../types';
-import * as math from 'mathjs';
 import dataTypes from './data-types';
 import { isSafe } from './utils';
+import { extractExpression } from './data-functions';
 
 
 export interface OperationSlotDefinition {
@@ -72,18 +72,4 @@ export function SourceSlot(def: OperationSlotDefinition): OperationSlot<string> 
     extract: (_dataSource, raw: string, misc: { sources: DataSource[] }) => misc.sources[parseFloat(raw)],
     isValid: _ => true,
   };
-}
-
-
-function extractExpression(dataSource: DataSource, raw: string): string[] {
-  const pat = s => new RegExp('(?<!\\\\)\\{' + s + '\\}', 'g');
-  const subbed = dataSource.columns.reduce((acc, col, idx) => acc.replace(pat(col.name), `v${idx}`), raw);
-  const fn = math.compile(subbed);
-  return dataSource.records.map(record => {
-    const scope = record.reduce((acc, v, idx) => {
-      const o = { ['v'+idx]: v };
-      return { ...acc, ...o };
-    }, {});
-    return fn.eval(scope).toString();
-  });
 }

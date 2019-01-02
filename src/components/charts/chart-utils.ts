@@ -74,7 +74,6 @@ export function xAxisBreaks(valRange: IRange, dimRange: IRange): Shape[] {
     Line(Point(x, lineY-5), Point(x, lineY+5)),
     Label(Point(x, textY), label),
   ]);
-  console.log({ ticks, firstTick, tickInc, tickLog, f: round(firstTick, tickLog) })
 
   // const scale = Math.log10(maxVal - minVal);
   // Can a tick mark be placed for every value between min and max?

@@ -33,7 +33,6 @@ function ChainedCollection(args: ChainedCollectionInput) {
   const chainSourceProxy$ = xs.create();
 
   const addModifier$ = add$.map(init => (collection: Item[]): Item[] => {
-    console.log({ init })
     const initChain = collection.length === 0 ?
       root$ :
       chainConnector(collection[collection.length - 1]);

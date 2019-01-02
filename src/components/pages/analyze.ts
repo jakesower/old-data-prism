@@ -45,7 +45,7 @@ export default function main(cycleSources) {
   ) as StateModifier<LocalState>;
 
   const localState$: Stream<LocalState> = stateModifiers$.fold((state, mod) => mod(state), initState);
-  const state$ = xs.combine<Props, LocalState>(props$, localState$).debug(analState => console.log({ analState })).map(([a,b]) => merge(a,b));
+  const state$ = xs.combine<Props, LocalState>(props$, localState$).map(([a,b]) => merge(a,b));
   const activeSource$: Stream<Maybe<DataSource>> = state$
     .map(state =>
       state.rootSource.hasValue('remix') ?

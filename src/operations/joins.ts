@@ -62,7 +62,6 @@ export const Concat: Operation = (function () {
   return {
     display: _ => div('Concatenate'),
     fn: (source, inputs) => {
-      console.log({ source, inputs });
       const local = source;
       const foreign = inputs.foreignSource;
       const xwalk = inputs.xwalk;

@@ -2,11 +2,12 @@ import * as moment from "moment";
 import { div, span, VNode } from '@cycle/dom';
 import { nth, range, findLastIndex } from 'ramda';
 import { DataSource, makeDataColumn, OperationSlot } from '../types';
-import { discoverTypes, mapRows, populateSlots } from '../lib/data-functions';
+import { discoverTypes, mapRows, populateSlots, compileExpression } from '../lib/data-functions';
 import dataTypes from '../lib/data-types';
-import { merge, sort, eq, pairs } from '../lib/utils';
+import { merge, sort, eq, pairs, reverse } from '../lib/utils';
 import { FreeSlot, ColumnSlot, ExpressionSlot } from '../lib/slots';
 import { SlotCollector, SlotOperation } from '../components/collectors/slot-collector';
+import { SlotPairCollector, SlotPairOperation } from '../components/collectors/slot-pair-collector';
 
 type PartialOperation = {
   [P in keyof SlotOperation]?: SlotOperation[P];
@@ -48,23 +49,6 @@ const makeDeriver = (def: Deriver): SlotOperation => {
 }
 
 
-
-// export const AbsoluteValue = makeDeriver({
-//   name: "Absolute Value",
-//   tags: ["math"],
-//   slots: {
-//     columnName: colNameSlot,
-//     num: ColumnSlot({ display: 'Column', type: dataTypes.FiniteNumber })
-//   },
-//   deriverFn: mapRows(({num}) => Math.abs(num).toString()),
-//   display: (dataSource, inputs) =>
-//     div({}, [
-//       'Absolute Value of ',
-//       col(dataSource, inputs.num)
-//     ])
-// });
-
-
 export const Expression = makeDeriver({
   name: "Expression",
   tags: ["math"],
@@ -85,7 +69,6 @@ export const Index = makeDeriver({
   deriverFn: (dataSource, _) => dataSource.records.map((_, idx) => (idx+1).toString()),
   display: _ => div('Add Index'),
 })
-
 
 
 export const FormatDate = makeDeriver({
@@ -122,81 +105,28 @@ export const ParseDate = makeDeriver({
 });
 
 
-// const Exponent = makeDeriver({
-//   name: "Exponent",
-//   tags: ["math"],
-//   slots: [
-//     DataSlot.Column('base', 'Base', DataType.FiniteNumber),
-//     Slot.Free('exponent', 'Exponent', DataType.FiniteNumber)
-//   ],
-//   fn: ({base, exponent}) => Math.pow(base, exponent),
-//   display: ({dataSource}, inputs) =>
-//     h('div', {}, [
-//       col(dataSource, inputs.base),
-//       h('sup', {}, inputs.exponent)
-//     ])
-// });
+export const MapValues: SlotPairOperation = {
+  name: 'Map Values',
+  tags: [],
+  collector: SlotPairCollector,
+  valid: _ => true,
+  fn: (dataSource, inputs: { values: { result: string, condition: string }[], otherwise: string, columnName: string}) => {
+    const fn: (row: string[]) => string = reverse(inputs.values).reduce((onion, {condition, result}) => {
+      const test = compileExpression(dataSource, condition);
+      const out = /\{/.test(result) ? compileExpression(dataSource, result) : _ => result;
+      return row => (test(row) === 'true') ? out(row) : onion(row);
+    }, _ => inputs.otherwise);
 
+    const values = dataSource.records.map(fn);
 
-// const Difference = makeDeriver({
-//   name: "Difference",
-//   tags: ["math"],
-//   slots: [
-//     DataSlot.Column('minuend', 'Minuend', DataType.FiniteNumber),
-//     DataSlot.Column('subtrahend', 'Subtrahend', DataType.FiniteNumber)
-//   ],
-//   fn: inputs => R.zipWith(R.subtract, inputs.minuend, inputs.subtrahend),
-//   display: ({dataSource}, inputs) =>
-//     h('div', {}, [
-//       col(dataSource, inputs.minuend),
-//       ' - ',
-//       col(dataSource, inputs.subtrahend),
-//     ])
-// });
-
-
-// const Floor = makeDeriver({
-//   name: "Floor",
-//   tags: ["math"],
-//   display: () => "Floor",
-//   slots: [
-//     DataSlot.Column('num', 'Column', DataType.FiniteNumber),
-//     Slot.Free('precision', 'Precision', DataType.Integer)
-//   ],
-//   fn: ({num, precision}) => {
-//     const m = Math.pow(10, precision * -1);
-//     return R.map(n => Math.floor(m*n) / m, num);
-//   }
-// });
-
-
-// const FormattedDate = makeDeriver({
-//   name: "Formatted Date",
-//   tags: ["time"],
-//   slots: [
-//     DataSlot.Column('date', 'Date', DataType.Date),
-//     Slot.Free('format', 'Format', DataType.NonEmptyString)
-//   ],
-//   fn: (inputs) => {return R.map(d => d.format(inputs.format), inputs.date)},
-//   display: ({dataSource}, inputs) => `<span class="column-name">${dataSource.headers[inputs.date]}</span> with format ${inputs.format}`
-// });
-
-
-// const Logarithm = makeDeriver({
-//   name: "Logarithm",
-//   tags: ["math"],
-//   slots: [
-//     DataSlot.Column('num', 'Column', DataType.PositiveFiniteNumber),
-//     Slot.Free('base', 'Base', DataType.PositiveFiniteNumber)
-//   ],
-//   fn: ({num, base}) => R.map(n => Math.log(n) / Math.log(base), num),
-//   display: ({dataSource}, {base, num}) =>
-//     h('div', {}, [
-//       `Log base ${base} of `,
-//       col(dataSource, num)
-//     ])
-// });
-
+    return dataSource.appendColumn(makeDataColumn({
+      values,
+      name: inputs.columnName,
+      types: discoverTypes(values),
+    }));
+  },
+  display: (dataSource, inputs) => div('Map Values'),
+};
 
 
 export const Quantile: SlotOperation = (function () {
@@ -254,65 +184,3 @@ export const Quantile: SlotOperation = (function () {
     }
   }
 }());
-
-// const Round = makeDeriver({
-//   name: "Round",
-//   tags: ["math"],
-//   slots: [
-//     DataSlot.Column('num', 'Column', DataType.FiniteNumber),
-//     Slot.Free('precision', 'Precision', DataType.Integer)
-//   ],
-//   fn: ({num, precision}) => {
-//     const m = Math.pow(10, precision * -1);
-//     return R.map(n => Math.round(m*n) / m, num);
-//   },
-//   display: ({dataSource}, inputs) =>
-//     h('div', {}, [
-//       'Round ',
-//       col(dataSource, inputs.num)
-//     ])
-// });
-
-// name: "Absolute Value",
-// tags: ["math"],
-// slots: {
-//   columnName: colNameSlot,
-//   num: ColumnSlot({ display: 'Column', type: dataTypes.FiniteNumber })
-// },
-// deriverFn: mapRows(({num}) => Math.abs(num).toString()),
-// display: (dataSource, inputs) =>
-//   div({}, [
-//     'Absolute Value of ',
-//     col(dataSource, inputs.num)
-//   ])
-
-// const Sum = makeDeriver({
-//   name: "Summation",
-//   tags: ["math"],
-//   slots: {
-//     columnName: colNameSlot,
-//     addends: MultiColumnSlot({ display: 'Column', type: dataTypes.FiniteNumber }),
-//   },
-//   deriverFn: mapRows(({addends}) => R.map(R.sum, inputs.addends),
-//   display: (dataSource, inputs) => {
-//     const colSpans = R.map(col(dataSource), inputs.addends);
-//     return h('div', {}, R.flatten([
-//       "Sum of ",
-//       R.intersperse(', ', colSpans)
-//     ]))
-//   }
-// });
-
-
-// module.exports = {
-//   AbsoluteValue,
-//   Ceiling,
-//   Difference,
-//   Exponent,
-//   Floor,
-//   FormattedDate,
-//   Logarithm,
-//   Quantile,
-//   Round,
-//   Sum,
-// };

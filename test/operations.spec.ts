@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import 'mocha';
 import { compileTestData } from './test-utils';
-import { Expression, Quantile } from '../src/operations/derivers'
+import { Expression, Quantile, MapValues } from '../src/operations/derivers'
 import { Grouping } from '../src/operations/groupings';
 import { Join } from '../src/operations/joins';
 
@@ -35,6 +35,24 @@ describe('derivers', () => {
       assert.deepEqual(col.values, ['-2', '-1', '1', '-1', '-1', '0']);
     });
   });
+
+  describe('Map Values', () => {
+    const inputs = {
+      columnName: 'Test',
+      values: [
+        { condition: '{HGs} > {AGs}', result: 'Home Win' },
+        { condition: '{AGs} > {HGs}', result: 'Away Win' },
+      ],
+      otherwise: 'Tie',
+    };
+
+    it('should compute', () => {
+      const result = MapValues.fn(testData, inputs);
+      const col = result.columns[5];
+      assert.equal(col.name, 'Test');
+      assert.deepEqual(col.values, ['Away Win', 'Away Win', 'Home Win', 'Away Win', 'Away Win', 'Tie']);
+    });
+  })
 });
 
 
