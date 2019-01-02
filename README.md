@@ -1,6 +1,6 @@
 # Data Prism
 
-Data Prism is a tool to help people make sense of tabular data. A running copy can be found (https://dataprism.jakesower.com)[at my website]. It runs completely in the browser, but may expand to cover server side aspects in the future.
+Data Prism is a tool to help people make sense of tabular data. A running copy can be found [at my website](https://dataprism.jakesower.com). It runs completely in the browser, but may expand to cover server side aspects in the future.
 
 ## Project Status
 
