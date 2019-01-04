@@ -1,8 +1,8 @@
 import xs, { Stream } from 'xstream';
-import { aside, div, input, main as main_, p, h1, h2, DOMSource } from '@cycle/dom';
+import { aside, div, input, main as main_, p, h1, h2, DOMSource, ul, li } from '@cycle/dom';
 import { DataSource, StateModifier } from '../../types';
 import Grid from '../components/grid';
-import { scopedEvent } from '../../lib/dom-utils';
+import { scopedEvent, extractFile } from '../../lib/dom-utils';
 import { merge } from '../../lib/utils';
 import { Maybe } from '../../lib/maybe';
 
@@ -20,9 +20,9 @@ interface State extends LocalState, Props {};
 
 const initState: LocalState = { activeSource: noNum };
 
-export default function main(cycleSources: { DOM: DOMSource, props: Stream<Props> }) {
+export default function main(cycleSources: { DOM: DOMSource, props: Stream<Props>, HTTP }) {
   const { props: props$, DOM } = cycleSources;
-  const { addSource$, newSource$, changeSource$ } = intent({ DOM });
+  const { addSource$, newSource$, changeSource$, newHttpSource$ } = intent({ DOM });
 
   const stateModifiers$ = xs.merge(
     newSource$.mapTo(state => ({ ...state, activeSource: noNum })),
@@ -46,18 +46,23 @@ export default function main(cycleSources: { DOM: DOMSource, props: Stream<Props
 
   return {
     DOM: xs.combine(state$, gridDom$).map(c => view(c[0] as State, c[1])).startWith(div('hi')),
-    csvLoader: addSource$.map(e => ({ source: 'upload-csv', element: e })),
+    csvLoader: addSource$,
+    HTTP: newHttpSource$.map(url => ({ url, category: 'imported-source' })),
   }
 }
 
 
 function intent({ DOM }) {
+  const fileEvent$ = DOM.select('#data-file').events('change')
+      .map(ev => ev.target)
+
   return {
-    addSource$: DOM.select('#data-file').events('change')
-      .map(ev => ev.target),
+    addSource$: extractFile(fileEvent$),
     newSource$: DOM.select('.new-source').events('click'),
     changeSource$: scopedEvent(DOM.select('.source-list .source'), 'click')
       .map(t => parseFloat(t.dataset.sourceId)),
+    newHttpSource$: DOM.select('li.http-data').events('click')
+      .map(ev => ev.target.dataset.url),
   }
 }
 
@@ -65,8 +70,8 @@ function intent({ DOM }) {
 function view(state: State, gridDom) {
   const { activeSource, sources } = state;
 
-  return div({class: {"main-container": true}}, [
-    aside({class: {source: true}}, [
+  return div('.main-container', [
+    aside('.source', [
       div(
         { class: {"new-source": true, active: activeSource.isNothing() }},
         "New DataSource"
@@ -87,15 +92,16 @@ function view(state: State, gridDom) {
 
 
 function sourceList(sources, activeSource) {
-  return div({class: {"source-list": true}}, sources.map(
+  return div('.source-list', sources.map(
     (source, idx) => div(
       { class: {source: true, active: activeSource.hasValue(idx) }, dataset: { sourceId: idx.toString() }},
-      [
+      div([
         h2(source.name.length === 0 ? '<no name>' : source.name),
         div({class: {"source-stat": true}}, `Records: ${source.numRecords}`)
-      ])
+      ]))
   ));
 }
+
 
 function activeSourceVdom(source: DataSource, grid) {
   return div({}, [
@@ -110,24 +116,23 @@ function newSourceVdom() {
     h1({}, 'Import New DataSource'),
 
     div({}, [
-      div({class: {colgroup: true}}, [
-        div({class: {"upload-type": true}}, [
+      div('.colgroup', [
+        div('upload-type', [
           h2({}, 'Import CSV'),
           input({
             attrs: {type: 'file', id: 'data-file'},
           }, [])
         ]),
 
-        div({class: {"upload-type": true}}, [
-          h2({}, 'Import Sample Data'),
-          // h('select',
-          //   prepend(emptyOption, R.map(({name, uri}) =>
-          //     option({attrs: {value: uri}}, name),
-          //     Samples.catalog
-          //   ))
-          // )
+        div('upload-type', [
+          h2('.sample-data', 'Import Sample Data'),
+          ul([
+            li('.http-data', { dataset: { url: 'https://dataprism.jakesower.com/2018-conmebol.csv' }}, '2018 CONMEBOL Results')
+          ])
         ])
       ])
     ])
   ]);
 }
+
+

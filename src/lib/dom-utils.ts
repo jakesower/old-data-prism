@@ -1,4 +1,5 @@
 import { option } from "@cycle/dom";
+import xs, { Stream } from "xstream";
 
 
 export function indexedOptions(opts, selVal) {
@@ -23,3 +24,30 @@ export function scopedEvent(DOM, eventType) {
 export function targetValue(ev) {
   return ev.target.value;
 }
+
+
+export function extractFile(element$: Stream<any>) {
+  const loaded$ = xs.create({
+    start: () => {},
+    stop: () => {}
+  });
+
+  element$.addListener({
+    next: element => {
+      var file = (element.files || [])[0];
+      var fileName = file.name.replace(/\.csv$/, '').replace(/_/g, ' ');
+
+      var r = new FileReader();
+      r.onload = function() {
+        loaded$.shamefullySendNext({
+          body: this.result as string,
+          name: fileName,
+        });
+      };
+
+      r.readAsText(file);
+    },
+  });
+
+  return loaded$;
+};

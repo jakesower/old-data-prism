@@ -59,7 +59,6 @@ export function regressionLine(points: IPoint[]): { slope: number, yIntercept: n
 
   const slope = r2 * (stdY / stdX);
   const yIntercept = yMean - (slope * xMean);
-  // console.log({ slope, yIntercept, r2, sumX, sx, sy, r, stdX, stdY })
 
   return { slope, yIntercept };
 }

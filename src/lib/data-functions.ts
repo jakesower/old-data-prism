@@ -1,7 +1,9 @@
+import * as parseCsv from 'csv-parse';
 import dataTypes from './data-types';
-import { DataType, OperationSlot, DataSource, Operation } from '../types';
-import { mapObj } from './utils';
+import { DataType, OperationSlot, DataSource, Operation, makeDataSource, makeDataColumn } from '../types';
+import { mapObj, transpose, zip } from './utils';
 import * as math from 'mathjs';
+import xs, { Stream } from 'xstream';
 
 export function discoverTypes(vals: string[]): DataType<any>[] {
   return Object.values(dataTypes).filter(type => vals.every(type.test));
@@ -38,6 +40,40 @@ export function mapRows(fn: ((x: {[k: string]: any}) => string)): (dataSource: D
 
     return output;
   }
+}
+
+
+export function csvToDataSource(raw: Stream<{ body: string, name?: string, }>): Stream<DataSource> {
+  return raw
+    .map(({ body, name }) => {
+      const p = new Promise((resolve, reject) => {
+        parseCsv(body, {}, (err, data: string[][]) => {
+          if (err) {
+            reject(err);
+          } else {
+            const headers = data[0];
+            const records = data.slice(1);
+            const pairs = zip(headers, transpose(records));
+
+            const columns = pairs.map(pair => makeDataColumn({
+              name: pair[0],
+              values: pair[1],
+              types: discoverTypes(pair[1]),
+            }));
+
+            const s: DataSource = makeDataSource({
+              name,
+              columns,
+            });
+
+            resolve(s);
+          }
+        });
+      });
+
+      return xs.fromPromise(p);
+    })
+    .flatten() as Stream<DataSource>;
 }
 
 

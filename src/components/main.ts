@@ -10,6 +10,7 @@ import { objectStream } from "../lib/stream-utils";
 import { DataSource, StateModifier } from "../types";
 import { Maybe } from "../lib/maybe";
 import isolate from "@cycle/isolate";
+import { csvToDataSource } from "../lib/data-functions";
 
 interface State {
   page: "sources" | "remix" | "chart" | "analyze" | "share" | "learn",
@@ -30,9 +31,20 @@ function main(cycleSources) {
   const selectedPage$ = actions.changeTab$;
   const addSourceProxy$ = xs.create();
 
+  // TODO: Handle multiple formats
+  const addHttpSource$ = cycleSources.HTTP.select('imported-source').flatten()
+    .map(response => {
+      const uriParts = response.req.uri.split('/');
+
+      return {
+        body: response.text,
+        name: uriParts[uriParts.length - 1].split('.')[0],
+      }
+    });
+
   const stateModifiers$: StateModifier<State>[] = [
     selectedPage$.map(page => prev => ({ ...prev, page })),
-    xs.merge(cycleSources.csvLoader, addSourceProxy$)
+    addSourceProxy$
       .map(source => prev => ({ ...prev,
         sources: prev.sources.concat(source),
       })),
@@ -61,7 +73,11 @@ function main(cycleSources) {
   });
   const learn = isolate(Learn, 'learn')({ ...cycleSources });
 
-  addSourceProxy$.imitate(remix.source);
+  addSourceProxy$.imitate(xs.merge(
+    remix.source,
+    csvToDataSource(sources.csvLoader),
+    csvToDataSource(addHttpSource$),
+  ));
 
   const pageDoms$ = objectStream({
     sources: sources.DOM,
@@ -76,8 +92,8 @@ function main(cycleSources) {
 
   return {
     DOM: view$,
-    csvLoader: sources.csvLoader,
     csvExport: remix.csvExport,
+    HTTP: sources.HTTP,
   };
 }
 
@@ -115,16 +131,7 @@ function view(state, page) {
       div({class: {"help-text": true}}, "Hi, I'm a help message!"),
     ]),
 
-    page[state.page] ? page[state.page] :
-      div({class: {"main-container": true}}, [
-        aside({}, [
-          p({}, "Placeholder")
-        ]),
-
-        mainT({}, [
-          div({}, "Hi"),
-        ])
-      ])
+    page[state.page]
   ]);
 }
 
