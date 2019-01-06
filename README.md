@@ -6,12 +6,12 @@ Data Prism is a tool to help people make sense of tabular data. A running copy c
 
 This repository is under active development. There are parts of the website that are incomplete, and the suite of operations, charts, and analyses are limited.
 
-That said, the most important structures are in place and working. I will be updating the `Learn` section to included tutorials that will showcase existing functionality, which covers enough cases to be genuinely useful. I hope to have this done by Jan 4.
+That said, the most important structures are in place and working. I will be updating the `Learn` section to included tutorials that will showcase existing functionality, which covers enough cases to be genuinely useful. Currently there is only one available, but it will expand.
 
 ## TODO
 
 - Tutorials that better showcase functionality.
-- HTTP imports.
+- Bugs in tracking chart state.
 - Export Remix recipes via JSON.
 - UI for importing Remix recipes.
 - Improve error message handling and validation.
