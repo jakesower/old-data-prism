@@ -44,7 +44,7 @@ export function ExpressionSlot(def: OperationSlotDefinition): OperationSlot<stri
     type: dataTypes.String,
     slotType: 'expression',
     extract: extractExpression,
-    isValid: isSafe(extractExpression), // performance
+    isValid: _ => true, //isSafe(extractExpression), // performance
   };
 }
 

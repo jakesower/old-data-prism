@@ -127,7 +127,11 @@ function newSourceVdom() {
         div('upload-type', [
           h2('.sample-data', 'Import Sample Data'),
           ul([
-            li('.http-data', { dataset: { url: 'https://dataprism.jakesower.com/2018-conmebol.csv' }}, '2018 CONMEBOL Results')
+            li('.http-data', { dataset: { url: 'https://dataprism.jakesower.com/test-data/2018-conmebol.csv' }}, '2018 CONMEBOL Results'),
+            li('.http-data',
+              { dataset: { url: 'https://dataprism.jakesower.com/test-data/average-northpole-temps.csv' }},
+              'Average North Pole Temperatures'
+            ),
           ])
         ])
       ])

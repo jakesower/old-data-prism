@@ -27,6 +27,21 @@ $total-nav-height: $nav-height + 4px;
     background-color: $mid;
   }
 
+  button, .button {
+    padding: 3px 7px;
+    margin: 0 3px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background-color: buttonface;
+    cursor: pointer;
+    outline: none;
+  }
+
+  button:hover, .button:hover {
+    background-color: $pure-color;
+    transition: background-color 0.2s ease;
+  }
+
   aside {
     background-color: $mid;
     // background: linear-gradient(180deg, $mid, $light);
@@ -218,6 +233,11 @@ div.body-container {
       display: block;
       padding: 4px 1em;
       text-align: right;
+
+      button {
+        margin-left: 0.3em;
+      }
+
     }
   }
 
@@ -452,9 +472,10 @@ nav {
   display: flex;
 
   h1 {
-    &::after {
-      // content: " \f059 \f2c2";
-    }
+    // &::after {
+    //   font: normal normal normal 18px/1 FontAwesome;
+    //   content: " \f059 \f2c2";
+    // }
     font-size: 140%;
     display: inline-block;
     padding: 0.3em 1em;
@@ -463,13 +484,27 @@ nav {
     order: 1;
   }
 
+  .help-toggle {
+    order: 3;
+    padding-top: 0.5em;
+    cursor: pointer;
+
+    &::after {
+      font: normal normal normal 18px/1 FontAwesome;
+      content: "\f059";
+      // content: " \f059 \f2c2";
+      padding: 0.3em 1em;
+      color: white;
+    }
+  }
+
   .help {
     &::before {
       content: "\f059";
     }
     font-size: 140%;
     flex: 0;
-    order: 3;
+    order: 4;
     min-width: 1em;
     padding: 0.3em 0.5em;
     color: white;

@@ -9,6 +9,17 @@ export function indexedOptions(opts, selVal) {
 }
 
 
+export function path(domElement) {
+  let out = <any>[];
+  let elt = domElement;
+  while (elt) {
+    out[out.length] = elt;
+    elt = elt.parentNode;
+  }
+  return out;
+}
+
+
 export function optionsList(opts) {
   return opts.map(opt => option({ attrs: { value: opt }}, opt));
 }
@@ -17,7 +28,9 @@ export function optionsList(opts) {
 export function scopedEvent(DOM, eventType) {
   const scopes = DOM.namespace.filter(s => s.type === 'selector').map(n => n.scope);
   const match = elt => scopes.some(s => elt.matches(s));
-  return DOM.events(eventType).map(ev => ev.path.find(match));
+  return DOM.events(eventType).map(ev => {
+    return path(ev.target).find(match)
+  });
 }
 
 

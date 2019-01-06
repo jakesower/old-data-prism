@@ -38,9 +38,41 @@
       font-weight: bold;
     }
 
-    p {
+    p, li {
       line-height: 150%;
       font-size: 20px;
     }
+
+    .tutorial {
+      padding: 1em;
+      margin: 1em 0;
+      background-color: $light-purple;
+
+      h2 {
+        margin: 0;
+        font-weight: bold;
+      }
+    }
+
+    button, .button {
+      cursor: pointer;
+      padding: 0.6em;
+      margin-right: 1em;
+      text-transform: uppercase;
+      display: inline-block;
+      border: solid black 1px;
+      border-radius: 5px;
+      background-color: buttonface;
+      font-size: 90%;
+
+      &:hover {
+        color: white;
+      }
+
+      &:focus {
+        outline: none;
+      }
+    }
+
   }
 }

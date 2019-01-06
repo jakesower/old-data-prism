@@ -20,6 +20,18 @@ const sections = {
 
   tutorials: [
     h1('Tutorials'),
+    div('.tutorial', [
+      h2('Climate Data'),
+      p('This covers a few simple use cases across the tools. A great place for starters.'),
+      p('Topics covered:'),
+      ul([
+        li('Simple remixing'),
+        li('Simple analysis'),
+        li('Simple charting'),
+      ]),
+      button('.start-tutorial', { dataset: { tutorial: 'climate' }}, 'Start'),
+    ])
+
   ],
 
   reference: [
@@ -28,13 +40,48 @@ const sections = {
 };
 
 
+const tutorials = {
+  climate: [
+    'Begin by going to the Sources tab.',
+    'Click the "Average North Pole Temperatures" item under the "Import Sample Data" heading, and wait for it to load.',
+    'Click the "Remix" tab.',
+    'Set the root source to the average temperatures.',
+    "Let's start by understanding the data. The important column is \"Anomaly of Temperature\". It indicates how much warmer or colder the month is compared to the same month in other years. For example, Jan 1880 was about 0.47 degrees cooler than normal. Columns other than Year, Month, and Anomoly of Temperature are not relevant to this tutorial.",
+    'Start by removing the irrelevant columns. Click "New Operation" and then choose "Adjust Columns"',
+    'Uncheck the "Keep" checkboxes next to "Total Error" and all columns below it. Then click "Save".',
+    "Let's take a look at how things correlate. Go to the \"Analyze\" tab.",
+    'Choose "(remix source)" as the Root Datasource.',
+    'It can now be seen that "Year" and "Anomaly of Temperature" are correlated. Using linear regression, they have an R value of 0.66. Click on the 0.66 and view the scatter plot with the best fit line.',
+    "Next, let's see if we can make a useful chart with the data. Return to the \"Remix\" tab.",
+    "There are too many years to make a readable bar chart. Let's group them by decade instead.",
+    'Click "New Operation" and choose "Expression". Expressions are the most flexible, but most complex operation available.',
+    'Set "Column Name" to "Decade". For "Expression" enter "floor({Year} / 10) * 10". Click "Save".',
+    'Click "New Operation" and choose "Grouping".',
+    'Group by "Decade" and then click "New Aggregator". Pick the "Mean" Aggregator, set the column name to "Avg Anomaly", and choose the "Anomaly of Temperature" as the column. Click "Save".',
+    'Click to the "Chart" tab and choose "(remix source)" as the root datasource.',
+    'Pick "Bar" for the chart type.',
+    'Pick "Decade" as the X Axis and "Avg Anomaly" for the Y Axis',
+    'This concludes the tutorial. Should you have questions, please email me at jake@jakesower.com'
+  ]
+}
+
+
 export default function main(cycleSources) {
-  const changeSection$ = cycleSources.DOM.select('.section').events('click').map(ev => ev.target.dataset.section);
+  const { startTutorial$, changeSection$ } = intent(cycleSources.DOM);
   const state$ = changeSection$.fold((_acc, section) => section, 'introduction');
 
   return {
     DOM: state$.map(view),
+    tutorial: startTutorial$,
   }
+}
+
+
+function intent(DOM) {
+  return {
+    startTutorial$: DOM.select('.start-tutorial').events('click').map(ev => tutorials[ev.target.dataset.tutorial]),
+    changeSection$: DOM.select('.section').events('click').map(ev => ev.target.dataset.section),
+  };
 }
 
 

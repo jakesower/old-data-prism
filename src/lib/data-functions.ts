@@ -78,7 +78,7 @@ export function csvToDataSource(raw: Stream<{ body: string, name?: string, }>): 
 
 
 export function compileExpression(dataSource: DataSource, raw: string) {
-  const pat = s => new RegExp('(?<!\\\\)\\{' + s + '\\}', 'g');
+  const pat = s => new RegExp('\\{' + s + '\\}', 'g');
   const subbed = dataSource.columns.reduce((acc, col, idx) => acc.replace(pat(col.name), `v${idx}`), raw);
   const fn = math.compile(subbed);
   return record => {

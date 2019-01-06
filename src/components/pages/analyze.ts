@@ -34,7 +34,7 @@ const initState: LocalState = {
 
 
 export default function main(cycleSources) {
-  const { props: props$, DOM, dimensions: dimensions$, remixSource: remixSource$ } = cycleSources;
+  const { props: props$, DOM, remixSource: remixSource$ } = cycleSources;
   const { changeRoot$, changeActivePair$ } = intent(DOM);
 
   const stateModifiers$ = xs.merge(
@@ -90,10 +90,10 @@ function view(state: State, grid: Maybe<ColPair>, remixSource: Maybe<DataSource>
   const mPts = extractPoints(state, grid);
 
   const remixOption = remixSource.map(_ =>
-    [option({ attrs: { value: "remix", select: state.rootSource.hasValue("remix") }}, "(remix source)")]
+    [option({ attrs: { value: "remix", selected: state.rootSource.hasValue("remix") }}, "(remix source)")]
   ).withDefault([]) as VNode[];
 
-  const sourceOptions = [option({ attrs: { value: "", select: state.rootSource.isNothing() }})].concat(
+  const sourceOptions = [option({ attrs: { value: "", selected: state.rootSource.isNothing() }})].concat(
     remixOption.concat(
     state.sources.map(s => option(
       { attrs: { value: s.fingerprint, selected: state.rootSource.hasValue(s.fingerprint) }},
@@ -143,11 +143,12 @@ function extractPoints(state: State, mGrid: Maybe<ColPair>): Maybe<IPoint[]> {
     const activePair: [number, number] = yield state.activePair;
     const cols: DataColumn[] = grid[0];
 
-    const fst = activePair[0];
-    const snd = activePair[1];
+    const fst: DataColumn = yield Maybe.fromValue(cols[activePair[0]]);
+    const snd: DataColumn = yield Maybe.fromValue(cols[activePair[1]]);
+
     return zipWith(
       (x,y) => Point(parseFloat(x), parseFloat(y)),
-      cols[fst].values, cols[snd].values
+      fst.values, snd.values
     );
   });
 }

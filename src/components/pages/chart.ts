@@ -1,8 +1,7 @@
 import xs, { Stream } from 'xstream';
 import { div, aside, main, option, select, h2, h3, VNode } from '@cycle/dom';
-import { flatten, merge, go } from '../../lib/utils';
+import { flatten, go } from '../../lib/utils';
 import * as BarChart from '../charts/bar';
-import { indexedOptions } from '../../lib/dom-utils';
 import { Maybe } from '../../lib/maybe';
 import { StateModifier, DataSource } from '../../types';
 import { SlotCollector } from '../collectors/slot-collector';
@@ -16,11 +15,10 @@ const chartDefs = {
   // line: lineChart,
 };
 
-type StrObj = {[k: string]: string};
-
 interface LocalState {
   rootSource: Maybe<string>,
   chartType: Maybe<string>,
+  chartInputs: {[k: string]: string},
 }
 
 interface Props {
@@ -33,6 +31,7 @@ interface State extends LocalState, Props {
 const initState: LocalState = {
   rootSource: Maybe.Nothing(),
   chartType: Maybe.Nothing(),
+  chartInputs: {},
 }
 
 export default function ChartComponent(cycleSources) {
@@ -70,8 +69,8 @@ export default function ChartComponent(cycleSources) {
       return chartDef.fn(dataSource, cValue, dimensions);
     }).withDefault([]))
 
-  const dom$ = xs.combine(state$, activeSource$, collectorVdom$, chartVdom$)
-    .map(args => <VNode | null>view(args[0], args[1], args[2], args[3]))
+  const dom$ = xs.combine(state$, remixSource$, collectorVdom$, chartVdom$)
+    .map(args => <VNode | null>view(args[0], <Maybe<DataSource>>args[1], args[2], args[3]))
     .startWith(null);
 
   return {
@@ -91,10 +90,10 @@ function intent(DOM) {
 
 function view(state: State, remixSource: Maybe<DataSource>, collectorVdom, chartVdom) {
   const remixOption = remixSource.map(_ =>
-    [option({ attrs: { value: "remix", select: state.rootSource.hasValue("remix") }}, "(remix source)")]
+    [option({ attrs: { value: "remix", selected: state.rootSource.hasValue("remix") }}, "(remix source)")]
   ).withDefault([]) as VNode[];
 
-  const sourceOptions = [option({ attrs: { value: "", select: state.rootSource.isNothing() }})].concat(
+  const sourceOptions = [option({ attrs: { value: "", selected: state.rootSource.isNothing() }})].concat(
     remixOption.concat(
     state.sources.map(s => option(
       { attrs: { value: s.fingerprint, selected: state.rootSource.hasValue(s.fingerprint) }},
@@ -109,7 +108,6 @@ function view(state: State, remixSource: Maybe<DataSource>, collectorVdom, chart
     aside([
       div('.root-datasource', {}, [
         h2({}, 'Root DataSource'),
-        // select('.root-source', indexedOptions(state.sources.map(s => s.name), state.rootSource.withDefault(null)))
         select('.root-source', sourceOptions)
       ]),
       state.rootSource.map(_ => div('.collector.editing', flatten([
@@ -128,12 +126,12 @@ function view(state: State, remixSource: Maybe<DataSource>, collectorVdom, chart
 function collector(state$: Stream<State>, activeSource$: Stream<Maybe<DataSource>>, cycleSources): Stream<{DOM: Stream<any>, value: Stream<any>}> {
   const emptyCollector = { DOM: xs.of([]), value: xs.of({}) };
 
-  return xs.combine(state$, activeSource$).map(([state, activeSource]) =>
-    activeSource.map(dataSource =>
+  return xs.combine(state$, activeSource$).map(([state, activeSource]) => {
+    return activeSource.map(dataSource =>
       state.chartType.map(chartType => {
         const { slots } = chartDefs[chartType];
-        return SlotCollector({ slots }, dataSource, {})(cycleSources);
+        return SlotCollector({ slots }, dataSource, state.chartInputs)(cycleSources);
       }).withDefault(emptyCollector)
     ).withDefault(emptyCollector)
-  );
+  });
 }
