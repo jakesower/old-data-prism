@@ -4,7 +4,7 @@ import { nth, range, findLastIndex } from 'ramda';
 import { DataSource, makeDataColumn, OperationSlot } from '../types';
 import { discoverTypes, mapRows, populateSlots, compileExpression } from '../lib/data-functions';
 import dataTypes from '../lib/data-types';
-import { merge, sort, eq, pairs, reverse } from '../lib/utils';
+import { merge, sort, eq, pairs, reverse, round } from '../lib/utils';
 import { FreeSlot, ColumnSlot, ExpressionSlot } from '../lib/slots';
 import { SlotCollector, SlotOperation } from '../components/collectors/slot-collector';
 import { SlotPairCollector, SlotPairOperation } from '../components/collectors/slot-pair-collector';
@@ -103,6 +103,23 @@ export const ParseDate = makeDeriver({
       col(dataSource, inputs.num)
     ])
 });
+
+
+export const Round = makeDeriver({
+  name: "Round",
+  tags: ["math"],
+  slots: {
+    columnName: colNameSlot,
+    column: ColumnSlot({ display: 'Column', type: dataTypes.FiniteNumber }),
+    precision: FreeSlot({ display: 'Precision', type: dataTypes.FiniteNumber }),
+  },
+  deriverFn: mapRows(({ column, precision }) => round(column, precision).toString()),
+  display: (dataSource, inputs) =>
+  div({}, [
+    'Round ',
+    col(dataSource, inputs.column)
+  ])
+})
 
 
 export const MapValues: SlotPairOperation = {

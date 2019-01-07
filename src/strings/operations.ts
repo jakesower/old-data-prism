@@ -28,7 +28,7 @@ Creates a new data source from the current one and another. The rows of the *for
 export const Expression = marked(`
 # Expression
 
-Expressions use the [math.js](http://mathjs.org/docs/expressions/index.html) library for expressions. The expression provided operates on each row of the data source individually. Columns from each row can be used in the expression with \{Column Name\}. The output of the expression creates a new column.
+Expressions use the [math.js](http://mathjs.org/docs/expressions/index.html) library for expressions. The expression provided operates on each row of the data source individually. Columns from each row can be used in the expression with \`\{Column Name\}\`. The output of the expression creates a new column.
 
 ## Examples
 
@@ -37,7 +37,7 @@ Expressions use the [math.js](http://mathjs.org/docs/expressions/index.html) lib
 | Avocado | 3 | 2 |
 | Bread | 6 | 3 |
 
-1. Arithmetic
+### Arithmetic
 
 Column Name: \`Discount\`
 
@@ -48,4 +48,21 @@ Expression: \`\{Regular Price\} - \{Sale Price\}\`
 | Avocado | 3 | 2 | 1 |
 | Bread | 6 | 3 | 3 |
 
+`);
+
+
+export const Round = marked(`
+# Round
+
+Takes a numeric column and rounds it based on precision. The precision is the exponent in \`10^x\`.
+
+## Examples:
+
+Value: \`3.14159\`
+
+| Precision | Result |
+| ---- | ------------- |
+| 0 | 3 |
+| 1 | 0 |
+| -3 | 3.142 |
 `);

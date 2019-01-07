@@ -58,10 +58,11 @@ const tutorials = {
     'Set "Column Name" to "Decade". For "Expression" enter "floor({Year} / 10) * 10". Click "Save".',
     'Click "New Operation" and choose "Grouping".',
     'Group by "Decade" and then click "New Aggregator". Pick the "Mean" Aggregator, set the column name to "Avg Anomaly", and choose the "Anomaly of Temperature" as the column. Click "Save".',
+    'Those numbers are long. Round them by picking the "Round" operation. Set the column name to "Rounded Avg Anomaly", use the column "Avg Anomaly", and set the precision to "-2", then click "Save".',
     'Click to the "Chart" tab and choose "(remix source)" as the root datasource.',
     'Pick "Bar" for the chart type.',
-    'Pick "Decade" as the X Axis and "Avg Anomaly" for the Y Axis',
-    'This concludes the tutorial. Should you have questions, please email me at jake@jakesower.com'
+    'Pick "Decade" as the X Axis and "Avg Anomaly" for the Y Axis. Click "Apply".',
+    'This concludes the tutorial. Should you have questions, please email me at jake@jakesower.com',
   ]
 }
 
