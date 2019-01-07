@@ -11,7 +11,6 @@ That said, the most important structures are in place and working. I will be upd
 ## TODO
 
 - Tutorials that better showcase functionality.
-- Bugs in tracking chart state.
 - Export Remix recipes via JSON.
 - UI for importing Remix recipes.
 - Improve error message handling and validation.

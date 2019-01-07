@@ -1,10 +1,11 @@
 import xs, { Stream } from 'xstream';
-import { div, aside, main, option, select, h2, h3, VNode } from '@cycle/dom';
+import { div, aside, main, option, select, h2, h3, VNode, button } from '@cycle/dom';
 import { flatten, go } from '../../lib/utils';
 import * as BarChart from '../charts/bar';
 import { Maybe } from '../../lib/maybe';
 import { StateModifier, DataSource } from '../../types';
 import { SlotCollector } from '../collectors/slot-collector';
+import { sampleWith } from '../../lib/stream-utils';
 // import { sampleWith } from '../../lib/stream-utils';
 // const scatterPlot = require('./charts/scatter');
 // const lineChart = require('./charts/line');
@@ -36,11 +37,13 @@ const initState: LocalState = {
 
 export default function ChartComponent(cycleSources) {
   const { props: props$, DOM, dimensions: dimensions$, remixSource: remixSource$ } = cycleSources;
-  const { changeRoot$, chartType$ } = intent(DOM);
+  const { changeRoot$, chartType$, apply$ } = intent(DOM);
+  const applyProxy$: any = xs.create();
 
   const modifier$: StateModifier<LocalState> = xs.merge(
     changeRoot$.map(root => state => ({ ...state, rootSource: Maybe.fromValue(root) })),
     chartType$.map(chartType => state => ({ ...state, chartType: Maybe.fromValue(chartType) })),
+    applyProxy$.map(chartInputs => state => ({ ...state, chartInputs })),
   ) as StateModifier<LocalState>;
 
   const localState$: Stream<LocalState> = modifier$.fold((state, mod) => mod(state), initState);
@@ -61,7 +64,9 @@ export default function ChartComponent(cycleSources) {
   const collectorVdom$: Stream<VNode | VNode[]> = collector$.map(c => c.DOM).flatten();
   const collectorValue$: Stream<{[k: string]: string}> = collector$.map(c => c.value).flatten();
 
-  const chartVdom$ = xs.combine(state$, collectorValue$, dimensions$, activeSource$)
+  applyProxy$.imitate(collectorValue$.compose(sampleWith(apply$)));
+
+  const chartVdom$ = xs.combine(state$, applyProxy$.startWith({}), dimensions$, activeSource$)
     .map(([state, cValue, dimensions, mActiveSource]) => go(function* () {
       const dataSource = yield mActiveSource;
       const chartType = yield state.chartType;
@@ -83,7 +88,8 @@ function intent(DOM) {
   const tv = ev => ev.target.value;
   return {
     chartType$: DOM.select('.chart-type').events('change').map(tv).startWith('').map(v => v ? v : null),
-    changeRoot$: DOM.select('select.root-source').events('change').map(tv)
+    changeRoot$: DOM.select('select.root-source').events('change').map(tv),
+    apply$: DOM.select('.apply').events('click'),
   };
 }
 
@@ -115,7 +121,10 @@ function view(state: State, remixSource: Maybe<DataSource>, collectorVdom, chart
           h3({}, 'Chart Type'),
           select('.chart-type', {}, chartOptions),
         ])),
-        [collectorVdom]
+        [collectorVdom],
+        state.chartType.map(_ => div([
+          button('.apply', {}, 'Apply'),
+        ])).withDefault(null)
       ]))).withDefault(null),
     ]),
 
@@ -133,5 +142,5 @@ function collector(state$: Stream<State>, activeSource$: Stream<Maybe<DataSource
         return SlotCollector({ slots }, dataSource, state.chartInputs)(cycleSources);
       }).withDefault(emptyCollector)
     ).withDefault(emptyCollector)
-  });
+  }).startWith(emptyCollector);
 }
