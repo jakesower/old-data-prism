@@ -1,7 +1,7 @@
 module.exports = {
   entry: './src/index.ts',
   output: {
-    filename: './data-prism.js'
+    filename: './scripts/data-prism.js'
   },
   resolve: {
     extensions: [".ts", ".js"]
@@ -15,5 +15,8 @@ module.exports = {
   },
   externals: {
   },
-  devtool: "source-map"
+  devtool: "source-map",
+  devServer: {
+
+  }
 }

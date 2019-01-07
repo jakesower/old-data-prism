@@ -1,5 +1,6 @@
 import { a, aside, div, h1, main as mainT, nav, p, i, button } from "@cycle/dom";
 import xs from 'xstream';
+import dropRepeats from 'xstream/extra/dropRepeats'
 import Sources from "./pages/sources";
 import Remix from "./pages/remix";
 import Chart from "./pages/chart";
@@ -11,7 +12,7 @@ import { DataSource, StateModifier } from "../types";
 import { Maybe } from "../lib/maybe";
 import isolate from "@cycle/isolate";
 import { csvToDataSource } from "../lib/data-functions";
-import { clamp } from "../lib/utils";
+import { clamp, last } from "../lib/utils";
 
 interface State {
   page: "sources" | "remix" | "chart" | "analyze" | "share" | "learn",
@@ -30,6 +31,8 @@ const initState: State = {
   sources: [],
 };
 
+const pages = ["sources", "remix", "chart", "analyze", "share", "learn"];
+
 
 function main(cycleSources) {
   const { changeTab$, helpToggle$, adjustTutorialPage$ } = intent(cycleSources);
@@ -46,8 +49,14 @@ function main(cycleSources) {
       }
     });
 
+  const urlPage$ = cycleSources.history
+    .map(h => last(h.pathname.split('/')))
+    .filter(p => pages.includes(p))
+    .compose(dropRepeats());
+
   const stateModifiers$: StateModifier<State>[] = [
-    changeTab$.map(page => prev => ({ ...prev, page })),
+    xs.merge(changeTab$, urlPage$)
+      .map(page => prev => ({ ...prev, page })),
     addSourceProxy$
       .map(source => prev => ({ ...prev,
         sources: prev.sources.concat(source),
@@ -105,11 +114,17 @@ function main(cycleSources) {
   });
 
   const view$ = xs.combine(state$, pageDoms$).map(([s, pd]) => view(s, pd));
+  const history$ = state$
+    .map(s => s.page)
+    .compose(dropRepeats())
+    .map(page => '/' + page);
+
 
   return {
     DOM: view$,
     csvExport: remix.csvExport,
     HTTP: sources.HTTP,
+    history: history$,
   };
 }
 
@@ -130,16 +145,17 @@ function intent({ DOM }) {
 
 
 function view(state, page) {
+  const { help, helpMessages, helpIndex } = state;
   const tab = n => a({
     class: {selected: state.page === n, tab: true}, dataset: { tab: n.toLowerCase() },
   }, n);
   const pageClass = state.page.toLowerCase();
 
   return div({
-    class: {"body-container": true, [pageClass]: true, help: state.help}
+    class: {"body-container": true, [pageClass]: true, 'help-active': help}
   }, [
-    nav({}, [
-      h1({}, "Data Prism"),
+    nav([
+      h1("Data Prism"),
       tab("sources"),
       tab("remix"),
       tab("chart"),
@@ -151,9 +167,9 @@ function view(state, page) {
 
     div('.help-bar', [
       div('.help-text', [
-        state.helpMessages[state.helpIndex],
-        button('.prev-tutorial', 'Prev'),
-        button('.next-tutorial', 'Next'),
+        helpMessages[helpIndex],
+        helpIndex !== 0 ? button('.prev-tutorial', 'Prev') : null,
+        helpIndex !== (helpMessages.length-1) ? button('.next-tutorial', 'Next') : null,
       ]),
     ]),
 

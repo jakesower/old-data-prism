@@ -30,7 +30,7 @@ $total-nav-height: $nav-height + 4px;
   button, .button {
     padding: 3px 7px;
     margin: 0 3px;
-    border: 1px solid transparent;
+    border: 1px solid black;
     border-radius: 5px;
     background-color: buttonface;
     cursor: pointer;
@@ -228,7 +228,7 @@ div.body-container {
     display: none;
   }
 
-  &.help {
+  &.help-active {
     .help-bar {
       display: block;
       padding: 4px 1em;
@@ -591,9 +591,9 @@ nav {
   padding-top: 4px;
 
   button, .button {
-    padding: 3px 7px;
+    padding: 4px 1em;
     margin: 0 3px;
-    border: 1px solid transparent;
+    border: 1px solid black;
     border-radius: 5px;
     background-color: transparent;
     cursor: pointer;

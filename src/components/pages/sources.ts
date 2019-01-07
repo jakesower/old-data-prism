@@ -76,11 +76,7 @@ function view(state: State, gridDom) {
         { class: {"new-source": true, active: activeSource.isNothing() }},
         "New DataSource"
       ),
-      sources.length > 0 ?
-        sourceList(sources, activeSource) :
-        p({}, [
-          'Get started by importing a data source. New to Data Prism? ...'
-        ])
+      sourceList(sources, activeSource)
     ]),
 
     main_({class: {source: true}},
@@ -127,11 +123,16 @@ function newSourceVdom() {
         div('upload-type', [
           h2('.sample-data', 'Import Sample Data'),
           ul([
-            li('.http-data', { dataset: { url: 'https://dataprism.jakesower.com/test-data/2018-conmebol.csv' }}, '2018 CONMEBOL Results'),
-            li('.http-data',
-              { dataset: { url: 'https://dataprism.jakesower.com/test-data/average-northpole-temps.csv' }},
-              'Average North Pole Temperatures'
-            ),
+            li('.http-data', { dataset: { url: '/data/2012-2013-agua-canyon-temp.csv' }}, '2012-2013 Agua Canyon Temperatures'),
+            li('.http-data', { dataset: { url: '/data/DC_Bike_Accidents_2013.csv' }}, '2013 DC Bike Accidents'),
+            li('.http-data', { dataset: { url: '/data/2018-conmebol.csv' }}, '2018 CONMEBOL Results'),
+            li('.http-data', { dataset: { url: '/data/artists.csv' }}, 'Artists'),
+            li('.http-data', { dataset: { url: '/data/average-northpole-temps.csv' }}, 'Average North Pole Temperatures'),
+            li('.http-data', { dataset: { url: '/data/elevations.csv' }}, 'Elevations of Capitals'),
+            li('.http-data', { dataset: { url: '/data/FL_insurance_sample.csv' }}, 'Florida Insurance Data'),
+            li('.http-data', { dataset: { url: '/data/Populations.csv' }}, 'Population Data (Small Sample)'),
+            li('.http-data', { dataset: { url: '/data/Sacramentorealestatetransactions.csv' }}, 'Sacramento Real Estate Transations'),
+            li('.http-data', { dataset: { url: '/data/Seattle-Wages-Gender.csv' }}, 'Seattle Wages by Gender'),
           ])
         ])
       ])
