@@ -11,7 +11,7 @@
     "build-sass": "mkdirp dist/styles && node-sass -r assets/styles/main.scss --output-style=compressed -o dist/styles",
     "watch-sass": "mkdirp dist/styles && node-sass -wr assets/styles/main.scss --output-style=compressed -o dist/styles",
     "watch": "concurrently \"npm run watch-js\" \"npm run watch-sass\"",
-    "start": "webpack --mode=production ./server.js",
+    "start": "node ./server.js",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "test-check": "find ./test -name '*.spec.js' | CHECK_TYPES=true TESTCHECK=true xargs mocha -t 50000 -R spec --reporter nyan"
   },

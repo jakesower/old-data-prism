@@ -46,7 +46,7 @@ const tutorials = {
     'Click the "Average North Pole Temperatures" item under the "Import Sample Data" heading, and wait for it to load.',
     'Click the "Remix" tab.',
     'Set the root source to the average temperatures.',
-    "Let's start by understanding the data. The important column is \"Anomaly of Temperature\". It indicates how much warmer or colder the month is compared to the same month in other years. For example, Jan 1880 was about 0.47 degrees cooler than normal. Columns other than Year, Month, and Anomoly of Temperature are not relevant to this tutorial.",
+    "Let's start by understanding the data. The important column is \"Anomaly of Temperature\". It indicates how much warmer or colder the month is compared to the same month in other years. For example, Jan 1880 was about 0.47 degrees cooler than normal. Columns other than Year, Month, and Anomaly of Temperature are not relevant to this tutorial.",
     'Start by removing the irrelevant columns. Click "New Operation" and then choose "Adjust Columns"',
     'Uncheck the "Keep" checkboxes next to "Total Error" and all columns below it. Then click "Save".',
     "Let's take a look at how things correlate. Go to the \"Analyze\" tab.",
@@ -61,7 +61,7 @@ const tutorials = {
     'Those numbers are long. Round them by picking the "Round" operation. Set the column name to "Rounded Avg Anomaly", use the column "Avg Anomaly", and set the precision to "-2", then click "Save".',
     'Click to the "Chart" tab and choose "(remix source)" as the root datasource.',
     'Pick "Bar" for the chart type.',
-    'Pick "Decade" as the X Axis and "Avg Anomaly" for the Y Axis. Click "Apply".',
+    'Pick "Decade" as the X Axis and "Rounded Avg Anomaly" for the Y Axis. Click "Apply".',
     'This concludes the tutorial. Should you have questions, please email me at jake@jakesower.com',
   ]
 }

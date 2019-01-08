@@ -1,9 +1,9 @@
-import { createServer } from 'http';
-import express from 'express';
-import config from './config.json';
+const http = require('http');
+const express = require('express');
+const config = require('./config.json');
 
 const port = config.port;
-const server = createServer();
+const server = http.createServer();
 
 const app = express();
 app.use(function (_, res, next) {
