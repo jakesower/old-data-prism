@@ -31,7 +31,7 @@ export const ColumnModifier: Operation = {
 
 export const Filter: SlotOperation = (function () {
   const slots = {
-    expression: ExpressionSlot({ display: 'Expression' }),
+    expression: ExpressionSlot({ display: 'Predicate Expression' }),
   };
 
   return {
