@@ -2,11 +2,12 @@ import xs, { Stream } from 'xstream'
 import sampleCombine from 'xstream/extra/sampleCombine'
 import { div, button, VNode, span, h2, i } from '@cycle/dom';
 import { DataSource, StateModifier } from '../../types';
-import { Maybe } from '../../lib/maybe';
+import { Maybe } from '../../lib/monads/maybe';
 import { go, flatten } from '../../lib/utils';
 import operationDefs, { OperationType } from '../../operations';
 import { sampleWith } from '../../lib/stream-utils';
 import * as help from '../../strings/operations';
+import { Either, Err } from '../../lib/monads/either';
 
 type StrObj = {[k: string]: string};
 
@@ -50,18 +51,13 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
   const { save$, cancel$, edit$, apply$, removePress$, toggleHelp$ } = intent(DOM);
   const stateModifiers$: StateModifier<LocalState> = xs.merge(
     chainInit$.map(ci => state => ({ ...state, operation: Maybe.fromValue(ci) })),
-    // setOperation$.map(operation => state => ({...state,
-    //   operation: Maybe.fromValue(operation),
-    // })),
     edit$.mapTo(state => ({...state, editing: true })),
     cancel$
       .filter(_ => state => !state.savedValue.isNothing())
       .mapTo(state => ({ ...state, editing: false, inputs: state.savedValue.withDefault({})})),
     collectorValueApplyProxy$
-      .filter(_ => valid)
       .map(inputs => state => ({ ...state, inputs })),
     collectorValueSaveProxy$
-      .filter(_ => valid)
       .map(inputs => state => ({ ...state, inputs, editing: false, savedValue: Maybe.of(inputs) })),
     toggleHelp$.mapTo(state => ({ ...state, helpVisible: !state.helpVisible })),
   ) as StateModifier<LocalState>;
@@ -87,17 +83,15 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
 
   // EXTERNAL STREAMS
   //
-  const value$ = state$
-    .compose(sampleWith(xs.merge(save$, apply$)))
-    .filter(valid)
-    .map(Maybe.of)
-    .startWith(Maybe.Nothing());
-
   const dataSource$ = state$
     .compose(sampleWith(xs.merge(save$, apply$)))
-    .filter(valid)
     .map(nextDataSource)
-    .startWith(Maybe.Nothing());
+    .startWith(Err("starting up"));
+
+  const value$ = state$
+    .compose(sampleWith(xs.merge(save$, apply$)))
+    // .map(Maybe.of)
+    // .startWith(Maybe.Nothing());
 
   const dom$ = xs.combine(state$, collectorVdom$)
     .map(args => view(args[0], args[1]));
@@ -109,6 +103,10 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
   return {
     DOM: dom$,
     value: value$,
+    operationValue: state$.map(state => go(function* () {
+      const operation = yield state.operation;
+      return { operation, inputs: state.inputs };
+    }).withDefault({})),
     dataSource: dataSource$,
     remove$: xs.merge(removePress$, cancelRemove$),
   };
@@ -172,16 +170,6 @@ function viewEdit(state: LocalState, collectorMarkup: VNode | VNode[]): VNode {
 }
 
 
-function valid(state: State): boolean {
-  return go(function* (){
-    const op = yield state.operation;
-    const opDef: OperationType = operationDefs[op];
-    const src: DataSource = yield state.dataSource;
-    return opDef.valid(src, state.inputs);
-  }).withDefault(false);
-}
-
-
 function collector(localState$: Stream<LocalState>, DOM, dataSource$: Stream<Maybe<DataSource>>, props): Stream<{DOM: Stream<any>, value: Stream<any>}> {
   const emptyCollector = { DOM: xs.of([]), value: xs.of({}) };
   const noDataSourceCollector = { DOM: xs.of(div('hi')), value: xs.of({}) };
@@ -202,11 +190,15 @@ function collector(localState$: Stream<LocalState>, DOM, dataSource$: Stream<May
 }
 
 
-function nextDataSource(state: State): Maybe<DataSource> {
-  return go(function* () {
+function nextDataSource(state: State): Either<string,DataSource> {
+  const mData = go(function* () {
     const op = yield state.operation;
     const opDef: OperationType = operationDefs[op];
     const src: DataSource = yield state.dataSource;
-    return opDef.fn(src, state.inputs);
+    return { opDef, src };
   });
+
+  return mData
+    .map(({ opDef, src }) => opDef.fn(src, state.inputs))
+    .withDefault(Err("missing operation or data source"));
 }

@@ -1,4 +1,5 @@
 import { over, set, lensPath } from "ramda";
+import { Ok, Err, Either } from "./monads/either";
 
 type Ord = number | string | boolean | Date;
 type ObjType<T> = {
@@ -14,6 +15,11 @@ export function ascend<T>(fn: ((x: T) => any)): (a: T, b: T) => number {
   }
 }
 
+export function asValues(obj: {[k: string]: any}, fn) {
+  const keys = Object.keys(obj);
+  return zipObj(keys, fn(Object.values(obj)));
+}
+
 export function clamp(min: number, max: number, val: number): number {
   return (val > max) ? max : ((val < min) ? min : val);
 }
@@ -26,12 +32,12 @@ export function descend<T>(fn: ((x: T) => any)): (a: T, b: T) => number {
   }
 }
 
-export function encase<T,U>(fn: (...args: any[]) => T, safetyVal: U): (...args: any[]) => T|U {
+export function encaseError<T>(fn: (...args: any[]) => T): (...args: any[]) => Either<Error,T> {
   return function (...args) {
     try {
-      return fn(...args);
+      return Ok(fn(...args));
     } catch (e) {
-      return safetyVal;
+      return Err(e);
     }
   };
 }

@@ -4,7 +4,7 @@ import { aside, div, main as main_, select, h2, VNode, input, button, map, h3, t
 import { ChainedCollection, pluck as pl} from '../../lib/chained-collection';
 import { DataSource, StateModifier, makeDataSource, DataColumn } from '../../types';
 import { merge, flatten, last, upperTriangularMatrixMap, round, reflectUTMatrix, zipWith, go } from '../../lib/utils';
-import { Maybe } from '../../lib/maybe';
+import { Maybe } from '../../lib/monads/maybe';
 import Grid from '../components/grid';
 import Collector from '../components/collector';
 import { indexedOptions, targetValue } from '../../lib/dom-utils';

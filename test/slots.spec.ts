@@ -2,7 +2,6 @@ import { assert } from 'chai';
 import 'mocha';
 import { ExpressionSlot } from '../src/lib/slots';
 import { compileTestData } from './test-utils';
-import dataTypes from '../src/lib/data-types';
 import { eq } from '../src/lib/utils';
 
 const testData = compileTestData({
@@ -17,7 +16,7 @@ describe('expression slot', () => {
 
   it('should compile a proper expression', () => {
     const exp = "{GF} + {GA}";
-    const vals = slot.extract(testData, exp);
-    assert(eq(vals, ['3', '1', '1']));
+    const vals = slot.extract(testData, exp).getOkValue();
+    assert.deepEqual(vals, ['3', '1', '1']);
   });
 });

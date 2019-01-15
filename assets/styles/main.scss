@@ -44,7 +44,25 @@ $total-nav-height: $nav-height + 4px;
 
   aside {
     background-color: $mid;
-    // background: linear-gradient(180deg, $mid, $light);
+
+    .subsection {
+      border-right: 2px solid $mid;
+      background-color: white;
+      margin-left: -1em;
+      padding-left: 1em;
+      margin-right: -1em;
+      padding-right: 1em;
+    }
+
+    button {
+      padding: 0.6em;
+      text-transform: uppercase;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 10em;
+    }
   }
 }
 
@@ -133,6 +151,7 @@ div.body-container {
         cursor: pointer;
         padding: 0.6em;
         margin-right: 1em;
+        margin-top: 0.5em;
         text-transform: uppercase;
         display: inline-block;
         border: solid black 1px;
@@ -888,7 +907,6 @@ nav {
   .save-as-source.open {
     margin-bottom: 0.5em;
     padding: 0.5em;
-    border: 1px black solid;
 
     .action { padding-top: 0; }
     .action::after { transform: rotate(0.25turn); }
@@ -914,7 +932,7 @@ nav {
 }
 
 .actions-container {
-  .toggle-actions-button {
+  .toggle {
     cursor: pointer;
     padding: 1em 0;
     text-transform: uppercase;
@@ -929,7 +947,7 @@ nav {
   }
 
   &.open {
-    .toggle-actions-button::after { transform: rotate(0.25turn); }
+    &.toggle::after, .toggle::after { transform: rotate(0.25turn); }
   }
 }
 

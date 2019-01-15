@@ -5,7 +5,8 @@ import { SlotCollector, SlotOperation } from '../components/collectors/slot-coll
 import { SortCollector } from '../components/collectors/sort-collector';
 import { ExpressionSlot } from '../lib/slots';
 import { discoverTypes, populateSlots } from '../lib/data-functions';
-import { sortBy, zip, transpose } from '../lib/utils';
+import { sortBy, zip, transpose, go } from '../lib/utils';
+import { Ok } from '../lib/monads/either';
 
 
 export const ColumnModifier: Operation = {
@@ -17,15 +18,14 @@ export const ColumnModifier: Operation = {
         acc
     , []);
 
-    return makeDataSource({
+    return Ok(makeDataSource({
       name: source.name,
       columns: nextCols
-    });
+    }));
   },
   name: 'Adjust Columns',
   tags: [],
   collector: ColumnCollector,
-  valid: _ => true,
 }
 
 
@@ -37,8 +37,8 @@ export const Filter: SlotOperation = (function () {
   return {
     slots,
     display: _ => div('Filter'),
-    fn: (source, inputs) => {
-      const populated = populateSlots(source, slots, inputs);
+    fn: (source, inputs) => go(function* () {
+      const populated = yield populateSlots(source, slots, inputs);
       const nextCols = source.columns.map(col => {
         const nextVals = col.values.filter((_, idx) => populated.expression[idx] === "true");
         return makeDataColumn({
@@ -48,15 +48,14 @@ export const Filter: SlotOperation = (function () {
         });
       });
 
-      return makeDataSource({
+      return Ok(makeDataSource({
         name: source.name,
         columns: nextCols,
-      });
-    },
+      }));
+    }),
     name: 'Filter',
     tags: [],
     collector: SlotCollector,
-    valid: _ => true,
   }
 }());
 
@@ -95,14 +94,13 @@ export const Sort: Operation = {
       types: source.columns[idx].types,
     }));
 
-    return makeDataSource({
+    return Ok(makeDataSource({
       name: source.name,
       columns: nextCols
-    });
+    }));
   },
   name: 'Sort',
   tags: [],
   collector: SortCollector,
-  valid: _ => true,
 };
 

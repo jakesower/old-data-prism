@@ -18,7 +18,7 @@ describe('derivers', () => {
     const inputs = { columnName: 'Test', column: "3", order: "3" };
 
     it('should compute correctly', () => {
-      const result = Quantile.fn(testData, inputs);
+      const result = Quantile.fn(testData, inputs).getOkValue();
       const col = result.columns[5];
       assert.equal(col.name, 'Test');
       assert.deepEqual(col.values, ['3', '3', '3', '2', '2', '2']);
@@ -29,7 +29,7 @@ describe('derivers', () => {
     const inputs = { columnName: 'Test', expression: "{HGs} - {AGs}" };
 
     it('should compute correctly', () => {
-      const result = Expression.fn(testData, inputs);
+      const result = Expression.fn(testData, inputs).getOkValue();
       const col = result.columns[5];
       assert.equal(col.name, 'Test');
       assert.deepEqual(col.values, ['-2', '-1', '1', '-1', '-1', '0']);
@@ -47,7 +47,7 @@ describe('derivers', () => {
     };
 
     it('should compute', () => {
-      const result = MapValues.fn(testData, inputs);
+      const result = MapValues.fn(testData, inputs).getOkValue();
       const col = result.columns[5];
       assert.equal(col.name, 'Test');
       assert.deepEqual(col.values, ['Away Win', 'Away Win', 'Home Win', 'Away Win', 'Away Win', 'Tie']);
@@ -67,7 +67,7 @@ describe('groupings', () => {
     };
 
     it('should compute correctly', () => {
-      const result = Grouping.fn(testData, inputs);
+      const result = Grouping.fn(testData, inputs).getOkValue();
       const home = result.columns[0];
       const count = result.columns[1];
       const sum = result.columns[2];
@@ -93,7 +93,7 @@ describe('joins', () => {
 
   it('should work for inner join', () => {
     const inputs = { ...baseInput, joinMethod: 'Inner' };
-    const result = Join.fn(testData, inputs);
+    const result = Join.fn(testData, inputs).getOkValue();
 
     assert.equal(result.columns.length, 7);
     assert.equal(result.records.length, 5);
@@ -102,7 +102,7 @@ describe('joins', () => {
 
   it('should work for left join', () => {
     const inputs = { ...baseInput, joinMethod: 'Left' };
-    const result = Join.fn(testData, inputs);
+    const result = Join.fn(testData, inputs).getOkValue();
 
     assert.equal(result.columns.length, 7);
     assert.equal(result.records.length, 6);
@@ -112,7 +112,7 @@ describe('joins', () => {
 
   it('should work for right join', () => {
     const inputs = { ...baseInput, joinMethod: 'Right' };
-    const result = Join.fn(testData, inputs);
+    const result = Join.fn(testData, inputs).getOkValue();
 
     assert.equal(result.columns.length, 7);
     assert.equal(result.records.length, 7);

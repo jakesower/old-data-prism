@@ -4,7 +4,7 @@ import { DataSource, StateModifier } from '../../types';
 import Grid from '../components/grid';
 import { scopedEvent, extractFile } from '../../lib/dom-utils';
 import { merge } from '../../lib/utils';
-import { Maybe } from '../../lib/maybe';
+import { Maybe } from '../../lib/monads/maybe';
 
 const noNum = Maybe.Nothing<number>();
 

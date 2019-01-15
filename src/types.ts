@@ -3,8 +3,10 @@ import { VNode } from '@cycle/dom';
 import * as sha1 from 'js-sha1';
 import { transpose } from './lib/utils';
 import { OperationSlot, OperationSlotDefinition } from './lib/slots';
+import { DataType } from './lib/data-types';
+import { Either } from './lib/monads/either';
 
-export { OperationSlot, OperationSlotDefinition };
+export { DataType, OperationSlot, OperationSlotDefinition };
 
 export interface DataSource {
   name?: string,
@@ -30,20 +32,14 @@ export interface DataColumn extends DataColumnAttrs {
   hasType: (this: DataColumn, type: DataType<any>) => boolean,
 }
 
-export interface DataType<T> {
-  name: string,
-  test: (s: string) => boolean,
-  cast: (s: string) => T
-}
-
 export interface Operation {
   display: (source: DataSource, inputs: {[k: string]: any}) => VNode,
-  fn: (source: DataSource, inputs: {[k: string]: any}) => DataSource,
+  fn: (source: DataSource, inputs: {[k: string]: any}) => Either<string,DataSource>,
   name: string,
   tags: string[],
   collector: any,
   help?: string,
-  valid: (source: DataSource, inputs: {[k: string]: any}) => boolean,
+  // valid?: (source: DataSource, inputs: {[k: string]: any}) => boolean,
 }
 
 export type StreamObj = {[k: string]: Stream<any>};

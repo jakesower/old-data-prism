@@ -8,7 +8,7 @@ export default function csvExportDriver(request$: Stream<DataSource>): void {
     next: (dataSource) => {
       stringify([dataSource.headers].concat(dataSource.records), (_, output: string) => {
         const blob = new Blob([output], { type: 'text/csv' });
-        FileSaver.saveAs(blob);
+        FileSaver.saveAs(blob, `${(dataSource.name || 'data')}.csv`);
       })
     },
     error: () => {},

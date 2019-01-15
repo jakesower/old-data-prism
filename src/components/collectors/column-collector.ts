@@ -1,7 +1,7 @@
 import { div, input, tr, td, table, th } from '@cycle/dom';
 import { DataSource, DataColumn, Operation } from '../../types';
 import xs, { Stream } from 'xstream';
-import { Maybe } from '../../lib/maybe';
+import { Maybe } from '../../lib/monads/maybe';
 import isolate from '@cycle/isolate';
 import { flatten } from '../../lib/utils';
 

@@ -9,7 +9,7 @@ import Share from "./pages/share";
 import Learn from "./pages/learn";
 import { objectStream } from "../lib/stream-utils";
 import { DataSource, StateModifier } from "../types";
-import { Maybe } from "../lib/maybe";
+import { Maybe } from "../lib/monads/maybe";
 import isolate from "@cycle/isolate";
 import { csvToDataSource } from "../lib/data-functions";
 import { clamp, last } from "../lib/utils";

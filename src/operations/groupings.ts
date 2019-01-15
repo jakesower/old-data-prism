@@ -1,9 +1,10 @@
 import { div } from '@cycle/dom';
-import { groupBy, values, pipeThru, transpose } from '../lib/utils';
+import { groupBy, values, pipeThru, transpose, go } from '../lib/utils';
 import { GroupCollector, GroupOperation } from '../components/collectors/group-collector';
 import { makeDataColumn, makeDataSource, DataColumn } from '../types';
 import { discoverTypes } from '../lib/data-functions';
 import * as aggregatorDefs from './aggregators';
+import { Ok, sequenceList } from '../lib/monads/either';
 
 interface GroupInputs {
   groupBasis: number[],
@@ -20,17 +21,8 @@ export const Grouping: GroupOperation = {
   name: "Grouping",
   tags: ["grouping"],
   display: _ => div("Grouping"),
-  help: "Well hai",
-  valid: _ => true,
 
-  // valid: ({dataset}, inputs) => {
-  //   const colsValid = R.length(inputs.columns) > 0;
-  //   const aggsValid = R.all(inputs.aggregators.valid(dataset));
-
-  //   return colsValid && aggsValid;
-  // },
-
-  fn: (dataSource, inputs: GroupInputs) => {
+  fn: (dataSource, inputs: GroupInputs) => go(function* () {
     const { groupBasis, aggregators } = inputs;
 
     const dataSourceGroups = pipeThru(dataSource.records, [
@@ -53,14 +45,15 @@ export const Grouping: GroupOperation = {
       });
     });
 
-    const aggColumns = aggregators.map(agg => {
+    const aggColumnsE = aggregators.map(agg => {
       const aggDef = aggregatorDefs[agg.aggregator];
       return aggDef.fn(dataSourceGroups, agg.inputs);
-    })
+    });
+
+    const aggColumns = yield sequenceList(aggColumnsE);
 
     return makeDataSource({ columns: basisColumns.concat(aggColumns) });
-
-  },
+  }),
 
   collector: GroupCollector,
 }

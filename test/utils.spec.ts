@@ -1,5 +1,5 @@
 import { go } from '../src/lib/utils';
-import { Maybe } from '../src/lib/maybe';
+import { Maybe } from '../src/lib/monads/maybe';
 import { assert } from 'chai';
 import 'mocha';
 

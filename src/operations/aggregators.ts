@@ -8,6 +8,8 @@ import { discoverTypes, populateSlots } from '../lib/data-functions';
 import { FreeSlot, ColumnSlot, MultiColumnSlot } from '../lib/slots';
 import { SlotCollector } from '../components/collectors/slot-collector';
 import dataTypes from '../lib/data-types';
+import { go } from '../lib/utils';
+import { Ok, Either, sequenceList } from '../lib/monads/either';
 
 interface SlotAggregatorDefinition {
   aggregatorFn: (dataSource: DataSource, inputs: {[k: string]: any}) => string,
@@ -18,7 +20,7 @@ interface SlotAggregatorDefinition {
 }
 
 interface Aggregator {
-  fn: (dataSource: DataSource[], inputs: {[k: string]: any}) => DataColumn,
+  fn: (dataSource: DataSource[], inputs: {[k: string]: any}) => Either<string, DataColumn>,
   display: (source: DataSource, inputs: {[k: string]: any}) => VNode,
   slots: { [k in string]: OperationSlot<any> },
   name: string,
@@ -34,18 +36,20 @@ const colNameSlot = FreeSlot({ display: 'Column Name', type: dataTypes.String })
 
 const makeAggregator = (def: SlotAggregatorDefinition): Aggregator => {
   return {...def,
-    fn: (dataSources, inputs) => {
-      const vals = dataSources.map(dataSource => {
-        const populated = populateSlots(dataSource, def.slots, inputs);
+    fn: (dataSources, inputs) => go(function* () {
+      const valsE = dataSources.map(dataSource => go(function* () {
+        const populated = yield populateSlots(dataSource, def.slots, inputs);
         return def.aggregatorFn(dataSource, populated);
-      });
+      }));
+
+      const vals = yield sequenceList(valsE);
 
       return makeDataColumn({
         name: inputs.columnName,
         values: vals,
         types: discoverTypes(vals),
       });
-    },
+    }),
     slots: def.slots,
     collector: SlotCollector,
     help: "TODO",

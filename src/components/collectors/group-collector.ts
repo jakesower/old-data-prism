@@ -4,7 +4,7 @@ import { MultiColumnSlot } from '../../lib/slots';
 import { OperationSlot, DataSource, Collector, DataColumn, Operation, StateModifier } from '../../types';
 import Multiselect, { Option } from '../components/multiselect';
 import xs, { Stream } from 'xstream';
-import { Maybe } from '../../lib/maybe';
+import { Maybe } from '../../lib/monads/maybe';
 import dataTypes from '../../lib/data-types';
 import * as aggregatorDefs from '../../operations/aggregators';
 import { sortWith, inlineKey, flatten } from '../../lib/utils';

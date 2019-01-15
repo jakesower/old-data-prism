@@ -3,7 +3,7 @@ import { Collection, pluck } from '../../lib/collection';
 import { div, button, option, VNode, h3, select } from '@cycle/dom';
 import dataTypes from '../../lib/data-types';
 import xs, { Stream } from 'xstream';
-import { Maybe } from '../../lib/maybe';
+import { Maybe } from '../../lib/monads/maybe';
 
 
 export function SortCollector(_opDef, dataSource: DataSource, initialInputs) {

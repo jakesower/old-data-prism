@@ -1,6 +1,6 @@
 import xs, { Stream } from 'xstream';
 import { div, span, strong, table, td, th, tr, button, VNode } from "@cycle/dom";
-import { Maybe } from '../../lib/maybe';
+import { Maybe } from '../../lib/monads/maybe';
 import { DataColumn, DataSource, StateModifier } from "../../types";
 import dataTypes from "../../lib/data-types";
 import { ascend, descend, sortBy, merge, pipe, clamp } from "../../lib/utils";

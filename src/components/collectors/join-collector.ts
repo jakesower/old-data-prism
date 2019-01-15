@@ -1,7 +1,7 @@
 import { div, select, option, h3 } from '@cycle/dom';
 import { DataSource, Operation, StateModifier } from '../../types';
 import xs, { Stream } from 'xstream';
-import { Maybe } from '../../lib/maybe';
+import { Maybe } from '../../lib/monads/maybe';
 import { go } from '../../lib/utils';
 
 export interface JoinOperation extends Operation {}

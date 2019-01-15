@@ -4,10 +4,11 @@ import { nth, range, findLastIndex } from 'ramda';
 import { DataSource, makeDataColumn, OperationSlot } from '../types';
 import { discoverTypes, mapRows, populateSlots, compileExpression } from '../lib/data-functions';
 import dataTypes from '../lib/data-types';
-import { merge, sort, eq, pairs, reverse, round } from '../lib/utils';
+import { merge, sort, eq, pairs, reverse, round, go } from '../lib/utils';
 import { FreeSlot, ColumnSlot, ExpressionSlot } from '../lib/slots';
 import { SlotCollector, SlotOperation } from '../components/collectors/slot-collector';
 import { SlotPairCollector, SlotPairOperation } from '../components/collectors/slot-pair-collector';
+import { Err, Ok } from "../lib/monads/either";
 
 type PartialOperation = {
   [P in keyof SlotOperation]?: SlotOperation[P];
@@ -17,7 +18,8 @@ interface Deriver extends PartialOperation {
   deriverFn: (dataSource: DataSource, inputs: {[k: string]: any}) => string[],
   display: (source: DataSource, inputs: {[k: string]: any}) => VNode,
   name: string,
-  slots: { [k in string]: OperationSlot<any> }
+  slots: { [k in string]: OperationSlot<any> },
+  valid?: (source: DataSource, inputs: {[k: string]: any}) => boolean,
 }
 
 const col = (dataSource, cName) =>
@@ -25,26 +27,27 @@ const col = (dataSource, cName) =>
 
 const colNameSlot = FreeSlot({ display: 'Column Name', type: dataTypes.NonEmptyString });
 
-const validateSlots = (slots: {[k: string]: OperationSlot<any>}) => (dataSource: DataSource, inputs: {[k: string]: string}): boolean => {
-  if (!eq(Object.keys(slots), Object.keys(inputs))) { return false; }
-  return pairs(inputs).every(([k, input]) => slots[k].isValid(dataSource, input));
+const slotsMissing = (slots: {[k: string]: OperationSlot<any>}, inputs: {[k: string]: string}): boolean => {
+  return !eq(Object.keys(slots), Object.keys(inputs));
 }
 
 const makeDeriver = (def: Deriver): SlotOperation => {
   return merge(def, {
-    fn: (dataSource: DataSource, inputs: {[k in string]: string}) => {
-      const populated = populateSlots(dataSource, def.slots, inputs);
+    fn: (dataSource: DataSource, inputs: {[k in string]: string}) => go(function* () {
+      if (slotsMissing(def.slots, inputs) || (def.valid && !def.valid(dataSource, inputs))) {
+        return Err("invalid input");
+      }
+      const populated = yield populateSlots(dataSource, def.slots, inputs);
       const vals = def.deriverFn(dataSource, populated);
       return dataSource.appendColumn(makeDataColumn({
         name: inputs.columnName,
         values: vals,
         types: discoverTypes(vals)
       }));
-    },
+    }),
     collector: SlotCollector,
     help: 'help text',
     tags: def.tags ? def.tags.concat(["deriver"]) : ["deriver"],
-    valid: (ds, i) => validateSlots(def.slots)(ds, i) && (def.valid ? def.valid(ds, i) : true),
   });
 }
 
@@ -126,7 +129,6 @@ export const MapValues: SlotPairOperation = {
   name: 'Map Values',
   tags: [],
   collector: SlotPairCollector,
-  valid: _ => true,
   fn: (dataSource, inputs: { values: { result: string, condition: string }[], otherwise: string, columnName: string}) => {
     const fn: (row: string[]) => string = reverse(inputs.values).reduce((onion, {condition, result}) => {
       const test = compileExpression(dataSource, condition);
@@ -136,11 +138,11 @@ export const MapValues: SlotPairOperation = {
 
     const values = dataSource.records.map(fn);
 
-    return dataSource.appendColumn(makeDataColumn({
+    return Ok(dataSource.appendColumn(makeDataColumn({
       values,
       name: inputs.columnName,
       types: discoverTypes(values),
-    }));
+    })));
   },
   display: (dataSource, inputs) => div('Map Values'),
 };
@@ -158,10 +160,10 @@ export const Quantile: SlotOperation = (function () {
     tags: ["math", "bucketers"],
     collector: SlotCollector,
     slots,
-    valid: validateSlots(slots),
 
-    fn: (dataSource, inputs) => {
-      const populated = populateSlots(dataSource, slots, inputs);
+    fn: (dataSource, inputs) => go(function* () {
+      if (slotsMissing(slots, inputs)) { return Err("missing inputs"); }
+      const populated = yield populateSlots(dataSource, slots, inputs);
       const sorted = sort(populated.column);
       const frac = sorted.length / populated.order;
       const cutoffs = range(0, parseInt(populated.order)).map(
@@ -173,8 +175,8 @@ export const Quantile: SlotOperation = (function () {
         name: populated.columnName,
         values: qCol,
         types: discoverTypes(qCol) // TODO
-      }))
-    },
+      }));
+    }),
 
     display: (dataSource, inputs) => {
       const quantileNames = {

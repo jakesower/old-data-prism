@@ -2,13 +2,10 @@ import xs, { Stream } from 'xstream';
 import { div, aside, main, option, select, h2, h3, VNode, button } from '@cycle/dom';
 import { flatten, go } from '../../lib/utils';
 import * as BarChart from '../charts/bar';
-import { Maybe } from '../../lib/maybe';
+import { Maybe } from '../../lib/monads/maybe';
 import { StateModifier, DataSource } from '../../types';
 import { SlotCollector } from '../collectors/slot-collector';
 import { sampleWith } from '../../lib/stream-utils';
-// import { sampleWith } from '../../lib/stream-utils';
-// const scatterPlot = require('./charts/scatter');
-// const lineChart = require('./charts/line');
 
 const chartDefs = {
   Bar: BarChart,

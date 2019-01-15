@@ -2,7 +2,7 @@ import { div, h3, input, select, option, VNode } from '@cycle/dom';
 import { OperationSlot, DataSource, DataColumn } from '../../../types';
 import Multiselect from '../../components/multiselect';
 import xs, { Stream } from 'xstream';
-import { Maybe } from '../../../lib/maybe';
+import { Maybe } from '../../../lib/monads/maybe';
 
 
 export function freeSlotComponent(slot, _dataSource, init) {

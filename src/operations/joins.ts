@@ -5,6 +5,7 @@ import { discoverTypes } from '../lib/data-functions';
 import { JoinCollector } from '../components/collectors/join-collector';
 import { ConcatCollector } from '../components/collectors/concat-collector';
 import dataTypes from '../lib/data-types';
+import { Ok, Err } from '../lib/monads/either';
 
 export const Join: Operation = (function () {
   function innerJoin(local, foreign, lk, fk) {
@@ -28,7 +29,7 @@ export const Join: Operation = (function () {
     });
   }
 
-  return {
+  return <Operation>{
     display: _ => div('Join'),
     fn: (source, inputs) => {
       const local = source;
@@ -38,14 +39,14 @@ export const Join: Operation = (function () {
 
       switch (inputs.joinMethod) {
         case 'Inner':
-          return innerJoin(local, foreign, lk, fk);
+          return Ok(innerJoin(local, foreign, lk, fk));
         case 'Left':
-          return leftJoin(local, foreign, lk, fk);
+          return Ok(leftJoin(local, foreign, lk, fk));
         case 'Right':
-          return rightJoin(local, foreign, lk, fk);
+          return Ok(rightJoin(local, foreign, lk, fk));
       }
 
-      return source; // :(
+      return Err("invalid join method");
     },
     name: 'Join',
     tags: [],
@@ -59,7 +60,7 @@ export const Join: Operation = (function () {
 
 
 export const Concat: Operation = (function () {
-  return {
+  return <Operation>{
     display: _ => div('Concatenate'),
     fn: (source, inputs) => {
       const local = source;
@@ -78,7 +79,7 @@ export const Concat: Operation = (function () {
         });
       });
 
-      return makeDataSource({ columns: nextCols });
+      return Ok(makeDataSource({ columns: nextCols }));
     },
     name: 'Concatenate',
     tags: [],
