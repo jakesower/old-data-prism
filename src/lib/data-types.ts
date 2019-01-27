@@ -51,21 +51,21 @@ const NonEmptyString: DataType<string> = withDefaults({
   name: "Non-Empty String",
   test: x => x !== "",
   cast: x => x,
-  testCast: x => x === "" ? Err("String must be empty") : Ok(x),
+  testCast: x => x === "" ? Err("must not be empty") : Ok(x),
 });
 
 const _Number: DataType<number> = withDefaults({
   name: "Number",
   test: x => !isNaN(parseFloat(x)),
   cast: parseFloat,
-  testCast: x => this.test ? Ok(this.cast(x)) : Err("must be numeric"),
+  testCast: x => !isNaN(parseFloat(x)) ? Ok(parseFloat(x)) : Err("must be numeric"),
 });
 
 const FiniteNumber: DataType<number> = withDefaults({
   name: "Finite Number",
   test: finiteNum,
   cast: parseFloat,
-  testCast: x => this.test ? Ok(this.cast(x)) : Err("must be a finite number"),
+  testCast: x => finiteNum(x) ? Ok(parseFloat(x)) : Err("must be a finite number"),
 });
 
 const PositiveFiniteNumber: DataType<number> = withDefaults({

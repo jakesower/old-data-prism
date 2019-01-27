@@ -141,6 +141,8 @@ div.body-container {
     }
 
     aside {
+      & > div { overflow-y: auto; }
+
       .slot {
         .multiselect {
           margin-top: 6px;
@@ -317,10 +319,13 @@ div.main-container {
 
   aside {
     position: relative;
-    flex: 0 0 24em;
+    // flex: 0 0 24em;
+    min-width: 24em;
     padding: 1em 1em 0 1em;
     display: flex;
     flex-direction: column;
+    // overflow-y: auto;
+    z-index: 1;
 
     .root-datasource {
       border: 3px black solid;
@@ -349,7 +354,7 @@ div.main-container {
     }
 
     .operation-heading {
-      position: relative;
+      // position: relative;
       z-index: 3;
 
       .help-toggle {
@@ -363,10 +368,9 @@ div.main-container {
         display: none;
         &.active { display: block; .help { background-color: rgba($mid-orange, 1); } }
         position: absolute;
-        top: 0; left: calc(100% + 22px);
+        top: 0; left: calc(100%);
 
         .help {
-          margin: -1em 0;
           padding: 1em;
           background-color: rgba($mid-orange, 0.9);
           min-width: 20em;
@@ -789,7 +793,6 @@ nav {
 
       .check {
         display: inline-block;
-        float: left;
       }
 
       .value {

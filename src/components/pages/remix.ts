@@ -10,7 +10,6 @@ import Collector from '../components/collector';
 import { targetValue } from '../../lib/dom-utils';
 import { sampleWith } from '../../lib/stream-utils';
 import OperationsMenu from '../components/operations-menu';
-import { Either } from '../../lib/monads/either';
 
 
 interface LocalState {
@@ -70,7 +69,7 @@ export default function main(cycleSources) {
   });
 
   const collectorDom$ = pl(collectors$, x => x.DOM);
-  const collectorSources$: Stream<Either<string,DataSource>[]> = pl(collectors$, x => x.dataSource);
+  const collectorSources$: Stream<Maybe<DataSource>[]> = pl(collectors$, x => x.dataSource);
   const collectorValues$ = pl(collectors$, x => x.operationValue); // TODO
 
   const recipe$ = xs.combine<Maybe<DataSource>, any[]>(activeSource$, collectorValues$)
@@ -81,20 +80,20 @@ export default function main(cycleSources) {
     .map(o => JSON.stringify(o))
     .startWith("{}");
 
-  const gridSource$ = xs.combine<Maybe<DataSource>, Either<string,DataSource>[]>(activeSource$, collectorSources$)
+  const gridSource$ = xs.combine<Maybe<DataSource>, Maybe<DataSource>[]>(activeSource$, collectorSources$)
     .map(([activeSource, collectorSources]): Maybe<DataSource> => {
-      return collectorSources.reduce((last, s) => s.isErr() ? last : s.toMaybe(), activeSource);
+      return collectorSources.reduce((last, s) => s.isNothing() ? last : s, activeSource);
     });
 
   const grid = Grid({ DOM: DOM, props: gridSource$.map(source => ({source})) });
 
   return {
     DOM: xs.combine(state$, grid.DOM, collectorDom$, menu.DOM, recipe$).map(a => view(a[0], a[1], a[2], a[3], a[4])),
-    source: xs.combine<string, Either<string,DataSource>[]>(saveName$, collectorSources$)
+    source: xs.combine<string, Maybe<DataSource>[]>(saveName$, collectorSources$)
       .compose(sampleWith(saveSource$))
       .map(([name, dataSources]) => ({ name, dataSource: last(dataSources) }))
-      .filter(x => x.dataSource && !x.dataSource.isErr())
-      .map(o => ({ ...o, dataSource: <DataSource>o.dataSource.recoverWith([]) }))
+      .filter(x => x.dataSource && !x.dataSource.isNothing())
+      .map(o => ({ ...o, dataSource: <DataSource>o.dataSource.withDefault([]) }))
       .map(({name, dataSource}) => makeDataSource({
         name,
         columns: dataSource.columns,
@@ -142,7 +141,7 @@ function view(state: State, gridDom, collectorDom, menuDom, recipe) {
   const opts = [emptyOption].concat(sourceOptions);
 
   return div('.main-container', [
-    aside({}, [
+    aside({}, div([
       div('.root-datasource', {}, [
         h2({}, 'Root DataSource'),
         select({ class: { "root-source": true }}, opts)
@@ -171,7 +170,7 @@ function view(state: State, gridDom, collectorDom, menuDom, recipe) {
 
         ]))
       ])
-    ]),
+    ])),
 
     main_({}, [
       gridDom

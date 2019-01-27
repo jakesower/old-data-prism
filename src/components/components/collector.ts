@@ -12,12 +12,11 @@ import { Either, Err } from '../../lib/monads/either';
 type StrObj = {[k: string]: string};
 
 interface LocalState {
-  operation: Maybe<string>,
   editing: boolean,
-  savedValue: Maybe<object>,
   inputs: StrObj,
   showErrors: boolean,
-  helpVisible: boolean,
+  showHelp: boolean,
+  savedValue: Maybe<object>,
 }
 
 interface State extends LocalState {
@@ -25,12 +24,11 @@ interface State extends LocalState {
 }
 
 const initState: LocalState = {
-  operation: Maybe.Nothing<string>(),
   editing: true,
-  savedValue: Maybe.Nothing<object>(),
   inputs: {},
   showErrors: false,
-  helpVisible: false,
+  showHelp: false,
+  savedValue: Maybe.Nothing(),
 };
 
 const iconTags = [
@@ -41,8 +39,8 @@ const iconTags = [
 ];
 
 
-export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<DataSource>>, chainInit$: Stream<any>, props: any }) {
-  const { DOM, chain$, chainInit$ } = cycleSources;
+export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<DataSource>>, chainInit$: Stream<string>, props: Stream<any> }) {
+  const { DOM, chain$, chainInit$: operation$ } = cycleSources;
   const collectorValueApplyProxy$: any = xs.create();
   const collectorValueSaveProxy$: any = xs.create();
 
@@ -50,7 +48,6 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
   //
   const { save$, cancel$, edit$, apply$, removePress$, toggleHelp$ } = intent(DOM);
   const stateModifiers$: StateModifier<LocalState> = xs.merge(
-    chainInit$.map(ci => state => ({ ...state, operation: Maybe.fromValue(ci) })),
     edit$.mapTo(state => ({...state, editing: true })),
     cancel$
       .filter(_ => state => !state.savedValue.isNothing())
@@ -59,15 +56,15 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
       .map(inputs => state => ({ ...state, inputs })),
     collectorValueSaveProxy$
       .map(inputs => state => ({ ...state, inputs, editing: false, savedValue: Maybe.of(inputs) })),
-    toggleHelp$.mapTo(state => ({ ...state, helpVisible: !state.helpVisible })),
+    toggleHelp$.mapTo(state => ({ ...state, showHelp: !state.showHelp })),
   ) as StateModifier<LocalState>;
 
-  const localState$: Stream<LocalState> = stateModifiers$.fold((state, mod) => mod(state), initState).debug();
+  const localState$: Stream<LocalState> = stateModifiers$.fold((state, mod) => mod(state), initState);
 
 
   // SECONDARY STREAMS
   //
-  const collector$ = collector(localState$, DOM, chain$, cycleSources.props);
+  const collector$ = collector(localState$, DOM, chain$, cycleSources.props, operation$);
   const collectorVdom$: Stream<VNode | VNode[]> = collector$.map(c => c.DOM).flatten();
   const collectorValue$: Stream<{[k: string]: string}> = collector$.map(c => c.value).flatten();
   const collectorValueApply$ = collectorValue$.compose(sampleWith(apply$));
@@ -78,14 +75,14 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
 
   const state$: Stream<State> = xs.combine<LocalState, Maybe<DataSource>>(localState$, chain$)
     .map(([a,b]) => Object.assign({}, a, { dataSource: b }))
-    .startWith({...initState, dataSource: Maybe.Nothing<DataSource>(), inputs: {} });
+    .startWith({...initState, dataSource: Maybe.Nothing(), inputs: {} });
 
 
   // EXTERNAL STREAMS
   //
-  const dataSource$ = state$
+  const dataSource$ = xs.combine(state$, operation$)
     .compose(sampleWith(xs.merge(save$, apply$)))
-    .map(nextDataSource)
+    .map(([s, o]) => nextDataSource(s, o))
     .startWith(Err("starting up"));
 
   const value$ = state$
@@ -93,8 +90,8 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
     // .map(Maybe.of)
     // .startWith(Maybe.Nothing());
 
-  const dom$ = xs.combine(state$, collectorVdom$)
-    .map(args => view(args[0], args[1]));
+  const dom$ = xs.combine(state$, collectorVdom$, dataSource$, operation$)
+    .map(args => view(args[0], args[1], args[2], args[3]));
 
   const cancelRemove$ = cancel$
     .compose(sampleCombine(localState$))
@@ -103,11 +100,10 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
   return {
     DOM: dom$,
     value: value$,
-    operationValue: state$.map(state => go(function* () {
-      const operation = yield state.operation;
-      return { operation, inputs: state.inputs };
-    }).withDefault({})),
-    dataSource: dataSource$,
+    operationValue: xs.combine(state$, operation$).map(([state, operation]) => (
+      { operation, inputs: state.inputs }
+    )),
+    dataSource: dataSource$.map(ds => ds.toMaybe()),
     remove$: xs.merge(removePress$, cancelRemove$),
   };
 }
@@ -125,11 +121,11 @@ function intent(DOM) {
 }
 
 
-function view(state: State, collectorMarkup: VNode | VNode[]) {
-  if (state.editing) { return viewEdit(state, collectorMarkup); }
+function view(state: State, collectorMarkup: VNode | VNode[], eDataSource: Either<string,DataSource>, operation: string) {
+  if (state.editing) { return viewEdit(state, collectorMarkup, operation); }
 
-  const def = state.operation.map(o => operationDefs[o]).withDefault(null);
-  const dataSource = state.dataSource.withDefault(null);
+  const def = operationDefs[operation];
+  const dataSource = eDataSource.recoverWith(null);
   if (!def || !dataSource) { return <VNode[]>[]; }
 
   const icon = `collector-${def.tags.find(t => iconTags.includes(t)) || 'generic'}`;
@@ -145,19 +141,16 @@ function view(state: State, collectorMarkup: VNode | VNode[]) {
 }
 
 
-function viewEdit(state: LocalState, collectorMarkup: VNode | VNode[]): VNode {
-  const operation = state.operation.map(o => operationDefs[o]).withDefault({
-    name: "",
-    help: "",
-  });
-
+function viewEdit(state: LocalState, collectorMarkup: VNode | VNode[], operation): VNode {
+  console.log({ help, operation })
+  const def = operationDefs[operation];
   return div('.collector.editing', {}, flatten([
     div('.operation-heading', [
       i('.fa.fa-question-circle.help-toggle', " "),
-      h2('.operation-title', operation.name),
+      h2('.operation-title', def.name),
       div(
-        state.helpVisible ? '.active.help-container' : '.help-container',
-        div('.help', { props: { innerHTML: help[state.operation.withDefault('')] }})
+        state.showHelp ? '.active.help-container' : '.help-container',
+        div('.help', { props: { innerHTML: help[operation] }})
       ),
     ]),
     collectorMarkup,
@@ -170,30 +163,29 @@ function viewEdit(state: LocalState, collectorMarkup: VNode | VNode[]): VNode {
 }
 
 
-function collector(localState$: Stream<LocalState>, DOM, dataSource$: Stream<Maybe<DataSource>>, props): Stream<{DOM: Stream<any>, value: Stream<any>}> {
-  const emptyCollector = { DOM: xs.of([]), value: xs.of({}) };
+function collector(
+localState$: Stream<LocalState>,
+DOM,
+dataSource$: Stream<Maybe<DataSource>>,
+props,
+operation$: Stream<string>): Stream<{DOM: Stream<any>, value: Stream<any>}> {
   const noDataSourceCollector = { DOM: xs.of(div('hi')), value: xs.of({}) };
 
-  return xs.combine(localState$, dataSource$)
-    .map(([ localState, mDataSource ]) =>
-      mDataSource.map(dataSource =>
-        localState.operation
-          .map(op => {
-            const opDef: OperationType = operationDefs[op];
-            return opDef.collector(opDef, dataSource, localState.inputs)({ DOM, props });
-          })
-          .withDefault(emptyCollector)
-      )
+  return xs.combine(localState$, dataSource$, operation$)
+    .map(([ localState, mDataSourcex, operation ]) =>
+      mDataSourcex.map(dataSource => {
+        const opDef: OperationType = operationDefs[operation];
+        return opDef.collector(opDef, dataSource, localState.inputs)({ DOM, props });
+      })
       .withDefault(noDataSourceCollector)
     )
     .startWith(noDataSourceCollector)
 }
 
 
-function nextDataSource(state: State): Either<string,DataSource> {
+function nextDataSource(state: State, operation: string): Either<string,DataSource> {
   const mData = go(function* () {
-    const op = yield state.operation;
-    const opDef: OperationType = operationDefs[op];
+    const opDef: OperationType = operationDefs[operation];
     const src: DataSource = yield state.dataSource;
     return { opDef, src };
   });

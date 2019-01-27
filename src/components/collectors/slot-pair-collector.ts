@@ -84,7 +84,7 @@ export function SlotPairCollector(_opDef, dataSource: DataSource, initialInputs)
       ])
     );
 
-    const value$ = xs.combine(condition$, result$).map(([condition, result]) => ({ condition, result })).debug();
+    const value$ = xs.combine(condition$, result$).map(([condition, result]) => ({ condition, result }));
 
     return {
       DOM: dom$,

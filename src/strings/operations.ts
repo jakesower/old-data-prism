@@ -104,25 +104,25 @@ Numerically labels each column. Commonly used with the \`Sort\` operation.
 
 ## Example
 
-| Item | Category | Regular Price | Sale Price |
+| Item | Regular Price | Sale Price |
 | ---- | ------------- | ---------- |
-| Avocado | Food | 3 | 2 |
-| Bread | Food | 6 | 3 |
-| Crown | Jewelry | 10000 | 9000 |
-| Diapers | Baby Supplies | 40 | 36 |
-| Eggs | Food | 4 | 3 |
-| Formula | Baby Supplies | 9 | 7 |
+| Avocado | 3 | 2 |
+| Bread | 6 | 3 |
+| Crown | 10000 | 9000 |
+| Diapers | 40 | 36 |
+| Eggs | 4 | 3 |
+| Formula | 9 | 7 |
 
 Column name: \`Idx\`
 
 | Item | Regular Price | Sale Price | Idx |
 | ---- | ------------- | ---------- | --- |
 | Avocado | 3 | 2 | 1 |
-| Bread | 6 | 3 | | 2 |
-| Crown | Jewelry | 10000 | 9000 | 3 |
-| Diapers | Baby Supplies | 40 | 36 | 4 |
-| Eggs | Food | 4 | 3 | 5 |
-| Formula | Baby Supplies | 9 | 7 | 6 |
+| Bread | 6 | 3 | 2 |
+| Crown | 10000 | 9000 | 3 |
+| Diapers | 40 | 36 | 4 |
+| Eggs | 4 | 3 | 5 |
+| Formula | 9 | 7 | 6 |
 
 `);
 

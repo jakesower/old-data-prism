@@ -33,7 +33,7 @@ function intent(DOM): {[k in string]: Stream<any>} {
   return {
     activate$: DOM.select('.new-operation-button').events('click'),
     close$: DOM.select('.close-mask').events('click'),
-    operation$: DOM.select('.operation').events('click').debug().map(ev => ev.target.dataset.operation),
+    operation$: DOM.select('.operation').events('click').map(ev => ev.target.dataset.operation),
   };
 }
 
