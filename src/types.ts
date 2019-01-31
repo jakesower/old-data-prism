@@ -32,9 +32,14 @@ export interface DataColumn extends DataColumnAttrs {
   hasType: (this: DataColumn, type: DataType<any>) => boolean,
 }
 
+// meant to be extended in collectors
+export interface OperationError {
+  message?: string,
+}
+
 export interface Operation {
   display: (source: DataSource, inputs: {[k: string]: any}) => VNode,
-  fn: (source: DataSource, inputs: {[k: string]: any}) => Either<string,DataSource>,
+  fn: <T extends OperationError>(source: DataSource, inputs: {[k: string]: any}) => Either<T, DataSource>,
   name: string,
   tags: string[],
   collector: any,

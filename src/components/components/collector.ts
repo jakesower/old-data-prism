@@ -1,7 +1,7 @@
 import xs, { Stream } from 'xstream'
 import sampleCombine from 'xstream/extra/sampleCombine'
 import { div, button, VNode, span, h2, i } from '@cycle/dom';
-import { DataSource, StateModifier } from '../../types';
+import { DataSource, StateModifier, OperationError } from '../../types';
 import { Maybe } from '../../lib/monads/maybe';
 import { go, flatten } from '../../lib/utils';
 import operationDefs, { OperationType } from '../../operations';
@@ -83,7 +83,7 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
   const dataSource$ = xs.combine(state$, operation$)
     .compose(sampleWith(xs.merge(save$, apply$)))
     .map(([s, o]) => nextDataSource(s, o))
-    .startWith(Err("starting up"));
+    .startWith(Err({}));
 
   const value$ = state$
     .compose(sampleWith(xs.merge(save$, apply$)))
@@ -121,11 +121,11 @@ function intent(DOM) {
 }
 
 
-function view(state: State, collectorMarkup: VNode | VNode[], eDataSource: Either<string,DataSource>, operation: string) {
+function view(state: State, collectorMarkup: VNode | VNode[], eDataSource: Either<OperationError,DataSource>, operation: string) {
   if (state.editing) { return viewEdit(state, collectorMarkup, operation); }
 
   const def = operationDefs[operation];
-  const dataSource = eDataSource.recoverWith(null);
+  const dataSource = eDataSource.okOr(null);
   if (!def || !dataSource) { return <VNode[]>[]; }
 
   const icon = `collector-${def.tags.find(t => iconTags.includes(t)) || 'generic'}`;
@@ -142,7 +142,6 @@ function view(state: State, collectorMarkup: VNode | VNode[], eDataSource: Eithe
 
 
 function viewEdit(state: LocalState, collectorMarkup: VNode | VNode[], operation): VNode {
-  console.log({ help, operation })
   const def = operationDefs[operation];
   return div('.collector.editing', {}, flatten([
     div('.operation-heading', [
@@ -172,8 +171,8 @@ operation$: Stream<string>): Stream<{DOM: Stream<any>, value: Stream<any>}> {
   const noDataSourceCollector = { DOM: xs.of(div('hi')), value: xs.of({}) };
 
   return xs.combine(localState$, dataSource$, operation$)
-    .map(([ localState, mDataSourcex, operation ]) =>
-      mDataSourcex.map(dataSource => {
+    .map(([ localState, mDataSource, operation ]) =>
+      mDataSource.map(dataSource => {
         const opDef: OperationType = operationDefs[operation];
         return opDef.collector(opDef, dataSource, localState.inputs)({ DOM, props });
       })
@@ -183,7 +182,7 @@ operation$: Stream<string>): Stream<{DOM: Stream<any>, value: Stream<any>}> {
 }
 
 
-function nextDataSource(state: State, operation: string): Either<string,DataSource> {
+function nextDataSource(state: State, operation: string): Either<OperationError,DataSource> {
   const mData = go(function* () {
     const opDef: OperationType = operationDefs[operation];
     const src: DataSource = yield state.dataSource;

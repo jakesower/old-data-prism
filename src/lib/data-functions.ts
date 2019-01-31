@@ -4,7 +4,7 @@ import { DataType, OperationSlot, DataSource, Operation, makeDataSource, makeDat
 import { mapObj, transpose, zip } from './utils';
 import * as math from 'mathjs';
 import xs, { Stream } from 'xstream';
-import { Either, Err, Ok, sequenceObj } from './monads/either';
+import { Either, Err, Ok, sequenceAndCollectObj } from './monads/either';
 
 export function discoverTypes(vals: string[]): DataType<any>[] {
   return Object.values(dataTypes).filter(type => vals.every(type.test));
@@ -19,10 +19,10 @@ export function modifyStateAttr<T>(attr: keyof T, fn: (x: T[keyof T]) => T[keyof
 export function populateSlots(
   dataSource: DataSource,
   slots: {[k: string]: OperationSlot<any>},
-  rawInputs: {[k: string]: string}): Either<string, {[k: string]: any}>
+  rawInputs: {[k: string]: string}): Either<{[k: string]: string}, {[k: string]: any}>
 {
   const populated = mapObj(slots, (slot, key) => slot.extract(dataSource, rawInputs[key]));
-  return sequenceObj(populated);
+  return sequenceAndCollectObj(populated);
 }
 
 

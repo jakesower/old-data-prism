@@ -4,21 +4,28 @@ import Multiselect from '../../components/multiselect';
 import xs, { Stream } from 'xstream';
 import { Maybe } from '../../../lib/monads/maybe';
 
+interface InStreams {
+  DOM: any,
+  errors: Stream<Maybe<string>>,
+  props: Stream<any>,
+}
+
 
 export function freeSlotComponent(slot, _dataSource, init) {
-  return function ({ DOM }): { DOM: Stream<any>, value: Stream<string> } {
+  return function ({ DOM, errors }: InStreams): { DOM: Stream<any>, value: Stream<string> } {
     const value$ = DOM.select('.slot-input')
       .events('change')
       .map(ev => ev.target.value)
       .startWith(init || '');
 
-    const view$ = value$.map(value =>
+    const view$ = xs.combine(value$, errors).map(([value, mErrors]) =>
       div('.slot', {}, [
         h3({}, slot.display),
         input('.slot-input', {
           attrs: { type: 'text', required: true },
           props: { value }
-        })
+        }),
+        mErrors.map(error => div('.error', error)).withDefault(null),
       ])
     );
 
@@ -28,7 +35,7 @@ export function freeSlotComponent(slot, _dataSource, init) {
 
 
 export function columnSlotComponent(slot, dataSource, init) {
-  return function ({ DOM }) {
+  return function ({ DOM, errors }: InStreams) {
     const value$ = DOM.select('.slot-input').events('change').map(ev => ev.target.value).startWith(init || '');
     const view$ = value$.map(value => {
       const emptyCol = option({ attrs: { value: '', selected: (value === "") }}, '');
@@ -50,7 +57,7 @@ export function columnSlotComponent(slot, dataSource, init) {
 
 
 export function multicolumnSlotComponent(slot: OperationSlot<any>, dataSource: DataSource) {
-  return function ({ DOM }) {
+  return function ({ DOM, errors }: InStreams) {
     const colReducer = (acc, col: DataColumn, idx: number) =>
       col.hasType(slot.type) ?
         [...acc, { value: idx, display: col.name }] :
@@ -63,9 +70,9 @@ export function multicolumnSlotComponent(slot: OperationSlot<any>, dataSource: D
 
 
 export function sourceSlotComponent(slot, _dataSource, init) {
-  return function ({ DOM, props: props$ }) {
+  return function ({ DOM, errors, props }: InStreams) {
     const value$ = DOM.select('.slot-input').events('change').map(ev => ev.target.value).startWith(init || '');
-    const view$ = xs.combine(value$, <Stream<any>>props$)
+    const view$ = xs.combine(value$, <Stream<any>>props)
       .map(([value, props]) => {
         const emptySource = option({ attrs: { value: '', selected: (value === '') }}, '');
         const sourceVdom = props.sources.map((src, idx) =>
@@ -84,7 +91,7 @@ export function sourceSlotComponent(slot, _dataSource, init) {
 
 
 export function enumeratedSlotComponent(slot, _dataSource, init) {
-  return function ({ DOM }) {
+  return function ({ DOM, errors }: InStreams) {
     const value$ = DOM.select('.slot-input').events('change').map(ev => ev.target.value).startWith(init || '');
     const view$ = value$.map(value => {
       const empty = option({ attrs: { value: '', selected: (value === '') }}, '');

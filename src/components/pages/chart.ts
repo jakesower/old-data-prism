@@ -136,7 +136,8 @@ function collector(state$: Stream<State>, activeSource$: Stream<Maybe<DataSource
     return activeSource.map(dataSource =>
       state.chartType.map(chartType => {
         const { slots } = chartDefs[chartType];
-        return SlotCollector({ slots }, dataSource, state.chartInputs)(cycleSources);
+        return emptyCollector; // TODO
+        // return SlotCollector({ slots }, dataSource, state.chartInputs)(cycleSources);
       }).withDefault(emptyCollector)
     ).withDefault(emptyCollector)
   }).startWith(emptyCollector);

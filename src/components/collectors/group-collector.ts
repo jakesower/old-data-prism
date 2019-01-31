@@ -144,7 +144,7 @@ function Aggregator(cycleSources, dataSource: DataSource, init) {
       state.aggregator
         .map(agg => {
           const aggDef = aggregatorDefs[agg];
-          return SlotCollector(aggDef, dataSource, state.inputs)({ DOM, props: cycleSources.props });
+          return SlotCollector(aggDef, dataSource, state.inputs)({ DOM, props: cycleSources.props, update: xs.never() });
         })
         .withDefault(emptyCollector)
     );

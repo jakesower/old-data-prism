@@ -26,8 +26,12 @@ export class Either<E,O> { // implements Monad<T> {
     return new Either(SOk, value);
   }
 
-  recoverWith<T>(defaultValue: T): (T|O) {
+  okOr<T>(defaultValue: T): (T|O) {
     return (this.type === SErr) ? defaultValue : <O>this.value;
+  }
+
+  errOr<T>(defaultValue: T): (T|E) {
+    return (this.type === SOk) ? defaultValue : <E>this.value;
   }
 
   map<T>(fn: (value: O) => T): Either<E,T> {
@@ -70,6 +74,17 @@ export class Either<E,O> { // implements Monad<T> {
     }
     return <O>this.value;
   }
+
+  getErrorValue(): E {
+    if (this.type === SOk) {
+      throw "tried to extract an Err value from an Ok Either!";
+    }
+    return <E>this.value;
+  }
+
+  flip(): Either<O,E> {
+    return this.type === SOk ? Err(<O>this.value) : Ok(<E>this.value);
+  }
 }
 
 
@@ -82,7 +97,7 @@ export function sequenceList<T,U>(eithers: Either<T,U>[]): Either<T,U[]> {
   for (let i=0; i<l; i+=1) {
     const e = eithers[i];
     if (e.isErr()) { return (e as unknown as Either<T, U[]>); }
-    out[i] = e.recoverWith(null) as U;
+    out[i] = e.getOkValue() as U;
   }
   return Ok(out);
 }
@@ -95,7 +110,28 @@ export function sequenceObj<T,U>(eithers: {[k: string]: Either<T,U>}): Either<T,
   for (let i=0; i<l; i+=1) {
     const e = vals[i];
     if (e.isErr()) { return (e as unknown as Either<T,{[k: string]: U}>); }
-    out[i] = e.recoverWith(null) as U;
+    out[i] = e.getOkValue() as U;
   }
   return Ok(zipObj(keys, out));
+}
+
+export function sequenceAndCollectObj<T,U>(eithers: {[k: string]: Either<T,U>}): Either<{[k: string]: T},{[k: string]: U}> {
+  const keys = Object.keys(eithers);
+  const vals = Object.values(eithers);
+  const l = vals.length;
+  const out = <U[]>[];
+  const outErrs = <{[k: string]: T}>{};
+  let errored = false;
+  for (let i=0; i<l; i+=1) {
+    const e = vals[i];
+    if (e.isErr()) {
+      outErrs[keys[i]] = e.getErrorValue();
+      errored = true;
+    } else {
+      out[i] = e.getOkValue();
+    }
+  }
+  return errored ?
+    Err(outErrs) :
+    Ok(zipObj(keys, out));
 }

@@ -11,7 +11,7 @@ export interface SlotPairOperation extends Operation {}
 
 
 export function SlotPairCollector(_opDef, dataSource: DataSource, initialInputs) {
-  function main(cycleSources: { DOM: Stream<any> }) {
+  function main(cycleSources) {
     const { add$, otherwise$ } = intent(cycleSources.DOM, initialInputs);
 
     const slot = FreeSlot({ display: 'Column Name', type: dataTypes.NonEmptyString });
