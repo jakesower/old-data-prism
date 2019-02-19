@@ -4,7 +4,7 @@ import xs, { Stream } from 'xstream';
 import isolate from '@cycle/isolate';
 import { freeSlotComponent, columnSlotComponent, enumeratedSlotComponent, multicolumnSlotComponent, sourceSlotComponent } from './shared/slot-components';
 import { sampleWith } from '../../lib/stream-utils';
-import { Either } from '../../lib/monads/either';
+import { Either, Err } from '../../lib/monads/either';
 import { Maybe } from '../../lib/monads/maybe';
 
 export interface SlotHolder {
@@ -52,7 +52,7 @@ export function SlotCollector(opDef: SlotOperation, dataSource: DataSource, init
       const init = initialInputs[slotKeys[idx]];
       return isolate(slotDispatch[slot.slotType](slot, dataSource, init), idx)({
         ...cycleSources,
-        errors: errorProxy$.map(mErrors => mErrors.map(error => error.slotErrors[idx])),
+        // errors: errorProxy$.map(mErrors => mErrors.chain(error => error.slotErrors[idx])),
       });
     });
 
@@ -70,8 +70,8 @@ export function SlotCollector(opDef: SlotOperation, dataSource: DataSource, init
 
     return {
       DOM: outDom,
-      value: value.compose(sampleWith(xs.merge(update$))),
-      dataSource: curDataSource$ // :(
+      value: value.compose(sampleWith(xs.merge(update$))).startWith({}),
+      dataSource: curDataSource$.map(ds => ds.toMaybe()).startWith(Maybe.Nothing()) // :(
     };
   }
 

@@ -12,7 +12,7 @@
     "watch-sass": "mkdirp dist/styles && node-sass -wr assets/styles/main.scss --output-style=compressed -o dist/styles",
     "watch": "concurrently \"npm run watch-js\" \"npm run watch-sass\"",
     "start": "node ./server.js",
-    "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "test": "mocha -r ts-node/register test/**/*.spec.*",
     "test-check": "find ./test -name '*.spec.js' | CHECK_TYPES=true TESTCHECK=true xargs mocha -t 50000 -R spec --reporter nyan"
   },
   "devDependencies": {

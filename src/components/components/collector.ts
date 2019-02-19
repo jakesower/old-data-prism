@@ -64,7 +64,7 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
 
   // SECONDARY STREAMS
   //
-  const collector$ = collector(localState$, DOM, chain$, cycleSources.props, operation$);
+  const collector$ = collector(localState$, DOM, chain$, cycleSources.props, operation$, xs.merge(apply$, save$));
   const collectorVdom$: Stream<VNode | VNode[]> = collector$.map(c => c.DOM).flatten();
   const collectorValue$: Stream<{[k: string]: string}> = collector$.map(c => c.value).flatten();
   const collectorValueApply$ = collectorValue$.compose(sampleWith(apply$));
@@ -80,15 +80,17 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
 
   // EXTERNAL STREAMS
   //
-  const dataSource$ = xs.combine(state$, operation$)
-    .compose(sampleWith(xs.merge(save$, apply$)))
-    .map(([s, o]) => nextDataSource(s, o))
-    .startWith(Err({}));
+  const dataSource$ = collector$.map(c => c.dataSource).flatten();
 
-  const value$ = state$
-    .compose(sampleWith(xs.merge(save$, apply$)))
-    // .map(Maybe.of)
-    // .startWith(Maybe.Nothing());
+  // const dataSource$ = xs.combine(state$, operation$)
+  //   .compose(sampleWith(xs.merge(save$, apply$)))
+  //   .map(([s, o]) => nextDataSource(s, o))
+  //   .startWith(Err({}));
+
+  // const value$ = state$
+  //   .compose(sampleWith(xs.merge(save$, apply$)))
+  //   // .map(Maybe.of)
+  //   // .startWith(Maybe.Nothing());
 
   const dom$ = xs.combine(state$, collectorVdom$, dataSource$, operation$)
     .map(args => view(args[0], args[1], args[2], args[3]));
@@ -99,11 +101,11 @@ export default function main(cycleSources: { DOM: any, chain$: Stream<Maybe<Data
 
   return {
     DOM: dom$,
-    value: value$,
+    // value: value$,
     operationValue: xs.combine(state$, operation$).map(([state, operation]) => (
       { operation, inputs: state.inputs }
     )),
-    dataSource: dataSource$.map(ds => ds.toMaybe()),
+    dataSource: dataSource$.startWith(Maybe.Nothing()),
     remove$: xs.merge(removePress$, cancelRemove$),
   };
 }
@@ -121,11 +123,11 @@ function intent(DOM) {
 }
 
 
-function view(state: State, collectorMarkup: VNode | VNode[], eDataSource: Either<OperationError,DataSource>, operation: string) {
+function view(state: State, collectorMarkup: VNode | VNode[], eDataSource: Maybe<DataSource>, operation: string) {
   if (state.editing) { return viewEdit(state, collectorMarkup, operation); }
 
   const def = operationDefs[operation];
-  const dataSource = eDataSource.okOr(null);
+  const dataSource = eDataSource.withDefault(null);
   if (!def || !dataSource) { return <VNode[]>[]; }
 
   const icon = `collector-${def.tags.find(t => iconTags.includes(t)) || 'generic'}`;
@@ -167,14 +169,15 @@ localState$: Stream<LocalState>,
 DOM,
 dataSource$: Stream<Maybe<DataSource>>,
 props,
-operation$: Stream<string>): Stream<{DOM: Stream<any>, value: Stream<any>}> {
-  const noDataSourceCollector = { DOM: xs.of(div('hi')), value: xs.of({}) };
+operation$: Stream<string>,
+update: Stream<any>): Stream<{DOM: Stream<any>, value: Stream<any>, dataSource: Stream<Maybe<DataSource>>}> {
+  const noDataSourceCollector = { DOM: xs.of(div('hi')), value: xs.of({}), dataSource: Err({}) };
 
   return xs.combine(localState$, dataSource$, operation$)
     .map(([ localState, mDataSource, operation ]) =>
       mDataSource.map(dataSource => {
         const opDef: OperationType = operationDefs[operation];
-        return opDef.collector(opDef, dataSource, localState.inputs)({ DOM, props });
+        return opDef.collector(opDef, dataSource, localState.inputs)({ DOM, props, update });
       })
       .withDefault(noDataSourceCollector)
     )
@@ -182,14 +185,14 @@ operation$: Stream<string>): Stream<{DOM: Stream<any>, value: Stream<any>}> {
 }
 
 
-function nextDataSource(state: State, operation: string): Either<OperationError,DataSource> {
-  const mData = go(function* () {
-    const opDef: OperationType = operationDefs[operation];
-    const src: DataSource = yield state.dataSource;
-    return { opDef, src };
-  });
+// function nextDataSource(state: State, operation: string): Either<OperationError,DataSource> {
+//   const mData = go(function* () {
+//     const opDef: OperationType = operationDefs[operation];
+//     const src: DataSource = yield state.dataSource;
+//     return { opDef, src };
+//   });
 
-  return mData
-    .map(({ opDef, src }) => opDef.fn(src, state.inputs))
-    .withDefault(Err("missing operation or data source"));
-}
+//   return mData
+//     .map(({ opDef, src }) => opDef.fn(src, state.inputs))
+//     .withDefault(Err("missing operation or data source"));
+// }

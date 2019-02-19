@@ -6,13 +6,14 @@ import { Maybe } from '../../../lib/monads/maybe';
 
 interface InStreams {
   DOM: any,
-  errors: Stream<Maybe<string>>,
-  props: Stream<any>,
+  errors?: Stream<Maybe<string>>,
+  props?: Stream<any>,
 }
 
 
 export function freeSlotComponent(slot, _dataSource, init) {
-  return function ({ DOM, errors }: InStreams): { DOM: Stream<any>, value: Stream<string> } {
+  return function ({ DOM }: InStreams): { DOM: Stream<any>, value: Stream<string> } {
+    const errors = xs.of(Maybe.Nothing())
     const value$ = DOM.select('.slot-input')
       .events('change')
       .map(ev => ev.target.value)
